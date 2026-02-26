@@ -1,1 +1,1 @@
-# App-Monney-Planner
+# money-planner
