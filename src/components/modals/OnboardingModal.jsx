@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function OnboardingModal(props) {
-  const { theme, darkMode, userInfo, setUserInfo, setShowOnboarding, setShowSetupWizard } = props;
+  const { theme, darkMode, userInfo, setUserInfo, setShowOnboarding, setShowSetupWizard, assetData, setAssetData } = props;
 
   return (
         <div className={`fixed inset-0 ${darkMode ? 'bg-black' : 'bg-neutral-900'} flex items-center justify-center p-4 z-50 animate-fadeIn`}>

@@ -3,8 +3,11 @@ import React from 'react';
 export default function DateTransactionsModal(props) {
   const {
     theme, darkMode, selectedDate, setShowDateTransactionsModal, setSelectedDate,
-    transactions, deleteTransaction, setEditingTransaction,
+    transactions, setTransactions, deleteTransaction, setEditingTransaction,
     creditCards, expenseCategories, incomeCategories,
+    newTransaction, setNewTransaction,
+    expandedCreditGroups, setExpandedCreditGroups,
+    getSettlementDate,
   } = props;
 
   const getTransactionsForDay = (ym, day) => {
