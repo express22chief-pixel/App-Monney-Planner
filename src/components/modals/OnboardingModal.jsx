@@ -140,4 +140,3 @@ export default function OnboardingModal(props) {
 
   );
 }
-import { BarChart2 } from 'lucide-react';

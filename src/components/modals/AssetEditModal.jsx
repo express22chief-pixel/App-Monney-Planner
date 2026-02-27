@@ -110,4 +110,3 @@ export default function AssetEditModal(props) {
 
   );
 }
-import { BarChart2 } from 'lucide-react';

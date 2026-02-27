@@ -128,4 +128,3 @@ export default function CloseMonthModal(props) {
 
   );
 }
-import { BarChart2 } from 'lucide-react';
