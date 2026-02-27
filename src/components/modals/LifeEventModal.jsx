@@ -1,4 +1,5 @@
 import React from 'react';
+import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
 
 export default function LifeEventModal(props) {
   const { theme, darkMode, editingLifeEvent, setEditingLifeEvent, addOrUpdateLifeEvent, setShowLifeEventModal } = props;
@@ -25,7 +26,7 @@ export default function LifeEventModal(props) {
               <div className="mb-4">
                 <p className={`text-sm ${theme.textSecondary} mb-3`}>テンプレートを選択</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {lifeEventTemplates.map((template) => (
+                  {LIFE_EVENT_TEMPLATES.map((template) => (
                     <button
                       key={template.name}
                       onClick={() => {
@@ -58,7 +59,7 @@ export default function LifeEventModal(props) {
                 <div>
                   <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>アイコン</label>
                   <div className="grid grid-cols-6 gap-2">
-                    {eventIcons.map((icon) => (
+                    {EVENT_ICONS.map((icon) => (
                       <button
                         key={icon}
                         onClick={() => setEditingLifeEvent({ ...editingLifeEvent, icon })}
