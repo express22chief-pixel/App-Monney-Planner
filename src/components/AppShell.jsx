@@ -4,7 +4,7 @@
  * 将来の広告バナー挿入もここに差し込むだけでOK。
  */
 import React from 'react';
-import { Sun, Moon, DollarSign, Droplets, Calendar, TrendingUp, Settings } from 'lucide-react';
+import { Sun, Moon, DollarSign, BarChart2, Calendar, TrendingUp, Settings } from 'lucide-react';
 
 import HomeTab       from './tabs/HomeTab';
 import CalendarTab   from './tabs/CalendarTab';
@@ -33,7 +33,7 @@ import CardModal             from './modals/CardModal';
 
 const TABS = [
   { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
-  { id: 'assets',     icon: <Droplets size={20} />,    label: '資産'   },
+  { id: 'assets',     icon: <BarChart2 size={20} />,    label: '資産'   },
   { id: 'calendar',   icon: <Calendar size={20} />,    label: '履歴'   },
   { id: 'simulation', icon: <TrendingUp size={20} />,  label: 'シミュ' },
   { id: 'settings',   icon: <Settings size={20} />,    label: '設定'   },
