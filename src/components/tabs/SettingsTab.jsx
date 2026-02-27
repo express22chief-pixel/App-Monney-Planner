@@ -26,12 +26,13 @@ export default function SettingsTab(props) {
   const {
     theme, darkMode, setDarkMode,
     userInfo, setUserInfo,
+    assetData, setAssetData,
     monthlyBudget, setMonthlyBudget,
     simulationSettings, setSimulationSettings,
     customCategories, setCustomCategories,
     expenseCategories, incomeCategories,
     creditCards, setCreditCards,
-    recurringTransactions, setShowRecurringModal, setEditingRecurring,
+    recurringTransactions, setRecurringTransactions, setShowRecurringModal, setEditingRecurring,
     editingCategoryName, setEditingCategoryName,
     editingCategoryValue, setEditingCategoryValue,
     newCategoryName, setNewCategoryName,
@@ -41,6 +42,7 @@ export default function SettingsTab(props) {
     resetAllData, applyRiskProfile,
     handleRenameDefaultCategory, handleDeleteDefaultCategory,
     deleteCustomCategory, deleteRecurring,
+    transactions, setTransactions, setMonthlyHistory,
   } = props;
 
   return (

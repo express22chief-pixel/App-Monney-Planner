@@ -7,7 +7,7 @@ export default function HomeTab(props) {
     summaryMonthOffset, setSummaryMonthOffset,
     calculateMonthlyBalance, budgetAnalysis, monthlyBudget,
     calculateCategoryExpenses, getLast6MonthsTrend,
-    transactions, currentMonth, currentBalance, recurringTransactions,
+    transactions, setTransactions, currentMonth, currentBalance, recurringTransactions,
     monthlyHistory, simulationSettings, creditCards,
     showCFList, setShowCFList, showSplitList, setShowSplitList,
     splitPayments, setSplitPayments, recentTxnLimit, setRecentTxnLimit,
@@ -15,6 +15,9 @@ export default function HomeTab(props) {
     setDismissedClosingAlerts, setShowClosingCheckModal,
     expandedCreditGroups, setExpandedCreditGroups,
     setEditingTransaction,
+    setShowTutorial, setTutorialPage,
+    setShowRecurringModal, setEditingRecurring, deleteRecurring,
+    getSettlementDate,
   } = props;
 
   return (

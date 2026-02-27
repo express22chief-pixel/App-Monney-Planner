@@ -9,6 +9,7 @@ export default function CalendarTab(props) {
     historyCategory, setHistoryCategory,
     expenseCategories, incomeCategories,
     setEditingTransaction,
+    monthlyHistory, calculateMonthlyBalance,
   } = props;
 
   const getDaysInMonth = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y,m,0).getDate(); };

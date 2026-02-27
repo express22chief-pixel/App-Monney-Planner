@@ -7,6 +7,8 @@ export default function AssetsTab(props) {
     simulationResults, calculateBenchmark, userInfo,
     setShowAssetEditModal, setShowInvestModal, setShowBenchmark,
     getLast6MonthsTrend, chartData, simulationSettings,
+    transactions, recurringTransactions, creditCards,
+    setShowClosingCheckModal, getSettlementDate, budgetAnalysis,
   } = props;
 
   return (
