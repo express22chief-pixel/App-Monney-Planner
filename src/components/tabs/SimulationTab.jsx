@@ -1,4 +1,5 @@
 import React from 'react';
+import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
 import { Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { RISK_PROFILES } from '../../hooks/useMoneyData';
@@ -16,17 +17,6 @@ export default function SimulationTab(props) {
   const totalTaxSaved = simulationResults[simulationResults.length - 1]?.taxSaved || 0;
   const futureAge = (userInfo?.age ? Number(userInfo.age) : 25) + simulationSettings.years;
   const futureBenchmark = calculateBenchmark(futureAge);
-  const lifeEventTemplates = [
-    { name: '結婚', estimatedAmount: 3000000, icon: '💍', type: 'expense' },
-    { name: '出産', estimatedAmount: 500000, icon: '👶', type: 'expense' },
-    { name: '住宅購入', estimatedAmount: 30000000, icon: '🏠', type: 'expense' },
-    { name: '車購入', estimatedAmount: 2000000, icon: '🚗', type: 'expense' },
-    { name: '進学', estimatedAmount: 2000000, icon: '🎓', type: 'expense' },
-    { name: '海外旅行', estimatedAmount: 500000, icon: '✈️', type: 'expense' },
-    { name: '退職', estimatedAmount: 0, icon: '🎉', type: 'milestone' },
-    { name: 'カスタム', estimatedAmount: 0, icon: '📌', type: 'expense' }
-  ];
-  const eventIcons = ['💍', '👶', '🏠', '🚗', '🎓', '✈️', '💰', '🎉', '📌', '🎊', '🎁', '⭐'];
 
   return (
           <div className="space-y-3 animate-fadeIn">
