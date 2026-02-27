@@ -1,7 +1,13 @@
 import React from 'react';
+import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../constants';
 
 export default function CategoryModal(props) {
   const { theme, darkMode, expenseCategories, incomeCategories, customCategories, setCustomCategories, monthlyBudget, setMonthlyBudget, newCategoryName, setNewCategoryName, newCategoryType, setNewCategoryType, addCustomCategory, setShowCategoryModal, editingCategoryName, setEditingCategoryName, editingCategoryValue, setEditingCategoryValue, handleRenameDefaultCategory, handleDeleteDefaultCategory, deleteCustomCategory } = props;
+  const deletedExp = customCategories?.deletedDefaults?.expense || [];
+  const deletedInc = customCategories?.deletedDefaults?.income || [];
+  const renamedExp = customCategories?.renamedDefaults?.expense || {};
+  const renamedInc = customCategories?.renamedDefaults?.income || {};
+
 
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
