@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart2 } from 'lucide-react';
 
 export default function CloseMonthModal(props) {
   const { theme, darkMode, closingTargetMonth, closeMonthData, setCloseMonthData, closeMonth, setShowCloseMonthModal, simulationSettings, calculateMonthlyBalance } = props;
@@ -56,7 +57,7 @@ export default function CloseMonthModal(props) {
 
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2 flex items-center gap-1`}>
-                  <Droplets size={14} style={{ color: theme.accent }} />
+                  <BarChart2 size={14} style={{ color: theme.accent }} />
                   待機資金に回す金額: ¥{closeMonthData.dryPowderAmount.toLocaleString()}
                 </label>
                 <input
@@ -127,3 +128,4 @@ export default function CloseMonthModal(props) {
 
   );
 }
+import { BarChart2 } from 'lucide-react';

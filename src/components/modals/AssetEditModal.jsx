@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart2 } from 'lucide-react';
 
 export default function AssetEditModal(props) {
   const { theme, darkMode, assetData, setAssetData, setShowAssetEditModal } = props;
@@ -65,7 +66,7 @@ export default function AssetEditModal(props) {
 
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-1 flex items-center gap-1`}>
-                  <Droplets size={14} style={{ color: theme.accent }} />
+                  <BarChart2 size={14} style={{ color: theme.accent }} />
                   投資待機資金
                 </label>
                 <p className={`text-[11px] ${theme.textSecondary} mb-2 leading-relaxed`}>
@@ -109,3 +110,4 @@ export default function AssetEditModal(props) {
 
   );
 }
+import { BarChart2 } from 'lucide-react';
