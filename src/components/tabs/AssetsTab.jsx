@@ -9,6 +9,7 @@ export default function AssetsTab(props) {
     getLast6MonthsTrend, chartData, simulationSettings,
     transactions, recurringTransactions, creditCards,
     setShowClosingCheckModal, getSettlementDate, budgetAnalysis,
+    currentBalance, currentMonth, openCloseMonthModal, setActiveTab, selectedMonth,
   } = props;
 
   return (

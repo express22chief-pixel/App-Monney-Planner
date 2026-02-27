@@ -10,6 +10,8 @@ export default function HomeTab(props) {
     transactions, setTransactions, currentMonth, currentBalance, recurringTransactions,
     monthlyHistory, simulationSettings, creditCards,
     showCFList, setShowCFList, showSplitList, setShowSplitList,
+    showRecurringList, setShowRecurringList,
+    selectedMonth,
     splitPayments, setSplitPayments, recentTxnLimit, setRecentTxnLimit,
     setShowAddTransaction, setShowBudgetModal, dismissedClosingAlerts,
     setDismissedClosingAlerts, setShowClosingCheckModal,

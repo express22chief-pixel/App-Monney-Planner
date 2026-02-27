@@ -7,7 +7,7 @@ export default function SimulationTab(props) {
     theme, darkMode, simulationSettings, setSimulationSettings,
     simulationResults, monteCarloResults, chartData, monteCarloChartData,
     lifeEvents, setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
-    applyRiskProfile, userInfo, assetData, calculateBenchmark,
+    applyRiskProfile, userInfo, assetData, calculateBenchmark, setActiveTab,
   } = props;
 
   const finalValue = simulationResults[simulationResults.length - 1]?.totalValue || 0;
