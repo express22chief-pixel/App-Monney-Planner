@@ -1,4 +1,5 @@
 import React from 'react';
+import { getAgeGroup } from '../../utils/calc';
 
 export default function BenchmarkModal(props) {
   const { theme, darkMode, assetData, userInfo, calculateBenchmark, setShowBenchmark } = props;
@@ -8,7 +9,7 @@ export default function BenchmarkModal(props) {
           <div className={`${theme.cardGlass} rounded-3xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto animate-slideUp`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className={`text-xl font-bold ${theme.text}`}>
-                {getAgeGroup() === '20s' ? '20代' : getAgeGroup() === '30s' ? '30代' : getAgeGroup() === '40s' ? '40代' : getAgeGroup() === '50s' ? '50代' : '60代以上'}平均との比較
+                {getAgeGroup(userInfo?.age) === '20s' ? '20代' : getAgeGroup(userInfo?.age) === '30s' ? '30代' : getAgeGroup(userInfo?.age) === '40s' ? '40代' : getAgeGroup(userInfo?.age) === '50s' ? '50代' : '60代以上'}平均との比較
               </h2>
               <button onClick={() => setShowBenchmark(false)} className={`text-2xl ${theme.textSecondary}`}>✕</button>
             </div>

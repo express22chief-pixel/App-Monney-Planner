@@ -1,4 +1,5 @@
 import React from 'react';
+import { getTransactionsForDay } from '../../utils/calc';
 
 export default function DateTransactionsModal(props) {
   const {
