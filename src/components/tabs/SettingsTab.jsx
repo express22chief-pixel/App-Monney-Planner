@@ -1,4 +1,5 @@
 import React from 'react';
+import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../constants';
 import { Edit2 } from 'lucide-react';
 import { RISK_PROFILES } from '../../hooks/useMoneyData';
 
@@ -44,6 +45,11 @@ export default function SettingsTab(props) {
     deleteCustomCategory, deleteRecurring,
     transactions, setTransactions, setMonthlyHistory,
   } = props;
+  const deletedExp = customCategories?.deletedDefaults?.expense || [];
+  const deletedInc = customCategories?.deletedDefaults?.income || [];
+  const renamedExp = customCategories?.renamedDefaults?.expense || {};
+  const renamedInc = customCategories?.renamedDefaults?.income || {};
+
 
   return (
           <div className="space-y-2 animate-fadeIn pb-6">

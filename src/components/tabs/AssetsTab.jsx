@@ -1,4 +1,5 @@
 import React from 'react';
+import { Edit2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function AssetsTab(props) {
@@ -10,6 +11,7 @@ export default function AssetsTab(props) {
     transactions, recurringTransactions, creditCards,
     setShowClosingCheckModal, getSettlementDate, budgetAnalysis,
     currentBalance, currentMonth, openCloseMonthModal, setActiveTab, selectedMonth,
+    dismissedClosingAlerts, setDismissedClosingAlerts,
   } = props;
 
   return (

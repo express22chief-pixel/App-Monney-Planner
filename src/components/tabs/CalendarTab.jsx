@@ -1,4 +1,5 @@
 import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CalendarTab(props) {
   const {
@@ -9,7 +10,7 @@ export default function CalendarTab(props) {
     historyCategory, setHistoryCategory,
     expenseCategories, incomeCategories,
     setEditingTransaction,
-    monthlyHistory, calculateMonthlyBalance,
+    monthlyHistory, calculateMonthlyBalance, currentMonth,
   } = props;
 
   const getDaysInMonth = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y,m,0).getDate(); };
@@ -44,7 +45,6 @@ export default function CalendarTab(props) {
                     const date = new Date(selectedMonth + '-01');
                     date.setMonth(date.getMonth() + 1);
                     const nextMonth = date.toISOString().slice(0, 7);
-                    const currentMonth = new Date().toISOString().slice(0, 7);
                     setSelectedMonth(nextMonth);
                   }}
                   className={`p-2 rounded-lg transition-all duration-200 hover-scale ${darkMode ? 'hover:bg-neutral-800' : 'hover:bg-neutral-100'}`}
