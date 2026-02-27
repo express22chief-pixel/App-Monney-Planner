@@ -1,4 +1,5 @@
 import React from 'react';
+import { getAgeGroup } from '../../utils/calc';
 import { Edit2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
@@ -78,7 +79,7 @@ export default function AssetsTab(props) {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <p className={`text-[10px] ${theme.textSecondary} mb-1 font-medium uppercase tracking-wide`}>
-                    {userInfo?.age ? `同世代比較（${getAgeGroup()==='20s'?'20代':getAgeGroup()==='30s'?'30代':getAgeGroup()==='40s'?'40代':getAgeGroup()==='50s'?'50代':'60代以上'}）` : '同世代比較'}
+                    {userInfo?.age ? `同世代比較（${getAgeGroup(userInfo?.age)==='20s'?'20代':getAgeGroup(userInfo?.age)==='30s'?'30代':getAgeGroup(userInfo?.age)==='40s'?'40代':getAgeGroup(userInfo?.age)==='50s'?'50代':'60代以上'}）` : '同世代比較'}
                   </p>
                   <div className="flex items-center gap-2">
                     {!userInfo?.age && (

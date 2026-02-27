@@ -39,7 +39,7 @@ export default function SimulationTab(props) {
               </h2>
               
               <div className="grid grid-cols-3 gap-2">
-                {Object.entries(riskProfiles).map(([key, profile]) => (
+                {Object.entries(RISK_PROFILES).map(([key, profile]) => (
                   <button
                     key={key}
                     onClick={() => applyRiskProfile(key)}

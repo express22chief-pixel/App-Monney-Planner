@@ -1,4 +1,5 @@
 import React from 'react';
+import { getDayBalance, getDaysInMonth, getFirstDayOfMonth, getTransactionsForDay } from '../../utils/calc';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function CalendarTab(props) {
@@ -11,6 +12,7 @@ export default function CalendarTab(props) {
     expenseCategories, incomeCategories,
     setEditingTransaction,
     monthlyHistory, calculateMonthlyBalance, currentMonth,
+    getLast6MonthsTrend,
   } = props;
 
   const getDaysInMonth = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y,m,0).getDate(); };
