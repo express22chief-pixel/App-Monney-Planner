@@ -2,7 +2,7 @@ import React from 'react';
 import { BarChart2 } from 'lucide-react';
 
 export default function CloseMonthModal(props) {
-  const { theme, darkMode, closingTargetMonth, closeMonthData, setCloseMonthData, closeMonth, setShowCloseMonthModal, simulationSettings, calculateMonthlyBalance } = props;
+  const { theme, darkMode, closingTargetMonth, closeMonthData, setCloseMonthData, closeMonth, setShowCloseMonthModal, simulationSettings, calculateMonthlyBalance, currentBalance, currentMonth, budgetAnalysis } = props;
 
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
