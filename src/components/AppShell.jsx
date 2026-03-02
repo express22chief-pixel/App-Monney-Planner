@@ -43,6 +43,7 @@ const TABS = [
 
 export default function AppShell({ data }) {
   const { theme, isPremium } = useAppContext();
+  const [fabOpen, setFabOpen] = React.useState(false);
   const {
     activeTab, setActiveTab,
     darkMode, setDarkMode,
@@ -104,23 +105,46 @@ export default function AppShell({ data }) {
       {/* ─── FAB（取引追加 / PayPay読み込み）─────────────────────────── */}
       {activeTab !== 'settings' && (
         <div className="fixed z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 72px)', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-          {/* PayPay CSV読み込みボタン */}
+          {/* メニュー展開時のオーバーレイ */}
+          {fabOpen && (
+            <div className="fixed inset-0 z-[-1]" onClick={() => setFabOpen(false)} />
+          )}
+
+          {/* メニュー項目（展開時のみ表示） */}
+          {fabOpen && (
+            <div className="flex flex-col items-end gap-2 animate-fadeIn">
+              <button
+                onClick={() => { data.setShowPayPayImport(true); setFabOpen(false); }}
+                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
+                style={{ backgroundColor: '#FF4B4B', boxShadow: '0 4px 12px rgba(255,75,75,0.4)' }}
+              >
+                <span>🔴</span>
+                <span>PayPay読み込み</span>
+              </button>
+              <button
+                onClick={() => { data.setShowAddTransaction(true); setFabOpen(false); }}
+                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
+                style={{ backgroundColor: theme.accent, boxShadow: `0 4px 12px ${theme.accent}55` }}
+              >
+                <span>✏️</span>
+                <span>手動で追加</span>
+              </button>
+            </div>
+          )}
+
+          {/* メインFABボタン */}
           <button
-            onClick={() => data.setShowPayPayImport(true)}
-            className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg transition-all duration-200 flex items-center gap-2 hover-scale"
-            style={{ backgroundColor: '#FF4B4B', boxShadow: '0 4px 16px rgba(255,75,75,0.45)' }}
+            onClick={() => setFabOpen(v => !v)}
+            className="h-12 px-5 rounded-full text-white text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2"
+            style={{
+              backgroundColor: theme.accent,
+              boxShadow: `0 4px 20px ${theme.accent}55`,
+              transform: fabOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+              transition: 'transform 0.2s ease',
+            }}
           >
-            <span style={{ fontSize: 14 }}>🔴</span>
-            <span>PayPay読み込み</span>
-          </button>
-          {/* 通常の取引追加ボタン */}
-          <button
-            onClick={() => data.setShowAddTransaction(true)}
-            className="h-12 px-5 rounded-full text-white text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 hover-scale"
-            style={{ backgroundColor: theme.accent, boxShadow: `0 4px 20px ${theme.accent}55` }}
-          >
-            <span className="text-xl font-light leading-none">+</span>
-            <span>取引を追加</span>
+            <span className="text-xl font-light leading-none" style={{ transform: fabOpen ? 'none' : 'none' }}>+</span>
+            {!fabOpen && <span>取引を追加</span>}
           </button>
         </div>
       )}
