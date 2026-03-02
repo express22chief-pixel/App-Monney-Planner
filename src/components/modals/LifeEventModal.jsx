@@ -1,8 +1,19 @@
 import React from 'react';
-import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
 
 export default function LifeEventModal(props) {
   const { theme, darkMode, editingLifeEvent, setEditingLifeEvent, addOrUpdateLifeEvent, setShowLifeEventModal } = props;
+  const lifeEventTemplates = [
+    { name: '結婚', estimatedAmount: 3000000, icon: '💍', type: 'expense' },
+    { name: '出産', estimatedAmount: 500000, icon: '👶', type: 'expense' },
+    { name: '住宅購入', estimatedAmount: 30000000, icon: '🏠', type: 'expense' },
+    { name: '車購入', estimatedAmount: 2000000, icon: '🚗', type: 'expense' },
+    { name: '進学', estimatedAmount: 2000000, icon: '🎓', type: 'expense' },
+    { name: '海外旅行', estimatedAmount: 500000, icon: '✈️', type: 'expense' },
+    { name: '退職', estimatedAmount: 0, icon: '🎉', type: 'milestone' },
+    { name: 'カスタム', estimatedAmount: 0, icon: '📌', type: 'expense' }
+  ];
+  const eventIcons = ['💍', '👶', '🏠', '🚗', '🎓', '✈️', '💰', '🎉', '📌', '🎊', '🎁', '⭐'];
+
 
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -26,7 +37,7 @@ export default function LifeEventModal(props) {
               <div className="mb-4">
                 <p className={`text-sm ${theme.textSecondary} mb-3`}>テンプレートを選択</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {LIFE_EVENT_TEMPLATES.map((template) => (
+                  {lifeEventTemplates.map((template) => (
                     <button
                       key={template.name}
                       onClick={() => {
@@ -59,7 +70,7 @@ export default function LifeEventModal(props) {
                 <div>
                   <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>アイコン</label>
                   <div className="grid grid-cols-6 gap-2">
-                    {EVENT_ICONS.map((icon) => (
+                    {eventIcons.map((icon) => (
                       <button
                         key={icon}
                         onClick={() => setEditingLifeEvent({ ...editingLifeEvent, icon })}

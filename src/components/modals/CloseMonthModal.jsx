@@ -4,11 +4,11 @@ import { BarChart2 } from 'lucide-react';
 export default function CloseMonthModal(props) {
   const { theme, darkMode, closingTargetMonth, closeMonthData, setCloseMonthData, closeMonth, setShowCloseMonthModal, simulationSettings, calculateMonthlyBalance, currentBalance, currentMonth, budgetAnalysis } = props;
 
-  return (
+  return formatYM(
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className={`${theme.cardGlass} rounded-2xl p-6 max-w-md w-full`}>
-            <h2 className={`text-xl font-bold ${theme.text} mb-1`}>{(closingTargetMonth || currentMonth).replace('-','年')}月の収支を確定する</h2>
-            <p className={`text-sm ${theme.textSecondary} mb-4`}>{closingTargetMonth || currentMonth} の集計を確定します</p>
+            <h2 className={`text-xl font-bold ${theme.text} mb-1`}>{formatYM(closingTargetMonth || currentMonth)}の収支を確定する</h2>
+            <p className={`text-sm ${theme.textSecondary} mb-4`}>{formatYM(closingTargetMonth || currentMonth)} の集計を確定します</p>
             {(() => {
               const tb = calculateMonthlyBalance(closingTargetMonth || currentMonth);
               return (<>
