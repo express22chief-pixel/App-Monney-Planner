@@ -4,6 +4,7 @@
  * 将来の広告バナー挿入もここに差し込むだけでOK。
  */
 import React from 'react';
+import { useAppContext } from '../context/AppContext';
 import { Sun, Moon, DollarSign, BarChart2, Calendar, TrendingUp, Settings } from 'lucide-react';
 
 import HomeTab       from './tabs/HomeTab';
@@ -30,6 +31,7 @@ import SetupWizardModal      from './modals/SetupWizardModal';
 import DailyReviewModal      from './modals/DailyReviewModal';
 import ClosingCheckModal     from './modals/ClosingCheckModal';
 import CardModal             from './modals/CardModal';
+import PayPayImportModal     from './modals/PayPayImportModal';
 
 const TABS = [
   { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
@@ -40,14 +42,16 @@ const TABS = [
 ];
 
 export default function AppShell({ data }) {
+  const { theme, isPremium } = useAppContext();
   const {
     activeTab, setActiveTab,
     darkMode, setDarkMode,
-    userInfo, theme,
+    userInfo,
   } = data;
 
-  // タブに渡す props をまとめる（全stateをdataから展開）
-  const tabProps = data;
+  // タブ・モーダルに渡す props（dataにthemeを追加）
+  // themeはAppContextから取得し、子コンポーネントへpropsとして伝播させる
+  const tabProps = { ...data, theme };
 
   return (
     <div className={`min-h-screen ${theme.bg} pb-20 transition-all duration-300`}>
@@ -91,12 +95,25 @@ export default function AppShell({ data }) {
       </div>
 
       {/* ─── 広告バナー挿入ポイント ─────────────────────────────────── */}
-      {/* 将来ここにAdMobバナーやウェブ広告を差し込む */}
-      {/* <AdBanner /> */}
+      {/* isPremium が false のユーザーにのみ広告を表示する                */}
+      {/* 実装例: {!isPremium && <AdBanner />}                              */}
+      {!isPremium && (
+        <div>{/* AdMob バナーをここに挿入 */}</div>
+      )}
 
-      {/* ─── FAB（取引追加ボタン）────────────────────────────────────── */}
+      {/* ─── FAB（取引追加 / PayPay読み込み）─────────────────────────── */}
       {activeTab !== 'settings' && (
-        <div className="fixed z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 72px)', right: '16px' }}>
+        <div className="fixed z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 72px)', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
+          {/* PayPay CSV読み込みボタン */}
+          <button
+            onClick={() => data.setShowPayPayImport(true)}
+            className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg transition-all duration-200 flex items-center gap-2 hover-scale"
+            style={{ backgroundColor: '#FF4B4B', boxShadow: '0 4px 16px rgba(255,75,75,0.45)' }}
+          >
+            <span style={{ fontSize: 14 }}>🔴</span>
+            <span>PayPay読み込み</span>
+          </button>
+          {/* 通常の取引追加ボタン */}
           <button
             onClick={() => data.setShowAddTransaction(true)}
             className="h-12 px-5 rounded-full text-white text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 hover-scale"
@@ -158,6 +175,7 @@ export default function AppShell({ data }) {
       {data.showDailyReview           && <DailyReviewModal      {...tabProps} />}
       {data.showClosingCheckModal     && <ClosingCheckModal     {...tabProps} />}
       {data.showCardModal             && <CardModal             {...tabProps} />}
+      {data.showPayPayImport          && <PayPayImportModal      {...tabProps} />}
     </div>
   );
 }
