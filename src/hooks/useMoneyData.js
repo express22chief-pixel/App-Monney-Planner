@@ -163,6 +163,8 @@ export function useMoneyData() {
   ]));
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [editingWallet, setEditingWallet]     = useState(null);
+  const [transactionTemplates, setTransactionTemplates] = useState(() => load('transactionTemplates', []));
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   const [simulationSettings, setSimulationSettings] = useState(() =>
     load('simulationSettings', {
@@ -179,7 +181,7 @@ export function useMoneyData() {
   usePersistence({
     transactions, assetData, monthlyHistory, lifeEvents, userInfo,
     simulationSettings, darkMode, monthlyBudget, customCategories,
-    recurringTransactions, creditCards, splitPayments, dismissedClosingAlerts,
+    recurringTransactions, creditCards, splitPayments, dismissedClosingAlerts, transactionTemplates,
   });
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -760,6 +762,8 @@ export function useMoneyData() {
     showRecurringList, setShowRecurringList,
     showCFList, setShowCFList,
     showPayPayImport, setShowPayPayImport,
+    transactionTemplates, setTransactionTemplates,
+    showTemplateModal, setShowTemplateModal,
     wallets, setWallets, addCharge,
     showWalletModal, setShowWalletModal,
     editingWallet, setEditingWallet,

@@ -46,4 +46,6 @@ export function usePersistence(state) {
   useEffect(() => { save('creditCards',           creditCards);           }, [creditCards]);
   useEffect(() => { save('splitPayments',         splitPayments);         }, [splitPayments]);
   useEffect(() => { save('dismissedClosingAlerts',dismissedClosingAlerts);}, [dismissedClosingAlerts]);
+
+  useEffect(() => { save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates]);
 }
