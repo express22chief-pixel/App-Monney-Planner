@@ -56,8 +56,8 @@ export default function AppShell({ data }) {
   return (
     <div className={`min-h-screen ${theme.bg} pb-20 transition-all duration-300`}>
 
-      {/* ─── ヘッダー ───────────────────────────────────────────────── */}
-      <div className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border} transition-colors duration-300`}>
+      {/* ─── ヘッダー（sticky固定）────────────────────────────────── */}
+      <div className={`sticky top-0 z-30 ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border} transition-colors duration-300`}>
         <div className="max-w-md mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
