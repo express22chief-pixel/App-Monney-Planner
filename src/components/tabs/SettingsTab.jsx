@@ -40,6 +40,7 @@ export default function SettingsTab(props) {
     newCategoryType, setNewCategoryType,
     settingsExpanded, setSettingsExpanded,
     setShowCategoryModal, setShowCardModal, setEditingCard,
+    wallets, setWallets,
     resetAllData, applyRiskProfile,
     handleRenameDefaultCategory, handleDeleteDefaultCategory,
     deleteCustomCategory, deleteRecurring,
@@ -290,6 +291,62 @@ export default function SettingsTab(props) {
                     ))}
                   </div>
                 )}
+              </div>
+            </AccSection>
+
+            <AccSection id="wallet" icon="👛" title="電子マネー・残高" expanded={settingsExpanded['wallet']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
+              darkMode={darkMode} theme={theme}>
+              <div className="pt-3 space-y-3">
+                {/* ウォレット一覧 */}
+                <div className="space-y-2">
+                  {(wallets || []).map(w => (
+                    <div key={w.id} className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{w.icon}</span>
+                        <div>
+                          <p className={`text-sm font-semibold ${theme.text}`}>{w.name}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { if (confirm(`「${w.name}」を削除しますか？`)) setWallets(prev => prev.filter(x => x.id !== w.id)); }}
+                        className="p-1.5 rounded-lg text-red-500">🗑️</button>
+                    </div>
+                  ))}
+                  {(!wallets || wallets.length === 0) && (
+                    <p className={`text-xs text-center py-3 ${theme.textSecondary}`}>電子マネーが登録されていません</p>
+                  )}
+                </div>
+                {/* 追加フォーム */}
+                {(() => {
+                  const PRESETS = [
+                    { name: 'PayPay残高', icon: '🔴', color: '#FF4B4B' },
+                    { name: 'Suica',     icon: '🚃', color: '#00A855' },
+                    { name: 'PASMO',     icon: '🟣', color: '#6C3BA5' },
+                    { name: 'nanaco',    icon: '🟡', color: '#F5A623' },
+                    { name: 'WAON',      icon: '🔵', color: '#0070CC' },
+                    { name: '楽天Edy',   icon: '❤️', color: '#BF0000' },
+                  ];
+                  const existing = new Set((wallets || []).map(w => w.name));
+                  const available = PRESETS.filter(p => !existing.has(p.name));
+                  return (
+                    <div>
+                      <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>追加</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {available.map(p => (
+                          <button key={p.name}
+                            onClick={() => setWallets(prev => [...(prev || []), { id: Date.now(), name: p.name, icon: p.icon, color: p.color }])}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
+                          >
+                            {p.icon} {p.name}
+                          </button>
+                        ))}
+                        {available.length === 0 && (
+                          <p className={`text-xs ${theme.textSecondary}`}>全てのプリセットが追加済みです</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </AccSection>
 

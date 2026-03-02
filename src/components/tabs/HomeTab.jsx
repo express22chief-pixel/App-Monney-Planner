@@ -19,7 +19,7 @@ export default function HomeTab(props) {
     setEditingTransaction,
     setShowTutorial, setTutorialPage,
     setShowRecurringModal, setEditingRecurring, deleteRecurring,
-    getSettlementDate,
+    getSettlementDate, setActiveTab,
   } = props;
   const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
@@ -597,79 +597,139 @@ export default function HomeTab(props) {
               </div>
             )}
             {/* 最近の取引 */}
-            <div className={`${theme.cardGlass} rounded-xl p-4`}>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>最近の取引</h2>
-                {!monthlyHistory[currentMonth] && currentBalance.cfBalance !== 0 && (
-                  <button
-                    onClick={() => openCloseMonthModal()}
-                    className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white hover-scale"
-                    style={{ backgroundColor: theme.accent }}>
-                    {formatYM(selectedMonth) + 'の収支を確定する'}
-                  </button>
-                )}
-              </div>
-              {transactions.length === 0 ? (
-                <p className={`text-sm text-center py-8 ${theme.textSecondary}`}>まだ取引がありません</p>
-              ) : (
-                <div className="space-y-1">
-                  {transactions.slice(0, recentTxnLimit).map((t, idx) => (
-                    <div key={t.id} onClick={() => setEditingTransaction(t)}
-                      className={`flex items-center gap-3 px-1 py-2.5 rounded-xl cursor-pointer transition-all duration-200 animate-fadeIn ${darkMode ? 'hover:bg-neutral-700/30' : 'hover:bg-neutral-50'}`}
-                      style={{ animationDelay: `${idx * 0.03}s` }}>
-                      {/* アイコン */}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-base ${
-                        t.isSettlement ? (darkMode?'bg-orange-500/15':'bg-orange-50') :
-                        t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
-                        t.paymentMethod==='credit' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
-                        (darkMode?'bg-neutral-800':'bg-neutral-100')
-                      }`}>
-                        {t.isRecurring ? (t.isInvestment ? '📈' : '🔄') : t.isSettlement ? '💸' : t.type === 'income' ? '💰' : (t.paymentMethod === 'credit' ? '💳' : '💵')}
-                      </div>
-                      {/* 中央テキスト */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
-                          {!t.settled && t.type === 'expense' && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold" style={{ backgroundColor: t.isSettlement ? 'rgba(255,159,10,0.2)' : 'rgba(255,159,10,0.15)', color: theme.orange }}>
-                              {t.isSettlement ? '引落予定' : '未確定'}
-                            </span>
-                          )}
-                          {t.isSplit && (() => {
-                            const members = t.splitMembers || [];
-                            const allSettled = members.length > 0 && members.every(m => m.settled);
-                            const settledCount = members.filter(m => m.settled).length;
-                            return (
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${allSettled ? 'bg-green-500/15 text-green-500' : 'bg-blue-500/15 text-blue-400'}`}>
-                                {allSettled ? '👥精算済' : `👥${settledCount}/${members.length}人`}
-                              </span>
-                            );
-                          })()}
-                        </div>
-                        <p className={`text-xs ${theme.textSecondary} mt-0.5 truncate`}>
-                          {t.memo ? t.memo : t.date}
-                          {t.memo && <span className="ml-1.5 opacity-60">{t.date.slice(5)}</span>}
-                        </p>
-                      </div>
-                      <div className="text-right shrink-0">
-                          <p className="text-sm font-bold tabular-nums" style={{ color: t.amount >= 0 ? theme.green : (t.isSettlement ? theme.orange : t.isInvestment ? '#a855f7' : theme.red) }}>
-                            {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
-                          </p>
-                          {t.memo && <p className={`text-[10px] tabular-nums ${theme.textSecondary}`}>{t.date.slice(5)}</p>}
-                      </div>
+            {(() => {
+              // 支払い取引（引き落とし予定を除く）を日付降順でグループ化
+              const visibleTxns = transactions.filter(t => !t.isSettlement);
+              const showAll = recentTxnLimit >= 9999;
+              const displayTxns = showAll ? visibleTxns : visibleTxns.slice(0, 3);
+
+              // 月ごとにグループ化
+              const groups = [];
+              displayTxns.forEach(t => {
+                const ym = t.date.slice(0, 7);
+                const label = ym === currentMonth
+                  ? `今月（${formatYM(ym)}）`
+                  : formatYM(ym);
+                const last = groups[groups.length - 1];
+                if (!last || last.ym !== ym) groups.push({ ym, label, items: [t] });
+                else last.items.push(t);
+              });
+
+              const TxnRow = ({ t, idx }) => (
+                <div
+                  key={t.id}
+                  onClick={() => setEditingTransaction(t)}
+                  className={`flex items-center gap-3 px-1 py-3 cursor-pointer transition-all duration-150 animate-fadeIn ${darkMode ? 'hover:bg-neutral-700/30' : 'hover:bg-neutral-50'}`}
+                  style={{ animationDelay: `${idx * 0.03}s` }}
+                >
+                  {/* アイコン */}
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-lg ${
+                    t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
+                    t.paymentMethod==='credit' || t.paymentMethod==='paypay' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
+                    (darkMode?'bg-neutral-800':'bg-neutral-100')
+                  }`}>
+                    {t.isRecurring ? (t.isInvestment ? '📈' : '🔄') : t.isCharge ? '⚡' : t.type === 'income' ? '💰' : (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' ? '💳' : t.paymentMethod === 'wallet' ? '👛' : '💵')}
+                  </div>
+                  {/* テキスト */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
+                      {!t.settled && t.type === 'expense' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0" style={{ backgroundColor: 'rgba(255,159,10,0.15)', color: theme.orange }}>未確定</span>
+                      )}
+                      {t.isSplit && (() => {
+                        const members = t.splitMembers || [];
+                        const allSettled = members.length > 0 && members.every(m => m.settled);
+                        const settledCount = members.filter(m => m.settled).length;
+                        return (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${allSettled ? 'bg-green-500/15 text-green-500' : 'bg-blue-500/15 text-blue-400'}`}>
+                            {allSettled ? '👥精算済' : `👥${settledCount}/${members.length}人`}
+                          </span>
+                        );
+                      })()}
                     </div>
-                  ))}
-                  {transactions.length > recentTxnLimit && (
+                    <p className={`text-xs ${theme.textSecondary} mt-0.5 truncate`}>
+                      {t.memo || ''}
+                      {t.memo && <span className="mx-1 opacity-40">·</span>}
+                      <span className="opacity-70">{t.date.slice(5).replace('-','/')}</span>
+                      {t.isTransfer && <span className="ml-1.5 text-[10px] font-medium" style={{ color: '#FF9F0A' }}>💱チャージ</span>}
+                      {!t.isTransfer && (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' || t.paymentMethod === 'wallet') && (
+                        <span className={`ml-1.5 text-[10px] font-medium ${t.paymentMethod === 'wallet' ? (darkMode ? 'text-purple-400' : 'text-purple-500') : (darkMode ? 'text-blue-400' : 'text-blue-500')}`}>
+                          {t.paymentMethod === 'paypay' ? 'PayPay' : t.paymentMethod === 'wallet' ? '📲電子マネー' : 'クレジット'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  {/* 金額 */}
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold tabular-nums" style={{ color: t.amount >= 0 ? theme.green : (t.isInvestment ? '#a855f7' : theme.red) }}>
+                      {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              );
+
+              return (
+                <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+                  {/* ヘッダー */}
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <h2 className={`text-sm font-semibold ${theme.text}`}>最近の取引</h2>
                     <button
-                      onClick={() => setRecentTxnLimit(prev => prev + 10)}
-                      className={`w-full mt-2 py-2.5 rounded-xl text-xs font-semibold transition-all ${darkMode ? 'bg-neutral-800 text-neutral-400 hover:bg-neutral-700' : 'bg-neutral-50 text-neutral-500 hover:bg-neutral-100'}`}
+                      onClick={() => setActiveTab ? setActiveTab('calendar') : null}
+                      className={`text-xs font-semibold`}
+                      style={{ color: theme.accent }}
                     >
-                      もっと見る（残り {transactions.length - recentTxnLimit} 件）
+                      もっと見る ›
                     </button>
+                  </div>
+
+                  {transactions.length === 0 ? (
+                    <p className={`text-sm text-center py-10 ${theme.textSecondary}`}>まだ取引がありません</p>
+                  ) : (
+                    <>
+                      {/* 月グループ */}
+                      {groups.map((group, gi) => (
+                        <div key={group.ym}>
+                          {/* 月ラベル */}
+                          <div className={`px-4 py-1.5 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-100/80'}`}>
+                            <span className={`text-xs font-semibold ${theme.textSecondary}`}>{group.label}</span>
+                          </div>
+                          {/* 取引行 */}
+                          <div className="px-3">
+                            {group.items.map((t, idx) => (
+                              <div key={t.id}>
+                                <TxnRow t={t} idx={gi * 10 + idx} />
+                                {idx < group.items.length - 1 && (
+                                  <div className={`h-px mx-1 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* もっと見るボタン */}
+                      {!showAll && visibleTxns.length > 3 && (
+                        <button
+                          onClick={() => setRecentTxnLimit(9999)}
+                          className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
+                        >
+                          もっと見る（全{visibleTxns.length}件）
+                        </button>
+                      )}
+                      {showAll && visibleTxns.length > 3 && (
+                        <button
+                          onClick={() => setRecentTxnLimit(3)}
+                          className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
+                        >
+                          ▲ 折りたたむ
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
 
   );
