@@ -113,11 +113,11 @@ export function calculateMonthlyBalance(yearMonth, transactions, recurringTransa
   );
 
   const plIncome = monthTransactions
-    .filter(t => t.amount > 0 && !t.isSettlement)
+    .filter(t => t.amount > 0 && !t.isSettlement && t.type !== 'transfer' && !t.isTransfer)
     .reduce((sum, t) => sum + t.amount, 0);
 
   const plExpense = Math.abs(monthTransactions
-    .filter(t => t.amount < 0 && !t.isSettlement && !investingRecurringIds.has(t.recurringId))
+    .filter(t => t.amount < 0 && !t.isSettlement && t.type !== 'transfer' && !t.isTransfer && !investingRecurringIds.has(t.recurringId))
     .reduce((sum, t) => {
       let unsettledSplit = 0;
       if (t.isSplit && t.splitMembers) {
@@ -133,11 +133,11 @@ export function calculateMonthlyBalance(yearMonth, transactions, recurringTransa
     .reduce((sum, t) => sum + t.amount, 0));
 
   const cfIncome = monthTransactions
-    .filter(t => t.amount > 0 && t.settled)
+    .filter(t => t.amount > 0 && t.settled && t.type !== 'transfer')
     .reduce((sum, t) => sum + t.amount, 0);
 
   const cfExpense = Math.abs(monthTransactions
-    .filter(t => t.amount < 0 && t.settled && !investingRecurringIds.has(t.recurringId))
+    .filter(t => t.amount < 0 && t.settled && t.type !== 'transfer' && !investingRecurringIds.has(t.recurringId))
     .reduce((sum, t) => sum + t.amount, 0));
 
   const unsettledCredit = Math.abs(monthTransactions
