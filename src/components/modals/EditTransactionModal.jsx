@@ -10,7 +10,7 @@ export default function EditTransactionModal(props) {
   const {
     theme, darkMode, editingTransaction, setEditingTransaction,
     updateTransaction, deleteTransaction,
-    expenseCategories, incomeCategories, creditCards, wallets,
+    expenseCategories, incomeCategories, creditCards,
     splitPayments, setSplitPayments,
     wallets = [],
   } = props;
