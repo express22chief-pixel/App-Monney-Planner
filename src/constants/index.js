@@ -45,3 +45,18 @@ export const NISA_LIMITS = {
   GROWTH: 2400000,
   TOTAL: 18000000,
 };
+
+// ─── 支払い方法定義 ──────────────────────────────────────────────────────────
+// paymentMethod の種別と表示設定
+export const PAYMENT_METHOD_DEFS = {
+  credit: { label: 'クレジット', icon: '💳', settled: false, isWallet: false },
+  cash:   { label: '現金',       icon: '💵', settled: true,  isWallet: false },
+  wallet: { label: '電子マネー', icon: '📲', settled: true,  isWallet: true  },
+};
+
+// ウォレット（電子マネー）のデフォルト定義
+export const DEFAULT_WALLETS = [
+  { id: 1, name: 'PayPay残高', icon: '🔴', color: '#FF4B4B' },
+  { id: 2, name: 'Suica',      icon: '🚃', color: '#00A855' },
+  { id: 3, name: 'PASMO',      icon: '🟣', color: '#6C3BA5' },
+];
