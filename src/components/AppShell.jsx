@@ -32,6 +32,7 @@ import DailyReviewModal      from './modals/DailyReviewModal';
 import ClosingCheckModal     from './modals/ClosingCheckModal';
 import CardModal             from './modals/CardModal';
 import PayPayImportModal     from './modals/PayPayImportModal';
+import TemplateModal         from './modals/TemplateModal';
 
 const TABS = [
   { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
@@ -122,6 +123,14 @@ export default function AppShell({ data }) {
                 <span>PayPay読み込み</span>
               </button>
               <button
+                onClick={() => { data.setShowTemplateModal(true); setFabOpen(false); }}
+                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
+                style={{ backgroundColor: '#f59e0b', boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }}
+              >
+                <span>⚡</span>
+                <span>テンプレから追加</span>
+              </button>
+              <button
                 onClick={() => { data.setShowAddTransaction(true); setFabOpen(false); }}
                 className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
                 style={{ backgroundColor: theme.accent, boxShadow: `0 4px 12px ${theme.accent}55` }}
@@ -200,6 +209,7 @@ export default function AppShell({ data }) {
       {data.showClosingCheckModal     && <ClosingCheckModal     {...tabProps} />}
       {data.showCardModal             && <CardModal             {...tabProps} />}
       {data.showPayPayImport          && <PayPayImportModal      {...tabProps} />}
+      {data.showTemplateModal         && <TemplateModal          {...tabProps} />}
     </div>
   );
 }
