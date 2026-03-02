@@ -21,6 +21,7 @@ export default function HomeTab(props) {
     setShowRecurringModal, setEditingRecurring, deleteRecurring,
     getSettlementDate,
   } = props;
+  const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
   return (
           <div className="space-y-3 animate-fadeIn">
@@ -40,7 +41,7 @@ export default function HomeTab(props) {
                           className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover-scale transition-all"
                           style={{ backgroundColor: theme.orange }}
                         >
-                          {ym.replace('-','年')}月の収支を確定する
+                          {formatYM(ym)}の収支を確定する
                         </button>
                       ))}
                     </div>
@@ -604,7 +605,7 @@ export default function HomeTab(props) {
                     onClick={() => openCloseMonthModal()}
                     className="px-3 py-1.5 rounded-xl text-xs font-semibold text-white hover-scale"
                     style={{ backgroundColor: theme.accent }}>
-                    {selectedMonth.replace('-', '年') + '月の収支を確定する'}
+                    {formatYM(selectedMonth) + 'の収支を確定する'}
                   </button>
                 )}
               </div>

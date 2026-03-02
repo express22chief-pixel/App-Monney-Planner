@@ -14,6 +14,7 @@ export default function AssetsTab(props) {
     currentBalance, currentMonth, openCloseMonthModal, setActiveTab, selectedMonth,
     dismissedClosingAlerts, setDismissedClosingAlerts,
   } = props;
+  const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
   return (
           <div className="space-y-3 animate-fadeIn">
@@ -205,7 +206,7 @@ export default function AssetsTab(props) {
                   className="w-full mt-3 py-2.5 rounded-xl font-semibold text-white transition-all hover-scale"
                   style={{ backgroundColor: theme.accent }}
                 >
-                  {selectedMonth.replace('-', '年')}月の収支を確定する
+                  {formatYM(selectedMonth)}の収支を確定する
                 </button>
               )}
             </div>

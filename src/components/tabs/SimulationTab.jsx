@@ -1,8 +1,7 @@
 import React from 'react';
-import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
+import { lifeEventTemplates, eventIcons } from '../../constants';
 import { Zap } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { RISK_PROFILES } from '../../hooks/useMoneyData';
 
 export default function SimulationTab(props) {
   const {
@@ -11,6 +10,12 @@ export default function SimulationTab(props) {
     lifeEvents, setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
     applyRiskProfile, userInfo, assetData, calculateBenchmark, setActiveTab,
   } = props;
+  const riskProfiles = {
+    conservative: { label: '保守的', icon: '🛡️', description: '安全性重視', returnRate: 3, monthlyInvestment: 20000, monthlySavings: 50000, useLumpSum: false, volatility: 0.05 },
+    standard:     { label: '標準的', icon: '⚖️', description: 'バランス重視', returnRate: 5, monthlyInvestment: 30000, monthlySavings: 30000, useLumpSum: true,  volatility: 0.10 },
+    aggressive:   { label: '積極的', icon: '🚀', description: '成長重視',    returnRate: 7, monthlyInvestment: 50000, monthlySavings: 20000, useLumpSum: true,  volatility: 0.15 }
+  };
+
 
   const finalValue = simulationResults[simulationResults.length - 1]?.totalValue || 0;
   const achievement = Math.min((finalValue / simulationSettings.targetAmount) * 100, 100);
@@ -29,7 +34,7 @@ export default function SimulationTab(props) {
               </h2>
               
               <div className="grid grid-cols-3 gap-2">
-                {Object.entries(RISK_PROFILES).map(([key, profile]) => (
+                {Object.entries(riskProfiles).map(([key, profile]) => (
                   <button
                     key={key}
                     onClick={() => applyRiskProfile(key)}

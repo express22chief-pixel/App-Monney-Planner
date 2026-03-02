@@ -13,7 +13,9 @@ export default function CalendarTab(props) {
     setEditingTransaction,
     monthlyHistory, calculateMonthlyBalance, currentMonth,
     getLast6MonthsTrend,
+    openCloseMonthModal,
   } = props;
+  const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
   const getDaysInMonth = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y,m,0).getDate(); };
   const getFirstDayOfMonth = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y,m-1,1).getDay(); };
@@ -237,7 +239,7 @@ export default function CalendarTab(props) {
                 className="w-full py-3 rounded-xl font-semibold text-white transition-all hover-scale flex items-center justify-center gap-2"
                 style={{ backgroundColor: theme.orange }}
               >
-                ⚠ {selectedMonth.replace('-','年')}月の収支を確定する
+                ⚠ {formatYM(selectedMonth)}の収支を確定する
               </button>
             )}
 
