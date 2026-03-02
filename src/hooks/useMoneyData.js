@@ -41,7 +41,7 @@ export function useMoneyData() {
   const [darkMode, setDarkMode]                           = useState(() => load('darkMode', true));
   const [showSplash, setShowSplash]                       = useState(true);
   const [summaryMonthOffset, setSummaryMonthOffset]       = useState(0);
-  const [recentTxnLimit, setRecentTxnLimit]               = useState(5);
+  const [recentTxnLimit, setRecentTxnLimit]               = useState(3);
   const [historySearch, setHistorySearch]                 = useState('');
   const [historyCategory, setHistoryCategory]             = useState('all');
   const [settingsExpanded, setSettingsExpanded]           = useState({
@@ -148,7 +148,7 @@ export function useMoneyData() {
   const [newTransaction, setNewTransaction] = useState({
     amount: '', category: '', type: 'expense', paymentMethod: 'credit',
     date: new Date().toISOString().slice(0, 10),
-    memo: '', isSplit: false, splitMembers: [], cardId: null,
+    memo: '', isSplit: false, splitMembers: [], cardId: null, walletId: null, chargeTarget: null,
   });
 
   const [creditCards, setCreditCards] = useState(() =>
@@ -156,6 +156,13 @@ export function useMoneyData() {
   );
   const [selectedCardId, setSelectedCardId]   = useState(1);
   const [splitPayments, setSplitPayments]     = useState(() => load('splitPayments', []));
+  const [wallets, setWallets]                 = useState(() => load('wallets', [
+    { id: 1, name: 'PayPay残高', icon: '🔴', color: '#FF4B4B' },
+    { id: 2, name: 'Suica',     icon: '🚃', color: '#00A855' },
+    { id: 3, name: 'PASMO',     icon: '🟣', color: '#6C3BA5' },
+  ]));
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [editingWallet, setEditingWallet]     = useState(null);
 
   const [simulationSettings, setSimulationSettings] = useState(() =>
     load('simulationSettings', {
@@ -376,25 +383,48 @@ export function useMoneyData() {
   };
 
   const addTransaction = () => {
-    if (!newTransaction.amount || !newTransaction.category) return;
-    const amount = newTransaction.type === 'expense'
+    const isCharge = newTransaction.type === 'charge';
+    // チャージはcategoryが不要、chargeTargetが必須
+    if (!newTransaction.amount) return;
+    if (!isCharge && !newTransaction.category) return;
+    if (isCharge && !newTransaction.chargeTarget) return;
+
+    const amount = newTransaction.type === 'expense' || isCharge
       ? -Math.abs(Number(newTransaction.amount))
       :  Math.abs(Number(newTransaction.amount));
     const validMembers  = (newTransaction.isSplit ? newTransaction.splitMembers : [])
       .filter(m => m.name.trim() && Number(m.amount) > 0);
     const splitTotalAmt = validMembers.reduce((sum, m) => sum + Number(m.amount), 0);
+
+    // チャージの場合: 「資金移動」としてカテゴリを自動設定
+    const targetWallet = isCharge ? wallets.find(w => w.id === newTransaction.chargeTarget) : null;
+    const chargeCategory = isCharge
+      ? `${targetWallet?.icon || '📲'} ${targetWallet?.name || 'ウォレット'}チャージ`
+      : newTransaction.category;
+
     const transaction   = {
-      id: Date.now(), date: newTransaction.date, category: newTransaction.category,
-      memo: newTransaction.memo || '', amount, type: newTransaction.type,
+      id: Date.now(), date: newTransaction.date,
+      category: chargeCategory,
+      memo: newTransaction.memo || '', amount,
+      type: isCharge ? 'expense' : newTransaction.type,
+      isTransfer: isCharge,  // PLから除外するフラグ
+      chargeTarget: isCharge ? newTransaction.chargeTarget : undefined,
       paymentMethod: newTransaction.type === 'income' ? undefined : newTransaction.paymentMethod,
-      settled: newTransaction.type === 'income' ? true : (newTransaction.paymentMethod === 'cash'),
+      settled: newTransaction.type === 'income' ? true
+        : (newTransaction.paymentMethod === 'cash' || newTransaction.paymentMethod === 'wallet'),
       isSettlement: false,
       cardId: newTransaction.paymentMethod === 'credit'
         ? (newTransaction.cardId || (creditCards[0] && creditCards[0].id))
         : undefined,
+      walletId: newTransaction.paymentMethod === 'wallet' ? newTransaction.walletId : undefined,
       isSplit: validMembers.length > 0, splitAmount: splitTotalAmt, splitMembers: validMembers,
     };
-    if (newTransaction.type === 'expense' && newTransaction.paymentMethod === 'credit') {
+
+    const shouldAddSettlement =
+      newTransaction.paymentMethod === 'credit' &&
+      (newTransaction.type === 'expense' || isCharge);
+
+    if (shouldAddSettlement) {
       const resolvedCardId = newTransaction.cardId
         ? String(newTransaction.cardId)
         : (creditCards[0] ? String(creditCards[0].id) : null);
@@ -406,6 +436,7 @@ export function useMoneyData() {
         category: 'クレジット引き落とし' + (card ? `（${card.name}）` : ''),
         amount, type: 'expense', paymentMethod: 'cash',
         settled: settlementDate <= new Date(), isSettlement: true,
+        isTransfer: isCharge,
         parentTransactionId: transaction.id, cardId: resolvedCardId,
       };
       setTransactions([transaction, settlementTxn, ...transactions]);
@@ -421,9 +452,67 @@ export function useMoneyData() {
       }))]);
     }
     setNewTransaction({
-      amount: '', category: '', type: 'expense', paymentMethod: 'credit',
-      date: new Date().toISOString().slice(0, 10), memo: '', isSplit: false, splitMembers: [], cardId: null,
+      amount: '', category: '', type: 'expense', paymentMethod: 'credit', walletId: null,
+      date: new Date().toISOString().slice(0, 10), memo: '', isSplit: false, splitMembers: [], cardId: null, chargeTarget: null,
     });
+  };
+
+
+  // ── チャージ記録（電子マネー・ウォレットへのチャージ）──────────────────────
+  // fromMethod: 'cash' | 'credit'
+  // fromCardId: クレカIDまたはnull
+  const addCharge = ({ date, amount, walletId, fromMethod, fromCardId, memo }) => {
+    const wallet  = wallets.find(w => String(w.id) === String(walletId));
+    const card    = fromMethod === 'credit'
+      ? creditCards.find(c => String(c.id) === String(fromCardId || (creditCards[0]?.id)))
+      : null;
+    const resolvedCardId = card ? String(card.id) : null;
+    const numAmount = -Math.abs(Number(amount));
+
+    // メインの「チャージ」取引（支出として記録、ただしPL対象外）
+    const mainTxn = {
+      id:            Date.now(),
+      date,
+      category:      `${wallet?.icon || '📲'} ${wallet?.name || 'ウォレット'}チャージ`,
+      memo:          memo || '',
+      amount:        numAmount,
+      type:          'expense',
+      isTransfer:    true,               // PLから除外
+      paymentMethod: fromMethod,
+      walletId:      String(walletId),
+      settled:       fromMethod === 'cash',
+      isSettlement:  false,
+      cardId:        resolvedCardId || undefined,
+    };
+
+    const newTxns = [mainTxn];
+
+    // クレカからのチャージ → 引き落とし予定を生成
+    if (fromMethod === 'credit' && resolvedCardId) {
+      const settlementDate = getSettlementDate(date, resolvedCardId, creditCards);
+      const settleDateStr  = [
+        settlementDate.getFullYear(),
+        String(settlementDate.getMonth() + 1).padStart(2, '0'),
+        String(settlementDate.getDate()).padStart(2, '0'),
+      ].join('-');
+      newTxns.push({
+        id:                   Date.now() + 1,
+        date:                 settleDateStr,
+        category:             `クレジット引き落とし${card ? `（${card.name}）` : ''}`,
+        memo:                 '',
+        amount:               numAmount,
+        type:                 'expense',
+        isTransfer:           true,     // チャージの引き落としもPL対象外
+        paymentMethod:        'cash',
+        settled:              settlementDate <= new Date(),
+        isSettlement:         true,
+        parentTransactionId:  mainTxn.id,
+        cardId:               resolvedCardId,
+      });
+    }
+
+    setTransactions(prev => [...newTxns, ...prev]);
+    setShowAddTransaction(false);
   };
 
   const deleteTransaction = (id) => {
@@ -671,6 +760,9 @@ export function useMoneyData() {
     showRecurringList, setShowRecurringList,
     showCFList, setShowCFList,
     showPayPayImport, setShowPayPayImport,
+    wallets, setWallets, addCharge,
+    showWalletModal, setShowWalletModal,
+    editingWallet, setEditingWallet,
     dismissedClosingAlerts, setDismissedClosingAlerts,
     // ── 前日確認 ───────────────────────────────────────────────────────────────
     showDailyReview, setShowDailyReview,
