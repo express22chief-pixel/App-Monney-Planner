@@ -15,6 +15,7 @@ export default function AddTransactionModal(props) {
     addTransaction, setShowAddTransaction,
     expenseCategories, incomeCategories,
     creditCards, wallets, addCharge,
+    transactionTemplates, setTransactionTemplates, setShowTemplateModal,
   } = props;
 
   const [chargeMode, setChargeMode]         = useState(false);
@@ -259,8 +260,37 @@ export default function AddTransactionModal(props) {
                 </div>
               )}
 
+              {/* テンプレとして保存 */}
+              {newTransaction.type === 'expense' && (
+                <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  <div>
+                    <p className={`text-xs font-medium ${theme.text}`}>⚡ テンプレとして保存</p>
+                    <p className={`text-[10px] ${theme.textSecondary}`}>次回からワンタップで入力できます</p>
+                  </div>
+                  <input type="checkbox" id="save-as-tpl" className="w-4 h-4 accent-blue-500" />
+                </div>
+              )}
+
               {/* 追加ボタン */}
-              <button onClick={() => { addTransaction(); if (newTransaction.amount && newTransaction.category) setShowAddTransaction(false); }} className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: theme.accent }}>追加する</button>
+              <button onClick={() => {
+                const cb = document.getElementById('save-as-tpl');
+                if (cb?.checked && newTransaction.category) {
+                  setTransactionTemplates(prev => [...prev, {
+                    id: Date.now(),
+                    name: newTransaction.memo || newTransaction.category,
+                    category: newTransaction.category,
+                    amount: newTransaction.amount || '',
+                    type: newTransaction.type,
+                    paymentMethod: newTransaction.paymentMethod,
+                    cardId: newTransaction.cardId,
+                    walletId: newTransaction.walletId,
+                    memo: newTransaction.memo || '',
+                  }]);
+                  if (cb) cb.checked = false;
+                }
+                addTransaction();
+                if (newTransaction.amount && newTransaction.category) setShowAddTransaction(false);
+              }} className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: theme.accent }}>追加する</button>
             </div>
           )}
         </div>

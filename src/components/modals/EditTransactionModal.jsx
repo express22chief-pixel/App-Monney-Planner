@@ -13,6 +13,7 @@ export default function EditTransactionModal(props) {
     expenseCategories, incomeCategories, creditCards,
     splitPayments, setSplitPayments,
     wallets = [],
+    transactionTemplates, setTransactionTemplates,
   } = props;
 
   // 立替メンバーの編集用ローカルstate
@@ -385,6 +386,27 @@ export default function EditTransactionModal(props) {
                   )}
                 </div>
               )}
+
+              {/* テンプレに登録 */}
+              <button
+                onClick={() => {
+                  const name = window.prompt('テンプレ名を入力（空欄でカテゴリ名）', tx.memo || tx.category);
+                  if (name === null) return;
+                  setTransactionTemplates(prev => [...prev, {
+                    id: Date.now(),
+                    name: name.trim() || tx.category,
+                    category: tx.category,
+                    amount: Math.abs(tx.amount) || '',
+                    type: tx.type,
+                    paymentMethod: tx.paymentMethod,
+                    cardId: tx.cardId,
+                    walletId: tx.walletId,
+                    memo: tx.memo || '',
+                  }]);
+                  alert('テンプレに登録しました！');
+                }}
+                className={`w-full py-2 rounded-xl text-xs font-semibold border-2 transition-all ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}
+              >⚡ テンプレとして登録</button>
 
               {/* アクションボタン */}
               <div className="flex gap-2 pt-1">
