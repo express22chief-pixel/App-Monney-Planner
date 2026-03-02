@@ -230,6 +230,7 @@ export default function PayPayImportModal(props) {
   const [categories, setCategories] = useState({});   // txId → カテゴリ名
   const [cardIds, setCardIds]       = useState({});   // txId → cardId | 'cash'
   const [globalCard, setGlobalCard] = useState('');   // 全クレカ行に一括適用するカード
+  const [excluded, setExcluded]     = useState(new Set()); // 追加しない行のtxId
   const [dragOver, setDragOver]     = useState(false);
   const [error, setError]           = useState('');
   const fileInputRef                = useRef(null);
@@ -268,6 +269,7 @@ export default function PayPayImportModal(props) {
       setCategories(initCats);
       setCardIds(initCards);
       setGlobalCard(linkedCard ? String(linkedCard.id) : '');
+      setExcluded(new Set());
       setStep('review');
     };
     reader.readAsText(file, 'UTF-8');
@@ -287,6 +289,16 @@ export default function PayPayImportModal(props) {
     });
   };
 
+  // 行の除外トグル
+  const toggleExclude = (txId) => {
+    setExcluded(prev => {
+      const next = new Set(prev);
+      if (next.has(txId)) next.delete(txId);
+      else next.add(txId);
+      return next;
+    });
+  };
+
   // 全件に同じカテゴリ適用
   const applyToAll = (cat) => {
     const next = {};
@@ -296,12 +308,13 @@ export default function PayPayImportModal(props) {
 
   // ─── 追加実行 ─────────────────────────────────────────────────────────────
   const handleImport = () => {
-    const unsetCat  = parsedRows.filter(r => !categories[r.txId]);
-    const unsetCard = parsedRows.filter(r => r.paymentType === 'credit' && !cardIds[r.txId]);
+    const activeRows = parsedRows.filter(r => !excluded.has(r.txId));
+    const unsetCat  = activeRows.filter(r => !categories[r.txId]);
+    const unsetCard = activeRows.filter(r => r.paymentType === 'credit' && !cardIds[r.txId]);
     if (unsetCat.length > 0)  { setError(`${unsetCat.length}件のカテゴリが未選択です`); return; }
     if (unsetCard.length > 0) { setError(`${unsetCard.length}件のクレカが未選択です`); return; }
 
-    const txns = parsedRows.map(r => {
+    const txns = activeRows.map(r => {
       const isCredit   = r.paymentType === 'credit' && cardIds[r.txId] !== 'cash';
       const resolvedId = isCredit ? cardIds[r.txId] : null;
       return {
@@ -323,13 +336,15 @@ export default function PayPayImportModal(props) {
     setShowPayPayImport(false);
   };
 
-  const creditCount = parsedRows.filter(r => r.paymentType === 'credit').length;
-  const cashCount   = parsedRows.filter(r => r.paymentType === 'cash').length;
-  const allCatSet   = parsedRows.length > 0 && parsedRows.every(r => categories[r.txId]);
-  const allCardSet  = parsedRows.filter(r => r.paymentType === 'credit').every(r => cardIds[r.txId]);
-  const canImport   = allCatSet && allCardSet;
-  const unsetCatCount  = parsedRows.filter(r => !categories[r.txId]).length;
-  const unsetCardCount = parsedRows.filter(r => r.paymentType === 'credit' && !cardIds[r.txId]).length;
+  const activeRows     = parsedRows.filter(r => !excluded.has(r.txId));
+  const creditCount    = parsedRows.filter(r => r.paymentType === 'credit').length;
+  const cashCount      = parsedRows.filter(r => r.paymentType === 'cash').length;
+  const excludedCount  = excluded.size;
+  const allCatSet      = activeRows.length > 0 && activeRows.every(r => categories[r.txId]);
+  const allCardSet     = activeRows.filter(r => r.paymentType === 'credit').every(r => cardIds[r.txId]);
+  const canImport      = activeRows.length > 0 && allCatSet && allCardSet;
+  const unsetCatCount  = activeRows.filter(r => !categories[r.txId]).length;
+  const unsetCardCount = activeRows.filter(r => r.paymentType === 'credit' && !cardIds[r.txId]).length;
 
   const S = { // inline styles shorthand
     bg:   darkMode ? '#111' : '#fff',
@@ -361,7 +376,10 @@ export default function PayPayImportModal(props) {
               <div style={{ fontSize: 16, fontWeight: 700, color: S.text }}>PayPay 取引読み込み</div>
               {step === 'review' && (
                 <div style={{ fontSize: 12, color: S.muted, marginTop: 1 }}>
-                  {parsedRows.length}件（クレカ {creditCount}件 / 即時 {cashCount}件）
+                  {activeRows.length}件追加 / {parsedRows.length}件中
+                  {excludedCount > 0 && (
+                    <span style={{ color: '#FF9F0A', marginLeft: 6 }}>（{excludedCount}件除外）</span>
+                  )}
                 </div>
               )}
             </div>
@@ -484,13 +502,15 @@ export default function PayPayImportModal(props) {
                 return (
                   <div key={row.txId} style={{
                     padding: '12px 14px', borderRadius: 12, marginBottom: 8,
-                    backgroundColor: S.sub,
-                    border: `1px solid ${categories[row.txId] ? theme.accent + '44' : S.border}`,
+                    backgroundColor: excluded.has(row.txId) ? (darkMode ? '#1a1a1a' : '#f5f5f5') : S.sub,
+                    border: `1px solid ${excluded.has(row.txId) ? S.border : (categories[row.txId] ? theme.accent + '44' : S.border)}`,
+                    opacity: excluded.has(row.txId) ? 0.5 : 1,
+                    transition: 'all 0.2s',
                   }}>
-                    {/* 上段: 取引先・金額 */}
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6 }}>
+                    {/* 上段: 取引先・金額・除外ボタン */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: excluded.has(row.txId) ? 0 : 6 }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: S.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: excluded.has(row.txId) ? S.muted : S.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: excluded.has(row.txId) ? 'line-through' : 'none' }}>
                           {row.merchant}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
@@ -507,22 +527,37 @@ export default function PayPayImportModal(props) {
                           )}
                         </div>
                       </div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#FF453A', marginLeft: 12, flexShrink: 0 }}>
-                        -¥{row.amount.toLocaleString()}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 12, flexShrink: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: excluded.has(row.txId) ? S.muted : '#FF453A' }}>
+                          -¥{row.amount.toLocaleString()}
+                        </div>
+                        <button
+                          onClick={() => toggleExclude(row.txId)}
+                          title={excluded.has(row.txId) ? '追加する' : '除外する'}
+                          style={{
+                            width: 24, height: 24, borderRadius: '50%', border: 'none',
+                            backgroundColor: excluded.has(row.txId) ? '#10b98133' : '#FF453A22',
+                            color: excluded.has(row.txId) ? '#10b981' : '#FF453A',
+                            cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            flexShrink: 0,
+                          }}
+                        >
+                          {excluded.has(row.txId) ? '＋' : '✕'}
+                        </button>
                       </div>
                     </div>
 
-                    {/* カテゴリ選択 */}
-                    <CategorySelect
+                    {/* カテゴリ・カード選択（除外時は非表示） */}
+                    {!excluded.has(row.txId) && <CategorySelect
                       value={categories[row.txId]}
                       onChange={(cat) => setCategories(prev => ({ ...prev, [row.txId]: cat }))}
                       categories={expenseCategories}
                       darkMode={darkMode}
                       theme={theme}
-                    />
+                    />}
 
                     {/* クレカ行かつ連携カード未設定 → 個別カード選択 */}
-                    {isCredit && needsCardSelection && (
+                    {!excluded.has(row.txId) && isCredit && needsCardSelection && (
                       <div style={{ marginTop: 6 }}>
                         <CardSelect
                           value={cardIds[row.txId]}
@@ -561,7 +596,7 @@ export default function PayPayImportModal(props) {
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 0.2s',
                   }}>
                   <Check size={16} />
-                  {parsedRows.length}件を追加する
+                  {activeRows.length}件を追加する
                 </button>
               </div>
             </div>
