@@ -32,7 +32,8 @@ import DailyReviewModal      from './modals/DailyReviewModal';
 import ClosingCheckModal     from './modals/ClosingCheckModal';
 import CardModal             from './modals/CardModal';
 import PayPayImportModal     from './modals/PayPayImportModal';
-import TemplateModal         from './modals/TemplateModal';
+import TemplateModal              from './modals/TemplateModal';
+import AllTransactionsModal       from './modals/AllTransactionsModal';
 
 const TABS = [
   { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
@@ -45,6 +46,7 @@ const TABS = [
 export default function AppShell({ data }) {
   const { theme, isPremium } = useAppContext();
   const [fabOpen, setFabOpen] = React.useState(false);
+  const [showAllTransactions, setShowAllTransactions] = React.useState(false);
   const {
     activeTab, setActiveTab,
     darkMode, setDarkMode,
@@ -53,7 +55,7 @@ export default function AppShell({ data }) {
 
   // タブ・モーダルに渡す props（dataにthemeを追加）
   // themeはAppContextから取得し、子コンポーネントへpropsとして伝播させる
-  const tabProps = { ...data, theme };
+  const tabProps = { ...data, theme, setShowAllTransactions };
 
   return (
     <div className={`min-h-screen ${theme.bg} pb-20 transition-all duration-300`}>
@@ -210,6 +212,16 @@ export default function AppShell({ data }) {
       {data.showCardModal             && <CardModal             {...tabProps} />}
       {data.showPayPayImport          && <PayPayImportModal      {...tabProps} />}
       {data.showTemplateModal         && <TemplateModal          {...tabProps} />}
+      {showAllTransactions && (
+        <AllTransactionsModal
+          theme={theme} darkMode={data.darkMode}
+          transactions={data.transactions}
+          creditCards={data.creditCards}
+          wallets={data.wallets}
+          setEditingTransaction={data.setEditingTransaction}
+          onClose={() => setShowAllTransactions(false)}
+        />
+      )}
     </div>
   );
 }
