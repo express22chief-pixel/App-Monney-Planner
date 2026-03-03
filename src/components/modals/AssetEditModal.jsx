@@ -1,10 +1,10 @@
 import React from 'react';
+import { BarChart2 } from 'lucide-react';
 
 export default function AssetEditModal(props) {
   const { theme, darkMode, assetData, setAssetData, setShowAssetEditModal } = props;
 
   return (
-      {showAssetEditModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className={`${theme.cardGlass} rounded-3xl p-6 max-w-md w-full animate-slideUp`}>
             <div className="flex items-center justify-between mb-4">
@@ -66,7 +66,7 @@ export default function AssetEditModal(props) {
 
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-1 flex items-center gap-1`}>
-                  <Droplets size={14} style={{ color: theme.accent }} />
+                  <BarChart2 size={14} style={{ color: theme.accent }} />
                   投資待機資金
                 </label>
                 <p className={`text-[11px] ${theme.textSecondary} mb-2 leading-relaxed`}>
@@ -106,7 +106,6 @@ export default function AssetEditModal(props) {
             </div>
           </div>
         </div>
-      )}
 
 
   );

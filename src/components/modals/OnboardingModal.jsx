@@ -1,10 +1,10 @@
 import React from 'react';
+import { BarChart2 } from 'lucide-react';
 
 export default function OnboardingModal(props) {
-  const { theme, darkMode, userInfo, setUserInfo, setShowOnboarding, setShowSetupWizard } = props;
+  const { theme, darkMode, userInfo, setUserInfo, setShowOnboarding, setShowSetupWizard, assetData, setAssetData, setSetupStep, setSetupSettlements } = props;
 
   return (
-      {showOnboarding && (
         <div className={`fixed inset-0 ${darkMode ? 'bg-black' : 'bg-neutral-900'} flex items-center justify-center p-4 z-50 animate-fadeIn`}>
           <div className={`${theme.cardGlass} rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slideUp`}>
             <div className="text-center mb-6">
@@ -96,7 +96,7 @@ export default function OnboardingModal(props) {
 
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-1 flex items-center gap-1`}>
-                  <Droplets size={14} style={{ color: theme.accent }} />
+                  <BarChart2 size={14} style={{ color: theme.accent }} />
                   投資待機資金
                 </label>
                 <p className={`text-[11px] ${theme.textSecondary} mb-2 leading-relaxed`}>
@@ -137,7 +137,6 @@ export default function OnboardingModal(props) {
             </button>
           </div>
         </div>
-      )}
 
   );
 }

@@ -4,7 +4,6 @@ export default function DailyReviewModal(props) {
   const { theme, darkMode, dailyReviewDate, dailyReviewTxns, setDailyReviewTxns, dailyReviewAddForm, setDailyReviewAddForm, setShowDailyReview, expenseCategories, incomeCategories, creditCards, transactions, setTransactions } = props;
 
   return (
-      {showDailyReview && (
         <div className="fixed inset-0 z-50 flex items-end justify-center animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.75)' }}>
           <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-lg animate-slideUp`} style={{ maxHeight: '85vh', display: 'flex', flexDirection: 'column' }}>
             <div className="px-5 pt-5 pb-3 flex items-center justify-between flex-shrink-0">
@@ -122,7 +121,6 @@ export default function DailyReviewModal(props) {
             </div>
           </div>
         </div>
-      )}
 
 
   );

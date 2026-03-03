@@ -2,9 +2,20 @@ import React from 'react';
 
 export default function LifeEventModal(props) {
   const { theme, darkMode, editingLifeEvent, setEditingLifeEvent, addOrUpdateLifeEvent, setShowLifeEventModal } = props;
+  const lifeEventTemplates = [
+    { name: '結婚', estimatedAmount: 3000000, icon: '💍', type: 'expense' },
+    { name: '出産', estimatedAmount: 500000, icon: '👶', type: 'expense' },
+    { name: '住宅購入', estimatedAmount: 30000000, icon: '🏠', type: 'expense' },
+    { name: '車購入', estimatedAmount: 2000000, icon: '🚗', type: 'expense' },
+    { name: '進学', estimatedAmount: 2000000, icon: '🎓', type: 'expense' },
+    { name: '海外旅行', estimatedAmount: 500000, icon: '✈️', type: 'expense' },
+    { name: '退職', estimatedAmount: 0, icon: '🎉', type: 'milestone' },
+    { name: 'カスタム', estimatedAmount: 0, icon: '📌', type: 'expense' }
+  ];
+  const eventIcons = ['💍', '👶', '🏠', '🚗', '🎓', '✈️', '💰', '🎉', '📌', '🎊', '🎁', '⭐'];
+
 
   return (
-      {showLifeEventModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className={`${theme.cardGlass} rounded-2xl p-6 max-w-md w-full max-h-[85vh] overflow-y-auto animate-slideUp`}>
             <div className="flex items-center justify-between mb-4">
@@ -137,7 +148,6 @@ export default function LifeEventModal(props) {
             )}
           </div>
         </div>
-      )}
 
   );
 }

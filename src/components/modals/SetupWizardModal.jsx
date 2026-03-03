@@ -4,7 +4,6 @@ export default function SetupWizardModal(props) {
   const { theme, darkMode, setupStep, setSetupStep, creditCards, setCreditCards, setupSettlements, setSetupSettlements, setupSettlementDate, setSetupSettlementDate, setShowSetupWizard, setShowTutorial, setTutorialPage, transactions, setTransactions, setShowCardModal, setEditingCard } = props;
 
   return (
-      {showSetupWizard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
           <div className={`${theme.cardGlass} rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slideUp`}>
 
@@ -202,7 +201,6 @@ export default function SetupWizardModal(props) {
 
           </div>
         </div>
-      )}
 
   );
 }
