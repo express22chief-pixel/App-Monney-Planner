@@ -41,6 +41,8 @@ export default function SettingsTab(props) {
     settingsExpanded, setSettingsExpanded,
     setShowCategoryModal, setShowCardModal, setEditingCard,
     wallets, setWallets,
+    walletBalances,
+    walletAdjustments, setWalletAdjustments,
     resetAllData, applyRiskProfile,
     handleRenameDefaultCategory, handleDeleteDefaultCategory,
     deleteCustomCategory, deleteRecurring,
@@ -301,15 +303,36 @@ export default function SettingsTab(props) {
                 <div className="space-y-2">
                   {(wallets || []).map(w => (
                     <div key={w.id} className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{w.icon}</span>
-                        <div>
+                      <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
+                          {w.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
                           <p className={`text-sm font-semibold ${theme.text}`}>{w.name}</p>
+                          <p className="text-xs font-bold tabular-nums" style={{ color: (walletBalances?.[String(w.id)] || 0) < 0 ? theme.red : theme.accent }}>
+                            ¥{(walletBalances?.[String(w.id)] || 0).toLocaleString()}
+                          </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => { if (confirm(`「${w.name}」を削除しますか？`)) setWallets(prev => prev.filter(x => x.id !== w.id)); }}
-                        className="p-1.5 rounded-lg text-red-500">🗑️</button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => {
+                            const wid = String(w.id);
+                            const bal = walletBalances?.[wid] || 0;
+                            const adj = walletAdjustments?.[wid] || 0;
+                            const txTotal = bal - adj;
+                            const input = window.prompt(`${w.name} の現在残高を入力`, String(bal));
+                            if (input === null) return;
+                            const newBal = Number(input.replace(/[^0-9-]/g, ''));
+                            if (isNaN(newBal)) { alert('数字を入力してください'); return; }
+                            setWalletAdjustments(prev => ({ ...prev, [wid]: newBal - txTotal }));
+                          }}
+                          className={`text-xs px-2 py-1 rounded-lg ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'}`}
+                        >修正</button>
+                        <button
+                          onClick={() => { if (confirm(`「${w.name}」を削除しますか？`)) setWallets(prev => prev.filter(x => x.id !== w.id)); }}
+                          className="p-1.5 rounded-lg text-red-500">🗑️</button>
+                      </div>
                     </div>
                   ))}
                   {(!wallets || wallets.length === 0) && (
@@ -325,24 +348,52 @@ export default function SettingsTab(props) {
                     { name: 'nanaco',    icon: '🟡', color: '#F5A623' },
                     { name: 'WAON',      icon: '🔵', color: '#0070CC' },
                     { name: '楽天Edy',   icon: '❤️', color: '#BF0000' },
+                    { name: 'iD',        icon: '💜', color: '#7C3AED' },
+                    { name: 'QUICPay',  icon: '🟠', color: '#EA580C' },
                   ];
                   const existing = new Set((wallets || []).map(w => w.name));
                   const available = PRESETS.filter(p => !existing.has(p.name));
                   return (
-                    <div>
-                      <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>追加</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {available.map(p => (
-                          <button key={p.name}
-                            onClick={() => setWallets(prev => [...(prev || []), { id: Date.now(), name: p.name, icon: p.icon, color: p.color }])}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${darkMode ? 'bg-neutral-700 text-neutral-300 hover:bg-neutral-600' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'}`}
-                          >
-                            {p.icon} {p.name}
-                          </button>
-                        ))}
-                        {available.length === 0 && (
-                          <p className={`text-xs ${theme.textSecondary}`}>全てのプリセットが追加済みです</p>
-                        )}
+                    <div className="space-y-3">
+                      {/* プリセット */}
+                      {available.length > 0 && (
+                        <div>
+                          <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>プリセットから追加</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {available.map(p => (
+                              <button key={p.name}
+                                onClick={() => setWallets(prev => [...(prev || []), { id: Date.now(), name: p.name, icon: p.icon, color: p.color }])}
+                                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}
+                              >{p.icon} {p.name}</button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* カスタム追加 */}
+                      <div>
+                        <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>カスタムで追加</p>
+                        <div className="flex gap-2">
+                          <input type="text" id="wallet-icon-input" placeholder="絵文字" maxLength={2}
+                            className={`w-14 px-2 py-2 rounded-xl text-center text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                          <input type="text" id="wallet-name-input" placeholder="名前（例: au PAY）"
+                            className={`flex-1 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                          <input type="color" id="wallet-color-input" defaultValue="#6366f1"
+                            className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent" />
+                        </div>
+                        <button
+                          onClick={() => {
+                            const icon = document.getElementById('wallet-icon-input').value.trim() || '💳';
+                            const name = document.getElementById('wallet-name-input').value.trim();
+                            const color = document.getElementById('wallet-color-input').value;
+                            if (!name) { alert('名前を入力してください'); return; }
+                            if ((wallets || []).some(w => w.name === name)) { alert('同じ名前のウォレットが既にあります'); return; }
+                            setWallets(prev => [...(prev || []), { id: Date.now(), name, icon, color }]);
+                            document.getElementById('wallet-icon-input').value = '';
+                            document.getElementById('wallet-name-input').value = '';
+                          }}
+                          className="w-full mt-2 py-2 rounded-xl text-xs font-semibold text-white"
+                          style={{ backgroundColor: theme.accent }}
+                        >＋ 追加する</button>
                       </div>
                     </div>
                   );

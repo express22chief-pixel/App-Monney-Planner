@@ -13,6 +13,7 @@ export default function AssetsTab(props) {
     setShowClosingCheckModal, getSettlementDate, budgetAnalysis,
     currentBalance, currentMonth, openCloseMonthModal, setActiveTab, selectedMonth,
     dismissedClosingAlerts, setDismissedClosingAlerts,
+    wallets, walletBalances, walletAdjustments, setWalletAdjustments,
   } = props;
   const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
@@ -57,6 +58,58 @@ export default function AssetsTab(props) {
                 ))}
               </div>
             </button>
+
+            {/* 電子マネー残高 */}
+            {wallets && wallets.length > 0 && (
+              <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+                <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
+                  <div>
+                    <p className={`text-xs ${theme.textSecondary} font-medium uppercase tracking-wide`}>Electronic Money</p>
+                    <p className={`text-lg font-black tabular-nums ${theme.text}`}>
+                      ¥{wallets.reduce((s, w) => s + (walletBalances?.[String(w.id)] || 0), 0).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <div className="px-3 py-3 space-y-2">
+                  {wallets.map(w => {
+                    const wid = String(w.id);
+                    const bal = walletBalances?.[wid] || 0;
+                    const [editing, setEditing] = [false, () => {}]; // ローカルstateは使えないため下で対処
+                    return (
+                      <div key={w.id} className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
+                          {w.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-semibold ${theme.text}`}>{w.name}</p>
+                          <p className="text-xs font-bold tabular-nums" style={{ color: bal < 0 ? theme.red : bal === 0 ? (darkMode ? '#555' : '#bbb') : theme.accent }}>
+                            ¥{bal.toLocaleString()}
+                            {bal < 0 && <span className="ml-1 text-red-400">残高不足</span>}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const current = walletAdjustments?.[wid] || 0;
+                            const txTotal = bal - current;
+                            const input = window.prompt(
+                              `${w.name} の現在残高を入力してください\n(取引履歴による変動分: ¥${txTotal.toLocaleString()})`,
+                              String(bal)
+                            );
+                            if (input === null) return;
+                            const newBal = Number(input.replace(/[^0-9-]/g, ''));
+                            if (isNaN(newBal)) { alert('数字を入力してください'); return; }
+                            // 新しい調整額 = 目標残高 - 取引分
+                            setWalletAdjustments(prev => ({ ...prev, [wid]: newBal - txTotal }));
+                          }}
+                          className={`shrink-0 text-xs px-2.5 py-1.5 rounded-lg font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'}`}
+                        >修正</button>
+                      </div>
+                    );
+                  })}
+                  <p className={`text-[10px] text-center pt-1 ${theme.textSecondary}`}>「修正」で現在の実際の残高に合わせられます</p>
+                </div>
+              </div>
+            )}
 
             {/* 投資実行 */}
             <button

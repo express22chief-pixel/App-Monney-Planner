@@ -13,6 +13,7 @@ export default function HomeTab(props) {
     showRecurringList, setShowRecurringList,
     selectedMonth,
     splitPayments, setSplitPayments, recentTxnLimit, setRecentTxnLimit,
+    setShowAllTransactions,
     setShowAddTransaction, setShowBudgetModal, dismissedClosingAlerts,
     setDismissedClosingAlerts, setShowClosingCheckModal,
     expandedCreditGroups, setExpandedCreditGroups,
@@ -20,6 +21,7 @@ export default function HomeTab(props) {
     setShowTutorial, setTutorialPage,
     setShowRecurringModal, setEditingRecurring, deleteRecurring,
     getSettlementDate, setActiveTab,
+    wallets, walletBalances,
   } = props;
   const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
@@ -675,7 +677,7 @@ export default function HomeTab(props) {
                   <div className="flex items-center justify-between px-4 py-3">
                     <h2 className={`text-sm font-semibold ${theme.text}`}>最近の取引</h2>
                     <button
-                      onClick={() => setActiveTab ? setActiveTab('calendar') : null}
+                      onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
                       className={`text-xs font-semibold`}
                       style={{ color: theme.accent }}
                     >
@@ -709,20 +711,12 @@ export default function HomeTab(props) {
                       ))}
 
                       {/* もっと見るボタン */}
-                      {!showAll && visibleTxns.length > 3 && (
+                      {visibleTxns.length > 3 && (
                         <button
-                          onClick={() => setRecentTxnLimit(9999)}
+                          onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
                           className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
                         >
-                          もっと見る（全{visibleTxns.length}件）
-                        </button>
-                      )}
-                      {showAll && visibleTxns.length > 3 && (
-                        <button
-                          onClick={() => setRecentTxnLimit(3)}
-                          className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
-                        >
-                          ▲ 折りたたむ
+                          もっと見る（全{visibleTxns.length}件）›
                         </button>
                       )}
                     </>
