@@ -175,6 +175,29 @@ export function useMoneyData() {
     })
   );
 
+  // ── ウォレット残高調整（初期残高・手動修正） ────────────────────────────────
+  const [walletAdjustments, setWalletAdjustments] = useState(() => load('walletAdjustments', {}));
+
+  // ── ウォレット残高計算 ─────────────────────────────────────────────────────
+  // 残高 = チャージ額 - 電子マネー支払い額（取引履歴から動的に算出）
+  const walletBalances = useMemo(() => {
+    const balances = {};
+    (wallets || []).forEach(w => {
+      // 調整額（初期残高含む）をベースにする
+      balances[String(w.id)] = Number(walletAdjustments[String(w.id)] || 0);
+    });
+    transactions.forEach(t => {
+      const wid = t.walletId ? String(t.walletId) : null;
+      if (!wid) return;
+      if (t.isTransfer && !t.isSettlement) {
+        balances[wid] = (balances[wid] || 0) + Math.abs(t.amount);
+      } else if (t.paymentMethod === 'wallet' && !t.isSettlement) {
+        balances[wid] = (balances[wid] || 0) - Math.abs(t.amount);
+      }
+    });
+    return balances;
+  }, [transactions, wallets, walletAdjustments]);
+
   // ════════════════════════════════════════════════════════════════════════════
   // 副作用 ① 永続化 → usePersistence に完全委譲
   // ════════════════════════════════════════════════════════════════════════════
@@ -182,6 +205,7 @@ export function useMoneyData() {
     transactions, assetData, monthlyHistory, lifeEvents, userInfo,
     simulationSettings, darkMode, monthlyBudget, customCategories,
     recurringTransactions, creditCards, splitPayments, dismissedClosingAlerts, transactionTemplates,
+    walletAdjustments,
   });
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -389,6 +413,25 @@ export function useMoneyData() {
     // チャージはcategoryが不要、chargeTargetが必須
     if (!newTransaction.amount) return;
     if (!isCharge && !newTransaction.category) return;
+
+    // 電子マネー支払い時の残高チェック
+    if (newTransaction.paymentMethod === 'wallet' && newTransaction.walletId) {
+      const wid = String(newTransaction.walletId);
+      const currentBal = (() => {
+        let bal = 0;
+        transactions.forEach(t => {
+          if (!t.walletId || String(t.walletId) !== wid) return;
+          if (t.isTransfer && !t.isSettlement) bal += Math.abs(t.amount);
+          else if (t.paymentMethod === 'wallet' && !t.isSettlement) bal -= Math.abs(t.amount);
+        });
+        return bal;
+      })();
+      const payAmount = Math.abs(Number(newTransaction.amount));
+      if (currentBal < payAmount) {
+        const w = wallets.find(w => String(w.id) === wid);
+        if (!window.confirm(`${w?.name || '電子マネー'}の残高（¥${currentBal.toLocaleString()}）が不足しています。\n支払額: ¥${payAmount.toLocaleString()}\n\nこのまま記録しますか？`)) return;
+      }
+    }
     if (isCharge && !newTransaction.chargeTarget) return;
 
     const amount = newTransaction.type === 'expense' || isCharge
@@ -765,6 +808,8 @@ export function useMoneyData() {
     transactionTemplates, setTransactionTemplates,
     showTemplateModal, setShowTemplateModal,
     wallets, setWallets, addCharge,
+    walletBalances,
+    walletAdjustments, setWalletAdjustments,
     showWalletModal, setShowWalletModal,
     editingWallet, setEditingWallet,
     dismissedClosingAlerts, setDismissedClosingAlerts,

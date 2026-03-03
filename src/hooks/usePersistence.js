@@ -48,4 +48,5 @@ export function usePersistence(state) {
   useEffect(() => { save('dismissedClosingAlerts',dismissedClosingAlerts);}, [dismissedClosingAlerts]);
 
   useEffect(() => { save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates]);
+  useEffect(() => { save('walletAdjustments', state.walletAdjustments); }, [state.walletAdjustments]);
 }
