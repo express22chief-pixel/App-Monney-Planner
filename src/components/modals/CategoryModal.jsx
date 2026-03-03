@@ -1,15 +1,10 @@
 import React from 'react';
-import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../constants';
 
 export default function CategoryModal(props) {
   const { theme, darkMode, expenseCategories, incomeCategories, customCategories, setCustomCategories, monthlyBudget, setMonthlyBudget, newCategoryName, setNewCategoryName, newCategoryType, setNewCategoryType, addCustomCategory, setShowCategoryModal, editingCategoryName, setEditingCategoryName, editingCategoryValue, setEditingCategoryValue, handleRenameDefaultCategory, handleDeleteDefaultCategory, deleteCustomCategory } = props;
-  const deletedExp = customCategories?.deletedDefaults?.expense || [];
-  const deletedInc = customCategories?.deletedDefaults?.income || [];
-  const renamedExp = customCategories?.renamedDefaults?.expense || {};
-  const renamedInc = customCategories?.renamedDefaults?.income || {};
-
 
   return (
+      {showCategoryModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className={`${theme.cardGlass} rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col animate-slideUp`}>
             <div className="flex items-center justify-between px-6 pt-5 pb-4">
@@ -126,6 +121,7 @@ export default function CategoryModal(props) {
             </div>
           </div>
         </div>
+      )}
 
 
   );

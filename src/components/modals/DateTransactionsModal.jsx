@@ -1,25 +1,13 @@
 import React from 'react';
-import { getTransactionsForDay } from '../../utils/calc';
 
 export default function DateTransactionsModal(props) {
-  const {
-    theme, darkMode, selectedDate, setShowDateTransactionsModal, setSelectedDate,
-    transactions, setTransactions, deleteTransaction, setEditingTransaction,
-    creditCards, expenseCategories, incomeCategories,
-    newTransaction, setNewTransaction,
-    expandedCreditGroups, setExpandedCreditGroups,
-    getSettlementDate,
-  } = props;
-
-  const getTransactionsForDay = (ym, day) => {
-    const ds = ym + '-' + String(day).padStart(2, '0');
-    return transactions.filter(t => t.date === ds);
-  };
-
-        const dayTxns = getTransactionsForDay(selectedDate.slice(0, 7), Number(selectedDate.slice(-2)));
-        const dateLabel = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+  const { theme, darkMode, selectedDate, setShowDateTransactionsModal, transactions, deleteTransaction, setEditingTransaction, creditCards, expenseCategories, incomeCategories } = props;
 
   return (
+      {showDateTransactionsModal && selectedDate && (() => {
+        const dayTxns = getTransactionsForDay(selectedDate.slice(0, 7), Number(selectedDate.slice(-2)));
+        const dateLabel = new Date(selectedDate + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+        return (
         <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 animate-fadeIn" onClick={() => { setShowDateTransactionsModal(false); setSelectedDate(null); }}>
           <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp`} onClick={e => e.stopPropagation()}>
 
@@ -312,6 +300,9 @@ export default function DateTransactionsModal(props) {
             </div>
           </div>
         </div>
+        );
+      })()}
+
 
   );
 }

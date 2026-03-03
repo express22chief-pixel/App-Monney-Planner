@@ -3,6 +3,8 @@ import React from 'react';
 export default function TutorialModal(props) {
   const { theme, darkMode, tutorialPage, setTutorialPage, setShowTutorial } = props;
 
+  return (
+      {showTutorial && (() => {
         const slides = [
           {
             emoji: '💡',
@@ -79,8 +81,7 @@ export default function TutorialModal(props) {
         const slide = slides[tutorialPage];
         const isLast = tutorialPage === slides.length - 1;
 
-
-  return (
+        return (
           <div className="fixed inset-0 z-50 flex items-end justify-center"
             style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }}>
             <div className={`w-full max-w-md rounded-t-3xl animate-slideUp overflow-hidden`}
@@ -265,6 +266,8 @@ export default function TutorialModal(props) {
               )}
             </div>
           </div>
+        );
+      })()}
 
   );
 }

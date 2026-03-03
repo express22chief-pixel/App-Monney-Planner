@@ -4,6 +4,7 @@ export default function RecurringModal(props) {
   const { theme, darkMode, showRecurringModal, setShowRecurringModal, editingRecurring, setEditingRecurring, addOrUpdateRecurring, creditCards, expenseCategories, incomeCategories } = props;
 
   return (
+      {showRecurringModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className={`${theme.cardGlass} rounded-3xl p-6 max-w-md w-full max-h-[85vh] overflow-y-auto animate-slideUp`}>
             <div className="flex items-center justify-between mb-4">
@@ -370,6 +371,7 @@ export default function RecurringModal(props) {
             </div>
           </div>
         </div>
+      )}
 
 
   );
