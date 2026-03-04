@@ -3,6 +3,29 @@ import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../con
 import { Edit2 } from 'lucide-react';
 import { RISK_PROFILES } from '../../hooks/useMoneyData';
 
+// ── プレミアムスライダー ────────────────────────────────────────────────────
+function PremiumSlider({ value, min, max, step, onChange, accent, darkMode }) {
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+  return (
+    <div className="relative" style={{ height: '28px', display: 'flex', alignItems: 'center' }}>
+      <div className="absolute w-full rounded-full" style={{ height: '4px', backgroundColor: darkMode ? '#3a3a3a' : '#e5e7eb' }} />
+      <div className="absolute rounded-full" style={{ height: '4px', width: `${pct}%`, background: `linear-gradient(90deg, ${accent}88, ${accent})` }} />
+      <div className="absolute rounded-full" style={{
+        width: '20px', height: '20px',
+        left: `calc(${pct}% - 10px)`,
+        background: `radial-gradient(circle at 38% 38%, #ffffff, ${accent}cc)`,
+        boxShadow: `0 2px 8px ${accent}55, 0 1px 4px rgba(0,0,0,0.25)`,
+        border: `2.5px solid ${accent}`,
+        pointerEvents: 'none',
+      }} />
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{ position: 'absolute', width: '100%', height: '28px', opacity: 0, cursor: 'pointer', margin: 0 }}
+      />
+    </div>
+  );
+}
+
 function AccSection({ id, title, icon, children, expanded, onToggle, darkMode, theme }) {
   return (
     <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
@@ -111,9 +134,11 @@ export default function SettingsTab(props) {
                           <label className={`text-xs font-medium ${theme.textSecondary}`}>{category}</label>
                           <span className={`text-xs font-bold tabular-nums ${theme.text}`}>¥{amount.toLocaleString()}</span>
                         </div>
-                        <input type="range" min="0" max="300000" step="5000" value={amount}
-                          onChange={(e) => setMonthlyBudget({ ...monthlyBudget, expenses: { ...monthlyBudget.expenses, [category]: Number(e.target.value) } })}
-                          className="w-full" style={{ accentColor: theme.accent }} />
+                        <PremiumSlider
+                          value={amount} min={0} max={300000} step={5000}
+                          onChange={(v) => setMonthlyBudget({ ...monthlyBudget, expenses: { ...monthlyBudget.expenses, [category]: v } })}
+                          accent={theme.accent} darkMode={darkMode}
+                        />
                       </div>
                     ))}
                   </div>
@@ -143,6 +168,8 @@ export default function SettingsTab(props) {
                   { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 2000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
                   { key: 'returnRate', label: '想定利回り', min: 0, max: 15, step: 0.5, fmt: v => `${v}%` },
                   { key: 'savingsInterestRate', label: '預金金利', min: 0, max: 5, step: 0.1, fmt: v => `${v}%` },
+                  { key: 'inflationRate', label: 'インフレ率', min: 0, max: 5, step: 0.5, fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
+                  { key: 'incomeGrowthRate', label: '収入成長率（年昇給）', min: 0, max: 10, step: 0.5, fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
                 ].map(({ key, label, min, max, step, fmt }) => (
                   <div key={key}>
                     <div className="flex justify-between items-center mb-1">
@@ -157,9 +184,11 @@ export default function SettingsTab(props) {
                         className={`w-32 px-2.5 py-1.5 rounded-lg text-sm font-bold tabular-nums text-right ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
                       />
                     </div>
-                    <input type="range" min={min} max={max} step={step} value={simulationSettings[key]}
-                      onChange={(e) => setSimulationSettings({ ...simulationSettings, [key]: Number(e.target.value) })}
-                      className="w-full" style={{ accentColor: theme.accent }} />
+                    <PremiumSlider
+                      value={simulationSettings[key]} min={min} max={max} step={step}
+                      onChange={(v) => setSimulationSettings({ ...simulationSettings, [key]: v })}
+                      accent={theme.accent} darkMode={darkMode}
+                    />
                     <p className={`text-[10px] text-right ${theme.textSecondary} -mt-0.5`}>{fmt(simulationSettings[key])}</p>
                   </div>
                 ))}
@@ -175,10 +204,123 @@ export default function SettingsTab(props) {
                     <p className={`${darkMode ? 'text-green-400' : 'text-green-700'} font-medium`}>✓ NISA口座で運用（利益非課税）</p>
                   </div>
                 )}
+
+                {/* ── NISA成長投資枠 ── */}
+                {simulationSettings.useNisa && (
+                  <div className={`pt-2 border-t space-y-3`} style={{ borderColor: darkMode ? '#2C2C2E' : '#e5e7eb' }}>
+                    <div className="flex items-center justify-between">
+                      <label className={`text-xs font-medium ${theme.text}`}>🌱 NISA成長投資枠を使う</label>
+                      <button
+                        onClick={() => setSimulationSettings({ ...simulationSettings, useLumpSum: !simulationSettings.useLumpSum })}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${simulationSettings.useLumpSum ? 'bg-green-500' : darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${simulationSettings.useLumpSum ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+
+                    {simulationSettings.useLumpSum && (
+                      <div className="space-y-3">
+                        {/* 1回あたりの金額 */}
+                        <div>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className={`text-xs font-medium ${theme.text}`}>1回あたりの投資額</span>
+                            <span className="text-xs font-bold tabular-nums" style={{ color: theme.accent }}>
+                              ¥{(simulationSettings.lumpSumAmount || 500000).toLocaleString()}
+                            </span>
+                          </div>
+                          <PremiumSlider
+                            value={simulationSettings.lumpSumAmount || 500000}
+                            min={100000} max={2400000} step={100000}
+                            onChange={(v) => setSimulationSettings({ ...simulationSettings, lumpSumAmount: v })}
+                            accent={theme.accent} darkMode={darkMode}
+                          />
+                          <p className={`text-[10px] text-right ${theme.textSecondary} -mt-0.5`}>
+                            年間上限: ¥2,400,000
+                          </p>
+                        </div>
+
+                        {/* 投資する月を選択 */}
+                        <div>
+                          <p className={`text-xs font-medium ${theme.text} mb-2`}>投資する月</p>
+                          <div className="grid grid-cols-6 gap-1">
+                            {[1,2,3,4,5,6,7,8,9,10,11,12].map(month => {
+                              const months = simulationSettings.lumpSumMonths || [];
+                              const selected = months.includes(month);
+                              return (
+                                <button
+                                  key={month}
+                                  onClick={() => {
+                                    const current = simulationSettings.lumpSumMonths || [];
+                                    const updated = selected
+                                      ? current.filter(m => m !== month)
+                                      : [...current, month].sort((a, b) => a - b);
+                                    setSimulationSettings({ ...simulationSettings, lumpSumMonths: updated });
+                                  }}
+                                  className={`py-1.5 rounded-lg text-xs font-semibold transition-all`}
+                                  style={{
+                                    backgroundColor: selected ? theme.accent : (darkMode ? '#1C1C1E' : '#f5f5f5'),
+                                    color: selected ? '#fff' : (darkMode ? '#a3a3a3' : '#737373'),
+                                  }}
+                                >
+                                  {month}月
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {(simulationSettings.lumpSumMonths || []).length > 0 && (
+                            <p className={`text-[10px] ${theme.textSecondary} mt-1`}>
+                              年間合計: ¥{((simulationSettings.lumpSumAmount || 500000) * (simulationSettings.lumpSumMonths || []).length).toLocaleString()}
+                              （上限240万円）
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </AccSection>
 
-            <AccSection id="category" icon="🏷️" title="カテゴリ管理" expanded={settingsExpanded['category']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
+            <AccSection id="withdrawal" icon="📉" title="取り崩しフェーズ" expanded={settingsExpanded['withdrawal']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
+              darkMode={darkMode} theme={theme}>
+              <div className="space-y-4 pt-3">
+                <div className={`text-xs ${theme.textSecondary} leading-relaxed px-1`}>
+                  積み立て完了後、資産を毎月取り崩すフェーズをシミュレーションします。FIREやリタイア後の計画に使えます。
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className={`text-xs font-medium ${theme.text}`}>取り崩しシミュレーションを使う</label>
+                  <button onClick={() => setSimulationSettings({ ...simulationSettings, useWithdrawal: !simulationSettings.useWithdrawal })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${simulationSettings.useWithdrawal ? 'bg-red-500' : darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}>
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${simulationSettings.useWithdrawal ? 'translate-x-6' : 'translate-x-1'}`} />
+                  </button>
+                </div>
+                {simulationSettings.useWithdrawal && (
+                  <div className="space-y-4">
+                    {[
+                      { key: 'withdrawalMonthly',      label: '月々の取り崩し額',   min: 50000,  max: 1000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
+                      { key: 'withdrawalReturnRate',   label: '取り崩し期の利回り', min: 0,      max: 10,      step: 0.5,   fmt: v => `${v}%` },
+                      { key: 'withdrawalInflationRate',label: '想定インフレ率',     min: 0,      max: 5,       step: 0.5,   fmt: v => `${v}%` },
+                      { key: 'withdrawalYears',        label: '取り崩し期間',       min: 5,      max: 50,      step: 1,     fmt: v => `${v}年` },
+                    ].map(({ key, label, min, max, step, fmt }) => (
+                      <div key={key}>
+                        <div className="flex justify-between items-center mb-1">
+                          <label className={`text-xs font-medium ${theme.textSecondary}`}>{label}</label>
+                          <span className="text-xs font-bold tabular-nums" style={{ color: theme.accent }}>{fmt(simulationSettings[key] ?? min)}</span>
+                        </div>
+                        <PremiumSlider
+                          value={simulationSettings[key] ?? min} min={min} max={max} step={step}
+                          onChange={(v) => setSimulationSettings({ ...simulationSettings, [key]: v })}
+                          accent={'#ef4444'} darkMode={darkMode}
+                        />
+                      </div>
+                    ))}
+                    <div className={`rounded-xl p-3 text-xs space-y-1 ${darkMode ? 'bg-red-950/40' : 'bg-red-50'}`}>
+                      <p className="font-semibold" style={{ color: '#ef4444' }}>📊 シミュレーションタブで結果を確認できます</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AccSection> expanded={settingsExpanded['category']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
               <div className="pt-3">
                 <div className="flex gap-2 mb-3">
