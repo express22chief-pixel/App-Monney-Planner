@@ -20,9 +20,8 @@ import {
   buildCategories, getSettlementDate, calculateMonthlyBalance,
   getUnclosedMonths, calculateBudgetAnalysis, calculateCategoryExpenses,
   getLast6MonthsTrend, calculateSimulation, runMonteCarloSimulation,
-  getRecurringTargetDates, calculateBenchmark,
+  getRecurringTargetDates, calculateBenchmark, calculateHousingComparison,
 } from '../utils/calc';
-
 // ─── リスクプロファイル定数（UIでも参照するためexport） ─────────────────────
 export const RISK_PROFILES = {
   conservative: { label: '保守的', icon: '🛡️', description: '安全性重視',  returnRate: 3, monthlyInvestment: 20000, monthlySavings: 50000, useLumpSum: false, volatility: 0.05 },
@@ -124,6 +123,8 @@ export function useMoneyData() {
 
   const [monthlyHistory, setMonthlyHistory]     = useState(() => load('monthlyHistory', {}));
   const [lifeEvents, setLifeEvents]             = useState(() => load('lifeEvents', []));
+  const [housingParams, setHousingParams]       = useState(() => load('housingParams', null));
+  const [showHousingModal, setShowHousingModal] = useState(false);
 
   const [monthlyBudget, setMonthlyBudget] = useState(() =>
     load('monthlyBudget', {
@@ -172,6 +173,10 @@ export function useMoneyData() {
       savingsInterestRate: 0.2, returnRate: 5, useNisa: true, useLumpSum: true,
       lumpSumAmount: 500000, lumpSumFrequency: 2, lumpSumMonths: [6, 12],
       riskProfile: 'standard', showMonteCarloSimulation: false,
+      inflationRate: 0, incomeGrowthRate: 0,
+      // 取り崩しフェーズ
+      useWithdrawal: false, withdrawalMonthly: 150000, withdrawalReturnRate: 3,
+      withdrawalInflationRate: 2, withdrawalYears: 30,
     })
   );
 
@@ -300,6 +305,21 @@ export function useMoneyData() {
     [simulationSettings, assetData, lifeEvents]
   );
 
+  // 複数シナリオ比較（現状 / 積立+1万 / 積立+3万）
+  const scenarioResults = useMemo(() => {
+    const base = simulationSettings.monthlyInvestment;
+    return [
+      { label: '現状', color: '#3b82f6', results: calculateSimulation(simulationSettings, assetData, lifeEvents) },
+      { label: `+¥10,000`, color: '#10b981', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 10000 }, assetData, lifeEvents) },
+      { label: `+¥30,000`, color: '#f59e0b', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 30000 }, assetData, lifeEvents) },
+    ];
+  }, [simulationSettings, assetData, lifeEvents]);
+
+  const housingComparison = useMemo(() => {
+    if (!housingParams) return null;
+    return calculateHousingComparison(housingParams, { returnRate: simulationSettings.returnRate, assetData });
+  }, [housingParams, simulationSettings.returnRate, assetData]);
+
   const monteCarloResults = useMemo(
     () => simulationSettings.showMonteCarloSimulation
       ? runMonteCarloSimulation(simulationSettings, assetData, lifeEvents, 100)
@@ -311,6 +331,7 @@ export function useMoneyData() {
     simulationResults.map(r => ({
       年: `${r.year}年`, 貯金: r.savings, 課税口座: r.regularInvestment,
       NISA: r.nisaInvestment, 待機資金: r.dryPowder, 合計: r.totalValue,
+      実質価値: r.realValue,
     })),
     [simulationResults]
   );
@@ -417,15 +438,7 @@ export function useMoneyData() {
     // 電子マネー支払い時の残高チェック
     if (newTransaction.paymentMethod === 'wallet' && newTransaction.walletId) {
       const wid = String(newTransaction.walletId);
-      const currentBal = (() => {
-        let bal = 0;
-        transactions.forEach(t => {
-          if (!t.walletId || String(t.walletId) !== wid) return;
-          if (t.isTransfer && !t.isSettlement) bal += Math.abs(t.amount);
-          else if (t.paymentMethod === 'wallet' && !t.isSettlement) bal -= Math.abs(t.amount);
-        });
-        return bal;
-      })();
+      const currentBal = walletBalances[wid] ?? 0;
       const payAmount = Math.abs(Number(newTransaction.amount));
       if (currentBal < payAmount) {
         const w = wallets.find(w => String(w.id) === wid);
@@ -841,7 +854,9 @@ export function useMoneyData() {
     // ── 派生データ ─────────────────────────────────────────────────────────────
     expenseCategories, incomeCategories,
     currentMonth, currentBalance, budgetAnalysis, unclosedMonths,
-    simulationResults, monteCarloResults, chartData, monteCarloChartData,
+    simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData,
+    housingParams, setHousingParams, housingComparison,
+    showHousingModal, setShowHousingModal,
     // ── アクション ─────────────────────────────────────────────────────────────
     resetAllData,
     applyRiskProfile,

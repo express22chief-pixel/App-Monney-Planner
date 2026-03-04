@@ -47,6 +47,8 @@ export function usePersistence(state) {
   useEffect(() => { save('splitPayments',         splitPayments);         }, [splitPayments]);
   useEffect(() => { save('dismissedClosingAlerts',dismissedClosingAlerts);}, [dismissedClosingAlerts]);
 
+  useEffect(() => { save('wallets', state.wallets); }, [state.wallets]);
+  useEffect(() => { if (state.housingParams) save('housingParams', state.housingParams); }, [state.housingParams]);
   useEffect(() => { save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates]);
   useEffect(() => { save('walletAdjustments', state.walletAdjustments); }, [state.walletAdjustments]);
 }
