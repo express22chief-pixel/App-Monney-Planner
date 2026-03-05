@@ -4,7 +4,7 @@
  * 引数として必要なデータを受け取り、結果を返す純関数。
  */
 
-// ─── カテゴリ定数 ───────────────────────────────────────────────────────────
+// --- カテゴリ定数 -----------------------------------------------------------
 export const DEFAULT_EXPENSE_CATEGORIES = [
   '食費', '住居費', '光熱費', '通信費', '交通費',
   '娯楽費', '医療費', '教育費', '被服費', 'その他'
@@ -27,7 +27,7 @@ export const RISK_PROFILES = {
   aggressive:   { returnRate: 7, volatility: 0.18, monthlyInvestment: 80000, monthlySavings: 10000, useLumpSum: true  }
 };
 
-// ─── カテゴリ構築 ────────────────────────────────────────────────────────────
+// --- カテゴリ構築 ------------------------------------------------------------
 export function buildCategories(defaults, deleted, renamed, custom, orderedOrig) {
   const activeDefs = (orderedOrig && orderedOrig.length > 0 ? orderedOrig : defaults)
     .filter(d => !deleted.includes(d))
@@ -35,7 +35,7 @@ export function buildCategories(defaults, deleted, renamed, custom, orderedOrig)
   return [...activeDefs, ...custom];
 }
 
-// ─── 年齢グループ ─────────────────────────────────────────────────────────────
+// --- 年齢グループ -------------------------------------------------------------
 export function getAgeGroup(age) {
   const a = age ?? 25;
   if (a < 30) return '20s';
@@ -45,7 +45,7 @@ export function getAgeGroup(age) {
   return '60s';
 }
 
-// ─── ベンチマーク計算 ─────────────────────────────────────────────────────────
+// --- ベンチマーク計算 ---------------------------------------------------------
 export function calculateBenchmark(assetData, targetAge) {
   const ageGroup = getAgeGroup(targetAge);
   const benchmark = BENCHMARK_DATA[ageGroup];
@@ -67,7 +67,7 @@ export function calculateBenchmark(assetData, targetAge) {
   };
 }
 
-// ─── 引き落とし日計算 ─────────────────────────────────────────────────────────
+// --- 引き落とし日計算 ---------------------------------------------------------
 export function getSettlementDate(txDate, cardId, creditCards) {
   const resolvedId = cardId ? String(cardId) : (creditCards[0] ? String(creditCards[0].id) : null);
   const card = creditCards.find(c => String(c.id) === String(resolvedId)) || creditCards[0];
@@ -103,7 +103,7 @@ export function getSettlementDate(txDate, cardId, creditCards) {
   return result;
 }
 
-// ─── 月次収支計算 ─────────────────────────────────────────────────────────────
+// --- 月次収支計算 -------------------------------------------------------------
 export function calculateMonthlyBalance(yearMonth, transactions, recurringTransactions) {
   const monthTransactions = transactions.filter(t => t.date.startsWith(yearMonth));
   const investingRecurringIds = new Set(
@@ -151,7 +151,7 @@ export function calculateMonthlyBalance(yearMonth, transactions, recurringTransa
   };
 }
 
-// ─── 未締め月リスト ───────────────────────────────────────────────────────────
+// --- 未締め月リスト -----------------------------------------------------------
 export function getUnclosedMonths(transactions, monthlyHistory) {
   const result = [];
   const today = new Date();
@@ -164,7 +164,7 @@ export function getUnclosedMonths(transactions, monthlyHistory) {
   return result;
 }
 
-// ─── 予算分析 ─────────────────────────────────────────────────────────────────
+// --- 予算分析 -----------------------------------------------------------------
 export function calculateBudgetAnalysis(currentBalance, monthlyBudget, simulationSettings, transactions, currentMonth) {
   const actualIncome = currentBalance.plIncome;
   const actualExpense = currentBalance.plExpense;
@@ -196,7 +196,7 @@ export function calculateBudgetAnalysis(currentBalance, monthlyBudget, simulatio
   };
 }
 
-// ─── カテゴリ別支出 ───────────────────────────────────────────────────────────
+// --- カテゴリ別支出 -----------------------------------------------------------
 export function calculateCategoryExpenses(transactions, currentMonth, recurringTransactions) {
   const investRecurringIds = new Set(
     recurringTransactions
@@ -214,7 +214,7 @@ export function calculateCategoryExpenses(transactions, currentMonth, recurringT
   return Object.entries(totals).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
 }
 
-// ─── カレンダー計算 ───────────────────────────────────────────────────────────
+// --- カレンダー計算 -----------------------------------------------------------
 export function getDaysInMonth(yearMonth) {
   const [year, month] = yearMonth.split('-').map(Number);
   return new Date(year, month, 0).getDate();
@@ -237,7 +237,7 @@ export function getDayBalance(transactions, yearMonth, day) {
   return { income, expense, balance: income - expense };
 }
 
-// ─── 直近6ヶ月トレンド ───────────────────────────────────────────────────────
+// --- 直近6ヶ月トレンド -------------------------------------------------------
 export function getLast6MonthsTrend(transactions, recurringTransactions) {
   const trends = [];
   const today = new Date();
@@ -250,7 +250,7 @@ export function getLast6MonthsTrend(transactions, recurringTransactions) {
   return trends;
 }
 
-// ─── シミュレーション計算 ─────────────────────────────────────────────────────
+// --- シミュレーション計算 -----------------------------------------------------
 export function calculateSimulation(simulationSettings, assetData, lifeEvents) {
   const { years, monthlyInvestment, monthlySavings, savingsInterestRate, returnRate, useNisa, useLumpSum, lumpSumAmount, lumpSumMonths,
     inflationRate = 0, incomeGrowthRate = 0 } = simulationSettings;
@@ -358,7 +358,7 @@ export function calculateSimulation(simulationSettings, assetData, lifeEvents) {
   return results;
 }
 
-// ─── モンテカルロシミュレーション ────────────────────────────────────────────
+// --- モンテカルロシミュレーション --------------------------------------------
 export function runMonteCarloSimulation(simulationSettings, assetData, lifeEvents, numSimulations = 100) {
   const { years, monthlyInvestment, monthlySavings, savingsInterestRate, returnRate, useNisa, useLumpSum, lumpSumAmount, lumpSumMonths, riskProfile } = simulationSettings;
   const volatility = RISK_PROFILES[riskProfile]?.volatility || 0.10;
@@ -435,7 +435,7 @@ export function runMonteCarloSimulation(simulationSettings, assetData, lifeEvent
   return statistics;
 }
 
-// ─── 定期取引の日付リスト生成（副作用なし） ──────────────────────────────────
+// --- 定期取引の日付リスト生成（副作用なし） ----------------------------------
 export function getRecurringTargetDates(recurring, currentMonth) {
   const recurrenceType = recurring.recurrenceType || 'monthly-date';
   let targetDates = [];
@@ -482,7 +482,7 @@ export function getRecurringTargetDates(recurring, currentMonth) {
   return targetDates;
 }
 
-// ─── 取り崩しシミュレーション ─────────────────────────────────────────────────
+// --- 取り崩しシミュレーション -------------------------------------------------
 /**
  * 積み立てフェーズ終了後、取り崩しフェーズをシミュレーション。
  * @param {number} principal - 取り崩し開始時の資産額
@@ -540,7 +540,7 @@ export function calculateWithdrawalSimulation(principal, withdrawalSettings) {
   };
 }
 
-// ─── 住宅ローン計算ユーティリティ ────────────────────────────────────────────
+// --- 住宅ローン計算ユーティリティ --------------------------------------------
 
 /** 元利均等返済の月返済額 */
 export function calcMonthlyPayment(principal, annualRate, months) {
@@ -591,7 +591,7 @@ export function calcPropertyValue(purchasePrice, landRatio, depreciationRate, ye
   return landValue + depreciatedBuilding;
 }
 
-// ─── 持ち家 vs 賃貸 比較シミュレーション ────────────────────────────────────
+// --- 持ち家 vs 賃貸 比較シミュレーション ------------------------------------
 /**
  * @param {object} p - housing params
  * @param {object} s - simulation base settings
@@ -628,7 +628,7 @@ export function calculateHousingComparison(p, s) {
         { key: 'pessimistic', label: '変動（悲観）', color: '#ef4444' },
       ];
 
-  // ── 購入シナリオ ──────────────────────────────────────────────────────────
+  // -- 購入シナリオ ----------------------------------------------------------
   const buyResults = scenarios.map(scenario => {
     let loanBalance      = principal;
     let financialAssets  = assetData ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder) : 0;
@@ -693,7 +693,7 @@ export function calculateHousingComparison(p, s) {
     };
   });
 
-  // ── 賃貸＋投資シナリオ ────────────────────────────────────────────────────
+  // -- 賃貸＋投資シナリオ ----------------------------------------------------
   // 購入シナリオのfixedまたはneutralのローン月払いを基準に差額を投資
   const refBuy      = buyResults.find(r => r.key === 'fixed' || r.key === 'neutral') || buyResults[0];
   let rentAssets    = assetData ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder) : 0;
@@ -732,7 +732,7 @@ export function calculateHousingComparison(p, s) {
     });
   }
 
-  // ── サマリー ──────────────────────────────────────────────────────────────
+  // -- サマリー --------------------------------------------------------------
   const rentFinal = rentYearlyData[rentYearlyData.length - 1]?.netAssets || 0;
   const buyFinal  = refBuy.finalNetAssets;
   const diff      = rentFinal - buyFinal;
