@@ -82,7 +82,7 @@ export default function AllTransactionsModal({
   return (
     <div className="fixed inset-0 z-50 flex flex-col animate-fadeIn" style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f5f5f5' }}>
 
-      {/* ヘッダー */}
+      {/* ヘッ�-ー */}
       <div className={`flex items-center gap-3 px-4 pt-12 pb-3 ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border}`}>
         <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-full ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
           ‹
@@ -126,7 +126,7 @@ export default function AllTransactionsModal({
         ) : (
           groups.map(({ ym, items }) => (
             <div key={ym}>
-              {/* 月ヘッダー */}
+              {/* 月ヘッ�-ー */}
               <div className={`flex items-center justify-between px-4 py-2 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-200/60'}`}>
                 <span className={`text-xs font-bold ${theme.textSecondary}`}>{formatYM(ym)}</span>
                 <span className={`text-xs ${theme.textSecondary}`}>

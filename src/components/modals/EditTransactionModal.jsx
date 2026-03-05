@@ -93,7 +93,7 @@ export default function EditTransactionModal(props) {
         className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-slideUp`}
         onClick={e => e.stopPropagation()}
       >
-        {/* ヘッダー */}
+        {/* ヘッ�-ー */}
         <div className={`sticky top-0 flex items-center justify-between px-5 pt-4 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
           <h2 className={`text-lg font-bold ${theme.text}`}>
             {tx.isSettlement ? '💳 クレジット引き落とし' : '取引を編集'}
@@ -105,7 +105,7 @@ export default function EditTransactionModal(props) {
         </div>
 
         <div className="px-4 pb-8 pt-4">
-          {/* ─── 引き落とし予約：読み取り専用 ─── */}
+          {/* --- 引き落とし予約：読み取り専用 --�- */}
           {tx.isSettlement ? (
             <div className="space-y-3">
               <div className={`rounded-2xl p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
@@ -142,7 +142,7 @@ export default function EditTransactionModal(props) {
             </div>
           ) : (
             <div className="space-y-3">
-              {/* 支出/収入 */}
+              {/* �-�出/収入 */}
               <div className="flex gap-2">
                 {[{ type: 'expense', label: '支出', color: theme.red }, { type: 'income', label: '収入', color: theme.green }].map(({ type, label, color }) => (
                   <button key={type}
@@ -195,7 +195,7 @@ export default function EditTransactionModal(props) {
                 </div>
               </div>
 
-              {/* 支払方法（支出のみ） */}
+              {/* 支払方法（�-�出のみ） */}
               {tx.type === 'expense' && !tx.isRecurring && (
                 <div>
                   <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>支払方法</p>
@@ -272,10 +272,10 @@ export default function EditTransactionModal(props) {
                 />
               </div>
 
-              {/* ─── 立替設定 ─── */}
+              {/* --- 立替設定 --�- */}
               {tx.type === 'expense' && (
                 <div className={`rounded-xl overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
-                  {/* トグルヘッダー */}
+                  {/* トグルヘッ�-ー */}
                   <button
                     onClick={() => setEditingSplit(v => !v)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all ${
@@ -306,7 +306,7 @@ export default function EditTransactionModal(props) {
                         )}
                       </div>
 
-                      {/* 人ごとの行 */}
+                      {/* 人�-との行 */}
                       <div className="space-y-1.5">
                         {splitMembers.map((member, idx) => (
                           <div key={idx} className="flex gap-1.5 items-center">

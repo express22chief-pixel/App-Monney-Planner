@@ -15,7 +15,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { Upload, X, Check, ChevronDown, AlertCircle, CreditCard, Info } from 'lucide-react';
 
-// ─── 支払い方法の分類 ─────────────────────────────────────────────────────────
+// --- 支払い方法の分類 ---------------------------------------------------------
 function classifyPaymentMethod(rawMethod) {
   if (!rawMethod) return 'cash';
   const m = rawMethod.trim();
@@ -24,7 +24,7 @@ function classifyPaymentMethod(rawMethod) {
   return 'cash'; // PayPay残高、PayPayポイント等
 }
 
-// ─── CSVパーサー ──────────────────────────────────────────────────────────────
+// --- CSVパーサー --------------------------------------------------------------
 function parsePayPayCsv(text) {
   const clean = text.replace(/^\uFEFF/, '');
   const lines = clean.split(/\r?\n/).filter(l => l.trim());
@@ -82,7 +82,7 @@ function parseCsvLine(line) {
   return cols;
 }
 
-// ─── カテゴリ選択ドロップダウン ───────────────────────────────────────────────
+// --- カテゴリ選択ドロップダウン -----------------------------------------------
 function CategorySelect({ value, onChange, categories, darkMode, theme }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -132,7 +132,7 @@ function CategorySelect({ value, onChange, categories, darkMode, theme }) {
   );
 }
 
-// ─── カード選択ドロップダウン ─────────────────────────────────────────────────
+// --- カード選択ドロップダウン -------------------------------------------------
 function CardSelect({ value, onChange, creditCards, darkMode, theme }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -209,7 +209,7 @@ function CardSelect({ value, onChange, creditCards, darkMode, theme }) {
   );
 }
 
-// ─── メインコンポーネント ─────────────────────────────────────────────────────
+// --- メインコンポーネント -----------------------------------------------------
 export default function PayPayImportModal(props) {
   const {
     theme, darkMode,
@@ -240,7 +240,7 @@ export default function PayPayImportModal(props) {
   // 連携カード未設定でクレカ行がある → カード選択が必要
   const needsCardSelection = hasCreditRows && !linkedCard;
 
-  // ─── ファイル読み込み ────────────────────────────────────────────────────
+  // --- ファイル読み込み ----------------------------------------------------
   const handleFile = (file) => {
     if (!file) return;
     if (!file.name.endsWith('.csv')) { setError('CSVファイルを選択してください'); return; }
@@ -306,7 +306,7 @@ export default function PayPayImportModal(props) {
     setCategories(next);
   };
 
-  // ─── 追加実行 ─────────────────────────────────────────────────────────────
+  // --- 追加実行 -------------------------------------------------------------
   const handleImport = () => {
     const activeRows = parsedRows.filter(r => !excluded.has(r.txId));
     const unsetCat  = activeRows.filter(r => !categories[r.txId]);
@@ -366,7 +366,7 @@ export default function PayPayImportModal(props) {
         padding: '20px 20px 32px',
       }}>
 
-        {/* ── ヘッダー ──────────────────────────────────────────────── */}
+        {/* -- ヘッダー -----------------------------------------------�- */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FF4B4B' }}>
@@ -390,7 +390,7 @@ export default function PayPayImportModal(props) {
           </button>
         </div>
 
-        {/* ── エラー ──────────────────────────────────────────────────── */}
+        {/* -- エラー ---------------------------------------------------�- */}
         {error && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', backgroundColor: '#FF453A22', borderRadius: 10, marginBottom: 12 }}>
             <AlertCircle size={16} color="#FF453A" />
@@ -398,7 +398,7 @@ export default function PayPayImportModal(props) {
           </div>
         )}
 
-        {/* ━━ STEP 1: アップロード ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/* ━━ STEP 1: アップロード ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━�-� */}
         {step === 'upload' && (
           <div>
             <div
@@ -422,7 +422,7 @@ export default function PayPayImportModal(props) {
                 onChange={(e) => handleFile(e.target.files[0])} />
             </div>
 
-            {/* 連携カード状態表示 */}
+            {/* �-�携カード状態表示 */}
             <div style={{ marginTop: 14, padding: '12px 14px', backgroundColor: linkedCard ? '#FF4B4B11' : S.sub, borderRadius: 12, border: `1px solid ${linkedCard ? '#FF4B4B33' : S.border}` }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={{ fontSize: 14 }}>🔴</span>
@@ -452,10 +452,10 @@ export default function PayPayImportModal(props) {
           </div>
         )}
 
-        {/* ━━ STEP 2: カテゴリ・カード選択レビュー ━━━━━━━━━━━━━━━━━━━ */}
+        {/* ━━ STEP 2: カテゴリ・カード選択レビュー ━━━━━━━━━━━━━━━━━━�-� */}
         {step === 'review' && (
           <>
-            {/* 一括設定バー */}
+            {/* �-括設定バー */}
             <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
               {/* 全件カテゴリ */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -465,7 +465,7 @@ export default function PayPayImportModal(props) {
                 </div>
               </div>
 
-              {/* クレカ一括設定（連携カード未設定かつクレカ行あり） */}
+              {/* クレカ一括設定（�-�携カード未設定かつクレカ行あり） */}
               {needsCardSelection && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', backgroundColor: '#FF4B4B11', borderRadius: 10, border: '1px solid #FF4B4B33' }}>
                   <Info size={14} color="#FF4B4B" style={{ flexShrink: 0 }} />
@@ -478,7 +478,7 @@ export default function PayPayImportModal(props) {
                 </div>
               )}
 
-              {/* 連携カード自動適用の通知 */}
+              {/* 連携カード自動適用の�-�知 */}
               {linkedCard && hasCreditRows && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', backgroundColor: '#FF4B4B11', borderRadius: 10, border: '1px solid #FF4B4B22' }}>
                   <span style={{ fontSize: 12 }}>🔴</span>
@@ -515,7 +515,7 @@ export default function PayPayImportModal(props) {
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
                           <span style={{ fontSize: 11, color: S.muted }}>{row.date}</span>
-                          {/* 支払い方法バッジ */}
+                          {/* �-�払い方法バッジ */}
                           {isCredit ? (
                             <span style={{ fontSize: 10, padding: '1px 6px', borderRadius: 4, backgroundColor: isCash ? '#9ca3af22' : (assignedCard?.isPayPayLinked ? '#FF4B4B22' : theme.accent + '22'), color: isCash ? '#9ca3af' : (assignedCard?.isPayPayLinked ? '#FF4B4B' : theme.accent) }}>
                               {isCash ? '残高払いとして処理' : (assignedCard ? `💳 ${assignedCard.name}` : 'クレカ未選択')}
@@ -556,7 +556,7 @@ export default function PayPayImportModal(props) {
                       theme={theme}
                     />}
 
-                    {/* クレカ行かつ連携カード未設定 → 個別カード選択 */}
+                    {/* クレカ行かつ連携カード未設定 → �-�別カード選択 */}
                     {!excluded.has(row.txId) && isCredit && needsCardSelection && (
                       <div style={{ marginTop: 6 }}>
                         <CardSelect
