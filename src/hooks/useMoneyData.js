@@ -22,7 +22,7 @@ import {
   getLast6MonthsTrend, calculateSimulation, runMonteCarloSimulation,
   getRecurringTargetDates, calculateBenchmark, calculateHousingComparison,
 } from '../utils/calc';
-// ─── リスクプロファイル定数（UIでも参照するためexport） ─────────────────────
+// --- リスクプロファイル定数（UIでも参照するためexport） ---------------------
 export const RISK_PROFILES = {
   conservative: { label: '保守的', icon: '🛡️', description: '安全性重視',  returnRate: 3, monthlyInvestment: 20000, monthlySavings: 50000, useLumpSum: false, volatility: 0.05 },
   standard:     { label: '標準的', icon: '⚖️', description: 'バランス重視', returnRate: 5, monthlyInvestment: 30000, monthlySavings: 30000, useLumpSum: true,  volatility: 0.10 },
@@ -31,9 +31,9 @@ export const RISK_PROFILES = {
 
 export function useMoneyData() {
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // STATE: UI
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const [activeTab, setActiveTab]                         = useState('home');
   const [selectedMonth, setSelectedMonth]                 = useState(() => new Date().toISOString().slice(0, 7));
   const [selectedDate, setSelectedDate]                   = useState(null);
@@ -49,9 +49,9 @@ export function useMoneyData() {
   });
   const [expandedCreditGroups, setExpandedCreditGroups]   = useState({});
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // STATE: モーダル表示フラグ
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const [showSettings, setShowSettings]                   = useState(false);
   const [showOnboarding, setShowOnboarding]               = useState(() => !load('userInfo', null));
   const [showTutorial, setShowTutorial]                   = useState(false);
@@ -86,27 +86,27 @@ export function useMoneyData() {
   const [showCFList, setShowCFList]                       = useState(false);
   const [showPayPayImport, setShowPayPayImport]           = useState(false);
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // STATE: カテゴリ編集
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const [editingCategoryName, setEditingCategoryName]     = useState(null);
   const [editingCategoryValue, setEditingCategoryValue]   = useState('');
   const [newCategoryName, setNewCategoryName]             = useState('');
   const [newCategoryType, setNewCategoryType]             = useState('expense');
   const [editingRecurring, setEditingRecurring]           = useState(null);
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // STATE: 前日確認モーダル
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const [showDailyReview, setShowDailyReview]             = useState(false);
   const [dailyReviewTxns, setDailyReviewTxns]             = useState([]);
   const [dailyReviewDate, setDailyReviewDate]             = useState('');
   const [dailyReviewAddForm, setDailyReviewAddForm]       = useState(null);
   const [dismissedClosingAlerts, setDismissedClosingAlerts] = useState(() => load('dismissedClosingAlerts', {}));
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // STATE: ドメインデータ（永続化対象）
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState(() => load('userInfo', null));
 
   const [transactions, setTransactions] = useState(() =>
@@ -180,10 +180,10 @@ export function useMoneyData() {
     })
   );
 
-  // ── ウォレット残高調整（初期残高・手動修正） ────────────────────────────────
+  // -- ウォレット残高調整（初期残高・手動修正） --------------------------------
   const [walletAdjustments, setWalletAdjustments] = useState(() => load('walletAdjustments', {}));
 
-  // ── ウォレット残高計算 ─────────────────────────────────────────────────────
+  // -- ウォレット残高計算 -----------------------------------------------------
   // 残高 = チャージ額 - 電子マネー支払い額（取引履歴から動的に算出）
   const walletBalances = useMemo(() => {
     const balances = {};
@@ -203,9 +203,9 @@ export function useMoneyData() {
     return balances;
   }, [transactions, wallets, walletAdjustments]);
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 副作用 ① 永続化 → usePersistence に完全委譲
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   usePersistence({
     transactions, assetData, monthlyHistory, lifeEvents, userInfo,
     simulationSettings, darkMode, monthlyBudget, customCategories,
@@ -213,9 +213,9 @@ export function useMoneyData() {
     walletAdjustments,
   });
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 副作用 ② システム初期化（スプラッシュ / 前日確認）
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
 
   // スプラッシュ非表示タイマー
   useEffect(() => {
@@ -242,9 +242,9 @@ export function useMoneyData() {
     setShowDailyReview(true);
   }, [showOnboarding]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 副作用 ③ UI副作用（背景スクロール制御 / 定期取引自動生成）
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
 
   // モーダル表示中は背景スクロールを無効化
   useEffect(() => {
@@ -267,9 +267,9 @@ export function useMoneyData() {
     updateRecurringSettlementStatus();
   }, [recurringTransactions]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 派生データ（カテゴリ）
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const deletedExp  = customCategories.deletedDefaults?.expense || [];
   const deletedInc  = customCategories.deletedDefaults?.income  || [];
   const renamedExp  = customCategories.renamedDefaults?.expense || {};
@@ -277,9 +277,9 @@ export function useMoneyData() {
   const expenseCategories = buildCategories(DEFAULT_EXPENSE_CATEGORIES, deletedExp, renamedExp, customCategories.expense, customCategories.orderedDefaults?.expense);
   const incomeCategories  = buildCategories(DEFAULT_INCOME_CATEGORIES,  deletedInc, renamedInc,  customCategories.income,  customCategories.orderedDefaults?.income);
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 派生データ（計算値）
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   const currentMonth = useMemo(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -344,9 +344,9 @@ export function useMoneyData() {
     [monteCarloResults]
   );
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // アクション関数
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
 
   const resetAllData = () => {
     if (window.confirm('本当に全てのデータを削除しますか？この操作は取り消せません。')) {
@@ -516,7 +516,7 @@ export function useMoneyData() {
   };
 
 
-  // ── チャージ記録（電子マネー・ウォレットへのチャージ）──────────────────────
+  // -- チャージ記録（電子マネー・ウォレットへのチャージ）----------------------
   // fromMethod: 'cash' | 'credit'
   // fromCardId: クレカIDまたはnull
   const addCharge = ({ date, amount, walletId, fromMethod, fromCardId, memo }) => {
@@ -771,11 +771,11 @@ export function useMoneyData() {
   };
 
 
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   // 返却値
-  // ════════════════════════════════════════════════════════════════════════════
+  // ----------------------------------------------------------------------------
   return {
-    // ── UI state ──────────────────────────────────────────────────────────────
+    // -- UI state --------------------------------------------------------------
     activeTab, setActiveTab,
     selectedMonth, setSelectedMonth,
     selectedDate, setSelectedDate,
@@ -787,7 +787,7 @@ export function useMoneyData() {
     historyCategory, setHistoryCategory,
     settingsExpanded, setSettingsExpanded,
     expandedCreditGroups, setExpandedCreditGroups,
-    // ── モーダル ───────────────────────────────────────────────────────────────
+    // -- モーダル ---------------------------------------------------------------
     showSettings, setShowSettings,
     showOnboarding, setShowOnboarding,
     showTutorial, setShowTutorial,
@@ -826,18 +826,18 @@ export function useMoneyData() {
     showWalletModal, setShowWalletModal,
     editingWallet, setEditingWallet,
     dismissedClosingAlerts, setDismissedClosingAlerts,
-    // ── 前日確認 ───────────────────────────────────────────────────────────────
+    // -- 前日確認 ---------------------------------------------------------------
     showDailyReview, setShowDailyReview,
     dailyReviewTxns, setDailyReviewTxns,
     dailyReviewDate,
     dailyReviewAddForm, setDailyReviewAddForm,
-    // ── カテゴリ ───────────────────────────────────────────────────────────────
+    // -- カテゴリ ---------------------------------------------------------------
     editingCategoryName, setEditingCategoryName,
     editingCategoryValue, setEditingCategoryValue,
     newCategoryName, setNewCategoryName,
     newCategoryType, setNewCategoryType,
     editingRecurring, setEditingRecurring,
-    // ── ドメインデータ ─────────────────────────────────────────────────────────
+    // -- ドメインデータ ---------------------------------------------------------
     userInfo, setUserInfo,
     transactions, setTransactions,
     assetData, setAssetData,
@@ -851,13 +851,13 @@ export function useMoneyData() {
     selectedCardId, setSelectedCardId,
     splitPayments, setSplitPayments,
     simulationSettings, setSimulationSettings,
-    // ── 派生データ ─────────────────────────────────────────────────────────────
+    // -- 派生データ -------------------------------------------------------------
     expenseCategories, incomeCategories,
     currentMonth, currentBalance, budgetAnalysis, unclosedMonths,
     simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData,
     housingParams, setHousingParams, housingComparison,
     showHousingModal, setShowHousingModal,
-    // ── アクション ─────────────────────────────────────────────────────────────
+    // -- アクション -------------------------------------------------------------
     resetAllData,
     applyRiskProfile,
     addTransaction,
@@ -875,7 +875,7 @@ export function useMoneyData() {
     addOrUpdateLifeEvent,
     deleteLifeEvent,
     addTransactionsFromImport,
-    // ── calc関数ブリッジ（UIから引数付きで呼ぶ場合） ────────────────────────────
+    // -- calc関数ブリッジ（UIから引数付きで呼ぶ場合） ----------------------------
     getSettlementDate:         (txDate, cardId) => getSettlementDate(txDate, cardId, creditCards),
     calculateMonthlyBalance:   (ym)             => calculateMonthlyBalance(ym, transactions, recurringTransactions),
     calculateCategoryExpenses: ()               => calculateCategoryExpenses(transactions, currentMonth, recurringTransactions),
