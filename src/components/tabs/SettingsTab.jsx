@@ -205,7 +205,7 @@ export default function SettingsTab(props) {
                   </div>
                 )}
 
-                {/* -- NISA成長投資枠 -�- */}
+                {/* -- NISA成長投資枠 -- */}
                 {simulationSettings.useNisa && (
                   <div className={`pt-2 border-t space-y-3`} style={{ borderColor: darkMode ? '#2C2C2E' : '#e5e7eb' }}>
                     <div className="flex items-center justify-between">
@@ -441,7 +441,7 @@ export default function SettingsTab(props) {
             <AccSection id="wallet" icon="👛" title="電子マネー・残高" expanded={settingsExpanded['wallet']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
               <div className="pt-3 space-y-3">
-                {/* ウォレット�-覧 */}
+                {/* ウォレット-覧 */}
                 <div className="space-y-2">
                   {(wallets || []).map(w => (
                     <div key={w.id} className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>

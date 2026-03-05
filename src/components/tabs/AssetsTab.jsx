@@ -20,7 +20,7 @@ export default function AssetsTab(props) {
   return (
           <div className="space-y-3 animate-fadeIn">
 
-            {/* 総資�-� */}
+            {/* 総資- */}
             <button
               onClick={() => setShowAssetEditModal(true)}
               className={`w-full ${theme.cardGlass} rounded-xl p-4 transition-all duration-200 hover-scale text-left`}
@@ -125,7 +125,7 @@ export default function AssetsTab(props) {
               </div>
             </button>
 
-            {/* 同世代�-較 */}
+            {/* 同世代-較 */}
             <button
               onClick={() => setShowBenchmark(true)}
               className={`w-full ${theme.cardGlass} rounded-xl p-3.5 transition-all duration-200 hover-scale text-left`}
@@ -208,7 +208,7 @@ export default function AssetsTab(props) {
               });
             })()}
 
-            {/* 今月の収�-� */}
+            {/* 今月の収- */}
             <div className={`${theme.cardGlass} rounded-xl p-4`}>
               <div className="flex items-center justify-between mb-3">
                 <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>今月の収支</h2>
@@ -264,7 +264,7 @@ export default function AssetsTab(props) {
               )}
             </div>
 
-            {/* �-�出内訳（投資除外） */}
+            {/* -出内訳（投資除外） */}
             {(() => {
               const investIds = new Set(recurringTransactions.filter(r => r.type==='investment'||r.type==='fund').map(r => r.id));
               const catMap = transactions
