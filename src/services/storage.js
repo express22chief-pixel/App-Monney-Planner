@@ -22,7 +22,7 @@
  * }
  */
 
-// ─── localStorage 実装 ──────────────────────────────────────────────────────
+// --- localStorage 実装 ------------------------------------------------------
 const localStorageAdapter = {
   load(key, defaultValue) {
     try {
@@ -50,7 +50,7 @@ const localStorageAdapter = {
   },
 };
 
-// ─── Capacitor Preferences 実装（移行時にコメント解除） ────────────────────
+// --- Capacitor Preferences 実装（移行時にコメント解除） --------------------
 // import { Preferences } from '@capacitor/preferences';
 // const capacitorAdapter = {
 //   async load(key, defaultValue) {
@@ -64,11 +64,11 @@ const localStorageAdapter = {
 //   async clearAll() { await Preferences.clear(); },
 // };
 
-// ─── アクティブなアダプターをここで切り替える ───────────────────────────────
+// --- アクティブなアダプターをここで切り替える -------------------------------
 const activeAdapter = localStorageAdapter;
 // Capacitor移行時: const activeAdapter = capacitorAdapter;
 
-// ─── 公開API（アダプターを隠蔽） ────────────────────────────────────────────
+// --- 公開API（アダプターを隠蔽） --------------------------------------------
 export const load    = (key, defaultValue) => activeAdapter.load(key, defaultValue);
 export const save    = (key, value)        => activeAdapter.save(key, value);
 export const remove  = (key)               => activeAdapter.remove(key);
