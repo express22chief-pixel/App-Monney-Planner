@@ -17,7 +17,7 @@
  */
 import React, { createContext, useContext, useMemo } from 'react';
 
-// ─── テーマ計算（純粋関数） ──────────────────────────────────────────────────
+// --- テーマ計算（純粋関数） --------------------------------------------------
 export function buildTheme(darkMode) {
   return {
     bg:            darkMode ? 'bg-black'           : 'bg-neutral-50',
@@ -35,7 +35,7 @@ export function buildTheme(darkMode) {
   };
 }
 
-// ─── Context 定義 ────────────────────────────────────────────────────────────
+// --- Context 定義 ------------------------------------------------------------
 const AppContext = createContext(null);
 
 /**
