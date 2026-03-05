@@ -320,7 +320,9 @@ export default function SettingsTab(props) {
                   </div>
                 )}
               </div>
-            </AccSection> expanded={settingsExpanded['category']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
+            </AccSection>
+
+            <AccSection id="category" icon="🏷️" title="カテゴリ管理" expanded={settingsExpanded['category']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
               <div className="pt-3">
                 <div className="flex gap-2 mb-3">
