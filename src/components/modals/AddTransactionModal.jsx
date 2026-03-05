@@ -48,7 +48,7 @@ export default function AddTransactionModal(props) {
     <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 animate-fadeIn" onClick={() => setShowAddTransaction(false)}>
       <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-slideUp`} onClick={e => e.stopPropagation()}>
 
-        {/* ヘッ�-ー */}
+        {/* ヘッ-ー */}
         <div className={`sticky top-0 flex items-center justify-between px-5 pt-4 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
           <h2 className={`text-lg font-bold ${theme.text}`}>取引を追加</h2>
           <button onClick={() => setShowAddTransaction(false)} className={`w-8 h-8 flex items-center justify-center rounded-full ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'} text-sm font-bold`}>✕</button>
@@ -56,10 +56,10 @@ export default function AddTransactionModal(props) {
 
         <div className="px-4 pb-8 pt-4 space-y-3">
 
-          {/* -- タイプ選択ブロック（支出/収入/チャージ + 支払方法を1枚のカードにまとめ） -�-� */}
+          {/* -- タイプ選択ブロック（支出/収入/チャージ + 支払方法を1枚のカードにまとめ） -- */}
           <div className={`rounded-2xl p-3 space-y-2.5 ${darkMode ? 'bg-neutral-800/60 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
 
-            {/* �-�出 / 収入 / チャージ */}
+            {/* -出 / 収入 / チャージ */}
             <div className="flex gap-1.5">
               {[
                 { id: 'expense', label: '支出',       color: theme.red   },
@@ -80,7 +80,7 @@ export default function AddTransactionModal(props) {
               })}
             </div>
 
-            {/* 支払方法（�-�出のみ） */}
+            {/* 支払方法（-出のみ） */}
             {isExpense && (
               <>
                 <div className={`h-px ${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'}`} />
@@ -123,7 +123,7 @@ export default function AddTransactionModal(props) {
             )}
           </div>
 
-          {/* ------ チャージモード -----�-� */}
+          {/* ------ チャージモード ------ */}
           {chargeMode && (
             <div className="space-y-2.5">
               <div>
@@ -170,7 +170,7 @@ export default function AddTransactionModal(props) {
             </div>
           )}
 
-          {/* ------ 支出・収入モード -----�-� */}
+          {/* ------ 支出・収入モード ------ */}
           {!chargeMode && (
             <div className="space-y-2">
 
@@ -206,7 +206,7 @@ export default function AddTransactionModal(props) {
               {/* メモ */}
               <textarea rows={2} placeholder="メモ（任意）" value={newTransaction.memo} onChange={e => setNewTransaction({ ...newTransaction, memo: e.target.value })} className={`${inputBase} resize-none`} />
 
-              {/* 立替トグル（�-�出のみ） */}
+              {/* 立替トグル（-出のみ） */}
               {newTransaction.type === 'expense' && (
                 <div className={`rounded-xl overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
                   <button

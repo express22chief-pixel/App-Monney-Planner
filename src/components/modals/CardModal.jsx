@@ -119,7 +119,7 @@ export default function CardModal(props) {
             </select>
           </div>
 
-          {/* -- PayPay連携設定 --------------------------------------�- */}
+          {/* -- PayPay連携設定 --------------------------------------- */}
           <div
             style={{
               padding: '12px 14px',
