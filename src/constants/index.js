@@ -46,7 +46,7 @@ export const NISA_LIMITS = {
   TOTAL: 18000000,
 };
 
-// ─── 支払い方法定義 ──────────────────────────────────────────────────────────
+// --- 支払い方法定義 ----------------------------------------------------------
 // paymentMethod の種別と表示設定
 export const PAYMENT_METHOD_DEFS = {
   credit: { label: 'クレジット', icon: '💳', settled: false, isWallet: false },
