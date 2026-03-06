@@ -224,7 +224,7 @@ export function useMoneyData() {
     transactions, assetData, monthlyHistory, lifeEvents, userInfo,
     simulationSettings, darkMode, monthlyBudget, customCategories,
     recurringTransactions, creditCards, splitPayments, dismissedClosingAlerts, transactionTemplates,
-    walletAdjustments,
+    walletAdjustments, wallets, housingParams, lifePlan,
   });
 
   // ----------------------------------------------------------------------------
