@@ -340,7 +340,14 @@ export default function SimulationTab(props) {
             </p>
             <div className={`rounded-xl p-4 mb-3 ${depletedYear ? (darkMode ? 'bg-red-950/30' : 'bg-red-50') : (darkMode ? 'bg-green-950/30' : 'bg-green-50')}`}>
               <p className="text-xs font-semibold mb-1" style={{ color: depletedYear ? '#ef4444' : '#10b981' }}>
-                {depletedYear ? `${depletedYear}年目に資産枯渇` : `${sustainableYears}年間持続可能`}
+                {depletedYear
+                  ? `⚠️ ${depletedYear}年目に資産枯渇`
+                  : `✅ ${sustainableYears}間持続可能`}
+              </p>
+              <p className={`text-xs ${theme.textSecondary}`}>
+                {depletedYear
+                  ? `設定した${simulationSettings.withdrawalYears}年間を完走できません`
+                  : `設定した${simulationSettings.withdrawalYears}年間の取り崩しを完走できます`}
               </p>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-3">
@@ -456,8 +463,11 @@ export default function SimulationTab(props) {
                   {[
                     ['総返済額', `¥${refBuy.totalRepayment.toLocaleString()}`],
                     ['うち利息', `¥${refBuy.totalInterest.toLocaleString()}`],
+                    ['諸費用（3%）', `¥${(refBuy.acquisitionCost||0).toLocaleString()}`],
+                    ['売却コスト（3%）', `¥${(refBuy.saleCost||0).toLocaleString()}`],
+                    ...(refBuy.totalPrepay > 0 ? [['繰り上げ返済（累計）', `¥${refBuy.totalPrepay.toLocaleString()}`]] : []),
                     ['ローン控除（累計）', `¥${refBuy.totalTaxCredit.toLocaleString()}`],
-                    ['実質総コスト', `¥${(refBuy.totalRepayment - refBuy.totalTaxCredit).toLocaleString()}`],
+                    ['実質総コスト', `¥${(refBuy.totalRepayment + (refBuy.acquisitionCost||0) + (refBuy.saleCost||0) - refBuy.totalTaxCredit).toLocaleString()}`],
                     ['完済予定', refBuy.finalLoan === 0 ? `${new Date().getFullYear() + hp.loanMonths/12}年頃` : '比較期間後も継続'],
                     ['控除適用期間', '最大13年（年収2,000万以下）'],
                   ].map(([k, v]) => (
