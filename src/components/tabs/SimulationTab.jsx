@@ -1,499 +1,620 @@
-import React, { useCallback, useMemo } from 'react';
-import { lifeEventTemplates, eventIcons } from '../../constants';
-import { Zap, Share2, Home, X, Download } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, ReferenceLine } from 'recharts';
-import { calculateWithdrawalSimulation } from '../../utils/calc';
+import React, { useCallback, useMemo, useState } from 'react';
+import { Share2, X, Download, Plus, Settings2, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import {
+  ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ReferenceLine, ResponsiveContainer, Legend,
+} from 'recharts';
 import HousingComparisonModal from '../modals/HousingComparisonModal';
+import LifePlanSettingsModal  from '../modals/LifePlanSettingsModal';
+import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
+
+// ─── 小コンポーネント ───────────────────────────────────────────────────────
+
+function StatPill({ label, value, color, bg }) {
+  return (
+    <div style={{ background: bg, borderRadius: 14, padding: '12px 16px', flex: 1 }}>
+      <p style={{ fontSize: 10, color: '#9ca3af', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</p>
+      <p style={{ fontSize: 18, fontWeight: 900, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{value}</p>
+    </div>
+  );
+}
+
+function SectionTitle({ children, action }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9ca3af' }}>{children}</p>
+      {action}
+    </div>
+  );
+}
+
+// カスタムツールチップ
+function CustomTooltip({ active, payload, label, retirementAge }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{
+      background: 'rgba(17,17,17,0.92)', backdropFilter: 'blur(8px)',
+      borderRadius: 12, padding: '10px 14px', border: '1px solid #2a2a2a',
+    }}>
+      <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6, fontWeight: 600 }}>
+        {label}歳{label >= retirementAge ? ' · リタイア後' : ''}
+      </p>
+      {payload.map((p, i) => (
+        <p key={i} style={{ fontSize: 12, fontWeight: 700, color: p.color, fontVariantNumeric: 'tabular-nums' }}>
+          {p.name}: ¥{Number(p.value).toLocaleString()}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ─── メインコンポーネント ───────────────────────────────────────────────────
 
 export default function SimulationTab(props) {
   const {
-    theme, darkMode, simulationSettings, setSimulationSettings,
-    simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData,
+    theme, darkMode,
+    simulationSettings, setSimulationSettings,
     lifeEvents, setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
-    applyRiskProfile, userInfo, assetData, calculateBenchmark, setActiveTab,
+    addOrUpdateLifeEvent,
+    userInfo, assetData,
     housingParams, setHousingParams, housingComparison,
     showHousingModal, setShowHousingModal,
+    lifePlan, setLifePlan, lifePlanSimulation,
+    recentMonthlyAverages, incomeGrowthEstimate, monthlyGapImpact,
+    monthlyHistory, transactions, recurringTransactions,
+    setActiveTab,
   } = props;
 
-  const riskProfiles = {
-    conservative: { label: '保守的', icon: '🛡️', description: '安全性重視', returnRate: 3, monthlyInvestment: 20000, monthlySavings: 50000, useLumpSum: false, volatility: 0.05 },
-    standard:     { label: '標準的', icon: '⚖️', description: 'バランス重視', returnRate: 5, monthlyInvestment: 30000, monthlySavings: 30000, useLumpSum: true,  volatility: 0.10 },
-    aggressive:   { label: '積極的', icon: '🚀', description: '成長重視',    returnRate: 7, monthlyInvestment: 50000, monthlySavings: 20000, useLumpSum: true,  volatility: 0.15 },
-  };
+  // 実績資産推移（monthlyHistoryから累積）
+  const actualAssetHistory = useMemo(() => {
+    if (!monthlyHistory || !assetData) return [];
+    // 締め月を時系列順に並べる
+    const entries = Object.entries(monthlyHistory)
+      .sort(([a], [b]) => a.localeCompare(b));
+    if (entries.length === 0) return [];
+    // 各月末時点の資産合計を再構築（assetDataは現在値なので過去へ遡れないが
+    // monthlyHistoryのsavedAmount/investAmountの累積から近似）
+    const currentAge = userInfo?.age ? Number(userInfo.age) : 30;
+    const nowYear    = new Date().getFullYear();
+    return entries.map(([ym, hist]) => {
+      const year = parseInt(ym.slice(0, 4));
+      const age  = currentAge - (nowYear - year);
+      return {
+        age,
+        実績余剰: hist.plBalance ?? 0,
+      };
+    }).filter(r => r.age >= (currentAge - 10) && r.age <= currentAge);
+  }, [monthlyHistory, assetData, userInfo]);
 
-  const finalValue     = simulationResults[simulationResults.length - 1]?.totalValue || 0;
-  const achievement    = Math.min((finalValue / simulationSettings.targetAmount) * 100, 100);
-  const totalTaxSaved  = simulationResults[simulationResults.length - 1]?.taxSaved || 0;
-  const futureAge      = (userInfo?.age ? Number(userInfo.age) : 25) + simulationSettings.years;
-  const futureBenchmark = calculateBenchmark(futureAge);
+  const [showLifePlanSettings, setShowLifePlanSettings] = useState(false);
+  const [shareModal, setShareModal] = useState(false);
+  const [shareUrl,   setShareUrl]   = useState(null);
+  const [expandEvents, setExpandEvents] = useState(false);
 
-  const [shareModal, setShareModal] = React.useState(false);
-  const [shareUrl, setShareUrl]     = React.useState(null);
+  const currentAge    = userInfo?.age ? Number(userInfo.age) : 30;
+  const retirementAge = lifePlan.retirementAge ?? 65;
+  const lifeExpectancy = lifePlan.lifeExpectancy ?? 90;
 
+  const { byAge, summary } = lifePlanSimulation ?? { byAge: [], summary: {} };
+
+  // ─── グラフデータ ────────────────────────────────────────────────────
+  const chartData = useMemo(() => {
+    return byAge.map(r => ({
+      age:          r.age,
+      純資産:        r.netWorth,
+      金融資産:      r.totalAssets,
+      不動産:        r.propertyValue,
+    }));
+  }, [byAge]);
+
+  // ライフイベントのピン（グラフ上の参照線用）
+  const eventPins = useMemo(() => {
+    return lifeEvents.map(ev => {
+      const evYear = parseInt(ev.date?.slice(0, 4));
+      const evAge  = currentAge + (evYear - new Date().getFullYear());
+      return { ...ev, age: evAge };
+    }).filter(ev => ev.age >= currentAge && ev.age <= lifeExpectancy);
+  }, [lifeEvents, currentAge, lifeExpectancy]);
+
+  // ─── カラー ──────────────────────────────────────────────────────────
+  const card = darkMode ? '#1c1c1e' : '#fff';
+  const bg   = darkMode ? '#111'    : '#f2f2f7';
+  const txt  = darkMode ? '#f5f5f5' : '#111';
+  const sub  = '#9ca3af';
+  const bdr  = darkMode ? '#2a2a2a' : '#e5e7eb';
+
+  const green  = '#10b981';
+  const red    = '#ef4444';
+  const amber  = '#f59e0b';
+  const blue   = '#3b82f6';
+
+  const isSafe        = summary.isSafe;
+  const depletionAge  = summary.depletionAge;
+  const retireWorth   = summary.retirementNetWorth ?? 0;
+  const finalWorth    = summary.finalNetWorth ?? 0;
+
+  // シェアカード
   const generateShareCard = useCallback(() => {
-    const canvas  = document.createElement('canvas');
-    canvas.width  = 1080;
-    canvas.height = 1080;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1080;
     const ctx = canvas.getContext('2d');
-    const grad = ctx.createLinearGradient(0, 0, 1080, 1080);
-    grad.addColorStop(0, '#0f172a');
-    grad.addColorStop(1, '#1e3a5f');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1080, 1080);
-    ctx.fillStyle = 'rgba(255,255,255,0.07)';
-    ctx.beginPath();
-    ctx.roundRect(60, 60, 960, 960, 32);
-    ctx.fill();
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '500 36px sans-serif';
-    ctx.fillText('Money Planner', 100, 140);
-    ctx.fillStyle = '#34d399';
-    ctx.font = 'bold 96px sans-serif';
-    ctx.fillText('Y' + finalValue.toLocaleString(), 100, 280);
-    ctx.fillStyle = '#64748b';
-    ctx.font = '500 32px sans-serif';
-    ctx.fillText(simulationSettings.years + '年後の予測資産', 100, 330);
-    ctx.fillStyle = '#1e293b';
-    ctx.beginPath();
-    ctx.roundRect(100, 380, 880, 20, 10);
-    ctx.fill();
-    ctx.fillStyle = '#34d399';
-    ctx.beginPath();
-    ctx.roundRect(100, 380, 880 * (achievement / 100), 20, 10);
-    ctx.fill();
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '500 28px sans-serif';
-    ctx.fillText('目標達成率 ' + achievement.toFixed(1) + '%', 100, 440);
+    const g = ctx.createLinearGradient(0, 0, 1080, 1080);
+    g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, '#0f2027');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1080);
+    ctx.fillStyle = '#10b981'; ctx.font = '800 88px sans-serif';
+    ctx.fillText(`¥${(retireWorth/10000).toFixed(0)}万`, 80, 220);
+    ctx.fillStyle = '#94a3b8'; ctx.font = '500 34px sans-serif';
+    ctx.fillText(`${retirementAge}歳時点の純資産`, 80, 280);
+    ctx.fillStyle = isSafe ? '#10b981' : '#ef4444';
+    ctx.font = '700 28px sans-serif';
+    ctx.fillText(isSafe ? `✓ ${lifeExpectancy}歳まで資産が持続します` : `⚠ ${depletionAge}歳で資産枯渇の見込み`, 80, 350);
     setShareUrl(canvas.toDataURL('image/png'));
     setShareModal(true);
-  }, [finalValue, achievement, simulationSettings, totalTaxSaved]);
+  }, [retireWorth, retirementAge, isSafe, lifeExpectancy, depletionAge]);
 
-  const withdrawalSim = useMemo(() => {
-    if (!simulationSettings.useWithdrawal) return null;
-    return calculateWithdrawalSimulation(finalValue, {
-      monthlyWithdrawal: simulationSettings.withdrawalMonthly,
-      returnRate:        simulationSettings.withdrawalReturnRate,
-      inflationRate:     simulationSettings.withdrawalInflationRate,
-      years:             simulationSettings.withdrawalYears,
-    });
-  }, [simulationSettings, finalValue]);
+  // ─── 年収フォーマット ─────────────────────────────────────────────────
+  const fmtMan = v => `¥${(v/10000).toFixed(0)}万`;
 
   return (
-    <div className="space-y-3 animate-fadeIn">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      <div className={`${theme.cardGlass} rounded-xl p-4`}>
-        <h2 className={`text-sm font-semibold ${theme.text} mb-3 uppercase tracking-wide flex items-center gap-2`}>
-          <Zap size={16} style={{ color: theme.accent }} />
-          投資スタイル
-        </h2>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.entries(riskProfiles).map(([key, profile]) => (
-            <button key={key} onClick={() => applyRiskProfile(key)}
-              className={`p-3 rounded-lg transition-all duration-200 hover-scale ${simulationSettings.riskProfile === key ? 'ring-2 scale-105' : ''}`}
-              style={{ backgroundColor: simulationSettings.riskProfile === key ? (darkMode ? '#262626' : '#f5f5f5') : (darkMode ? '#171717' : '#fafafa'), ringColor: theme.accent }}>
-              <div className="text-2xl mb-1">{profile.icon}</div>
-              <div className={`text-xs font-semibold ${theme.text}`}>{profile.label}</div>
-              <div className={`text-xs ${theme.textSecondary} mt-1`}>{profile.description}</div>
-            </button>
+      {/* ══════════════════════════════════════════════════════════════════
+          1. ステータスバナー
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{
+        background: isSafe
+          ? (darkMode ? '#0a2018' : '#f0fdf4')
+          : (darkMode ? '#200a0a' : '#fef2f2'),
+        borderRadius: 18, padding: '16px 18px',
+        border: `1.5px solid ${isSafe ? (darkMode ? '#065f46' : '#a7f3d0') : (darkMode ? '#7f1d1d' : '#fecaca')}`,
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div style={{ flex: 1 }}>
+            {isSafe ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <CheckCircle2 size={16} color={green} />
+                  <p style={{ fontSize: 12, fontWeight: 700, color: green }}>プランは持続可能です</p>
+                </div>
+                <p style={{ fontSize: 26, fontWeight: 900, color: green, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                  {lifeExpectancy}歳まで資産が持続
+                </p>
+                <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
+                  {lifeExpectancy}歳時点の純資産: {fmtMan(finalWorth)}
+                </p>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  <AlertTriangle size={16} color={red} />
+                  <p style={{ fontSize: 12, fontWeight: 700, color: red }}>資産枯渇リスクあり</p>
+                </div>
+                <p style={{ fontSize: 26, fontWeight: 900, color: red, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                  {depletionAge}歳で枯渇見込み
+                </p>
+                <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
+                  収入増加・支出削減・リタイア年齢の見直しを検討してください
+                </p>
+              </>
+            )}
+          </div>
+          <button onClick={generateShareCard} style={{
+            padding: '8px 12px', background: darkMode ? '#2a2a2a' : '#fff',
+            border: 'none', borderRadius: 10, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+          }}>
+            <Share2 size={13} color={sub} />
+            <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>シェア</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── リタイア時/最終 サマリーピル ─────────────────────────────── */}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <StatPill label={`${retirementAge}歳時の純資産`} value={fmtMan(retireWorth)}
+          color={blue} bg={darkMode ? '#0d1a2b' : '#eff6ff'} />
+        <StatPill label={`${lifeExpectancy}歳時の純資産`} value={fmtMan(finalWorth)}
+          color={finalWorth > 0 ? green : red} bg={darkMode ? '#1c1c1e' : '#f9fafb'} />
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          2. タイムライングラフ
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ background: card, borderRadius: 18, padding: '18px 14px 14px' }}>
+        <SectionTitle>
+          資産タイムライン（{currentAge}歳〜{lifeExpectancy}歳）
+        </SectionTitle>
+
+        <ResponsiveContainer width="100%" height={240}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={blue}  stopOpacity={0.25} />
+                <stop offset="95%" stopColor={blue}  stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="gradProp" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%"  stopColor={amber} stopOpacity={0.2} />
+                <stop offset="95%" stopColor={amber} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid strokeDasharray="3 3" stroke={bdr} vertical={false} />
+
+            <XAxis dataKey="age" tick={{ fontSize: 10, fill: sub }}
+              tickFormatter={v => `${v}歳`}
+              ticks={Array.from({ length: Math.ceil((lifeExpectancy - currentAge) / 5) + 1 }, (_, i) => currentAge + i * 5).filter(a => a <= lifeExpectancy)}
+            />
+            <YAxis tick={{ fontSize: 10, fill: sub }}
+              tickFormatter={v => v === 0 ? '0' : `${(v/10000).toFixed(0)}万`}
+              width={48}
+            />
+
+            <Tooltip content={<CustomTooltip retirementAge={retirementAge} />} />
+
+            {/* ゼロライン */}
+            <ReferenceLine y={0} stroke={red} strokeDasharray="3 2" strokeOpacity={0.5} />
+
+            {/* リタイア縦線 */}
+            <ReferenceLine x={retirementAge} stroke={amber} strokeDasharray="4 3" strokeWidth={1.5}
+              label={{ value: 'リタイア', position: 'insideTopRight', fontSize: 9, fill: amber, dy: -2 }} />
+
+            {/* ライフイベントピン */}
+            {eventPins.map(ev => (
+              <ReferenceLine key={ev.id} x={ev.age} stroke={sub} strokeDasharray="2 3" strokeWidth={1}
+                label={{ value: ev.icon || '📌', position: 'top', fontSize: 12 }} />
+            ))}
+
+            {/* 不動産エリア */}
+            {byAge.some(r => r.propertyValue > 0) && (
+              <Area type="monotone" dataKey="不動産" stroke={amber} strokeWidth={1.5}
+                fill="url(#gradProp)" dot={false} />
+            )}
+
+            {/* 純資産メインライン */}
+            <Area type="monotone" dataKey="純資産" stroke={blue} strokeWidth={2.5}
+              fill="url(#gradNet)" dot={false} activeDot={{ r: 4, fill: blue }} />
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* 凡例 */}
+        <div style={{ display: 'flex', gap: 14, marginTop: 8, paddingLeft: 8 }}>
+          {[
+            { color: blue,  label: '純資産' },
+            ...(byAge.some(r => r.propertyValue > 0) ? [{ color: amber, label: '不動産' }] : []),
+            { color: amber, label: 'リタイア', dashed: true },
+          ].map(item => (
+            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{
+                width: 16, height: 2,
+                background: item.dashed ? 'transparent' : item.color,
+                borderBottom: item.dashed ? `2px dashed ${item.color}` : 'none',
+                borderRadius: 1,
+              }} />
+              <span style={{ fontSize: 10, color: sub }}>{item.label}</span>
+            </div>
           ))}
         </div>
       </div>
 
-      <button onClick={() => setActiveTab('settings')}
-        className={`w-full ${theme.cardGlass} rounded-xl p-4 flex items-center justify-between hover-scale transition-all`}>
-        <div className="text-left">
-          <p className={`text-sm font-semibold ${theme.text}`}>積立・投資目標の設定</p>
-          <p className={`text-xs ${theme.textSecondary} mt-0.5`}>目標金額・運用期間・利回りなど</p>
-        </div>
-        <span className={`text-lg ${theme.textSecondary}`}>›</span>
-      </button>
+      {/* ══════════════════════════════════════════════════════════════════
+          3. 家計実績インサイト
+      ══════════════════════════════════════════════════════════════════ */}
+      {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
+        <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+          <SectionTitle
+            action={
+              <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>
+            }
+          >
+            実績ベースのインサイト
+          </SectionTitle>
 
-      <div className={`${theme.cardGlass} rounded-xl p-4`}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>Life Events</h2>
-          <button onClick={() => { setEditingLifeEvent(null); setShowLifeEventModal(true); }}
-            className="px-3 py-1 rounded-lg text-xs font-semibold text-white transition-all duration-200 hover-scale"
-            style={{ backgroundColor: theme.accent }}>
-            + 追加
-          </button>
-        </div>
-        {lifeEvents.length === 0 ? (
-          <p className={`${theme.textSecondary} text-center py-3 text-sm`}>イベントを追加</p>
-        ) : (
-          <div className="space-y-2">
-            {lifeEvents.sort((a, b) => a.date.localeCompare(b.date)).map((event, idx) => (
-              <div key={event.id} className={`flex items-center justify-between p-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'} rounded-lg`}>
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-xl">{event.icon}</span>
-                  <div className="flex-1">
-                    <p className={`text-sm font-medium ${theme.text}`}>{event.name}</p>
-                    <p className={`text-xs ${theme.textSecondary} tabular-nums`}>{event.date}</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+            {/* 今月の過不足 → 将来影響 */}
+            {monthlyGapImpact && (
+              <div style={{
+                padding: '12px 14px', borderRadius: 12,
+                background: monthlyGapImpact.diff >= 0
+                  ? (darkMode ? '#0d2b1a' : '#f0fdf4')
+                  : (darkMode ? '#200a0a' : '#fef2f2'),
+                border: `1px solid ${monthlyGapImpact.diff >= 0
+                  ? (darkMode ? '#065f46' : '#a7f3d0')
+                  : (darkMode ? '#7f1d1d' : '#fecaca')}`,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: monthlyGapImpact.diff >= 0 ? green : red, marginBottom: 3 }}>
+                      {monthlyGapImpact.diff >= 0 ? '📈 今月は計画より黒字' : '📉 今月は計画より赤字'}
+                    </p>
+                    <p style={{ fontSize: 12, color: sub, lineHeight: 1.5 }}>
+                      計画比 <strong style={{ color: monthlyGapImpact.diff >= 0 ? green : red }}>
+                        {monthlyGapImpact.diff >= 0 ? '+' : ''}¥{monthlyGapImpact.diff.toLocaleString()}
+                      </strong> が{monthlyGapImpact.yearsRemaining}年後の資産に
+                    </p>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold tabular-nums" style={{ color: theme.red }}>¥{event.amount.toLocaleString()}</p>
-                  <button onClick={() => { setEditingLifeEvent(event); setShowLifeEventModal(true); }} className="text-blue-500">✏️</button>
-                  <button onClick={() => deleteLifeEvent(event.id)} className="text-red-500">🗑️</button>
+                  <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
+                    <p style={{ fontSize: 20, fontWeight: 900, color: monthlyGapImpact.impact >= 0 ? green : red, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+                      {monthlyGapImpact.impact >= 0 ? '+' : ''}¥{(monthlyGapImpact.impact / 10000).toFixed(0)}万
+                    </p>
+                    <p style={{ fontSize: 10, color: sub }}>の影響</p>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className={`${theme.cardGlass} rounded-xl p-4`}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>{simulationSettings.years}年後の予測</h2>
-          <button onClick={generateShareCard}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-            style={{ backgroundColor: theme.accent }}>
-            <Share2 size={12} /> シェア
-          </button>
-        </div>
-
-        <div className={`${darkMode ? 'bg-neutral-800' : 'bg-green-50'} rounded-xl p-4 mb-3`}>
-          <p className={`text-xs ${theme.textSecondary} mb-1 font-medium uppercase tracking-wide`}>予想資産額</p>
-          <p className="text-3xl font-bold tabular-nums tracking-tight" style={{ color: theme.green }}>¥{finalValue.toLocaleString()}</p>
-          <div className={`w-full ${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'} rounded-full h-2 my-2 overflow-hidden`}>
-            <div className="h-2 rounded-full" style={{ width: `${achievement}%`, backgroundColor: theme.green }} />
-          </div>
-          <p className={`text-xs ${theme.textSecondary} tabular-nums`}>目標達成率: {achievement.toFixed(1)}%</p>
-          {simulationSettings.useNisa && (
-            <div className="mt-2 pt-2" style={{ borderTop: `1px solid ${darkMode ? '#262626' : '#d1fae5'}` }}>
-              <p className="text-xs font-semibold tabular-nums" style={{ color: theme.green }}>
-                NISA節税効果: 約¥{totalTaxSaved.toLocaleString()}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {achievement >= 100 ? (
-          <div className={`${darkMode ? 'bg-neutral-800' : 'bg-green-50'} border-2 rounded-xl p-3 text-center mb-3`} style={{ borderColor: theme.green }}>
-            <p className="text-xl mb-1">🎉</p>
-            <p className="text-sm font-semibold" style={{ color: theme.green }}>目標達成可能</p>
-          </div>
-        ) : (
-          <div className={`${darkMode ? 'bg-neutral-800' : 'bg-orange-50'} border-2 rounded-xl p-3 mb-3`} style={{ borderColor: theme.orange }}>
-            <p className="text-xs font-semibold mb-1" style={{ color: theme.orange }}>追加投資が必要</p>
-            <p className={`text-xs ${darkMode ? 'text-neutral-400' : 'text-orange-700'}`}>
-              月々約<span className="font-bold tabular-nums"> ¥{(Math.max(0, Math.ceil((simulationSettings.targetAmount - finalValue) / (simulationSettings.years * 12) / 1000) * 1000)).toLocaleString()}</span>円
-            </p>
-          </div>
-        )}
-
-        <div className="mb-4">
-          {!simulationSettings.showMonteCarloSimulation && (
-            <div className={`${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'} rounded-lg p-3 mb-3`}>
-              <h3 className={`text-xs font-semibold ${theme.text} mb-2 uppercase tracking-wide`}>{simulationSettings.years}年後の資産構成</h3>
-              {(() => {
-                const last = simulationResults[simulationResults.length - 1];
-                const total = last?.totalValue || 1;
-                const items = [
-                  { label: '貯金', val: last?.savings || 0, color: '#3b82f6' },
-                  { label: '投資', val: last?.regularInvestment || 0, color: '#a855f7' },
-                  ...(simulationSettings.useNisa ? [{ label: 'NISA', val: last?.nisaInvestment || 0, color: theme.green }] : []),
-                  { label: '待機', val: last?.dryPowder || 0, color: theme.accent },
-                ];
-                return (
-                  <>
-                    <div className="flex gap-2 mb-2">
-                      {items.map(item => (
-                        <div key={item.label} className="flex-1">
-                          <div className="flex items-center gap-1 mb-1">
-                            <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
-                            <span className={`text-xs ${theme.textSecondary}`}>{item.label}</span>
-                          </div>
-                          <p className="text-sm font-bold tabular-nums" style={{ color: item.color }}>{(item.val / total * 100).toFixed(1)}%</p>
-                          <p className={`text-xs ${theme.textSecondary} tabular-nums`}>¥{(item.val / 10000).toFixed(0)}万</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="w-full h-3 rounded-full overflow-hidden flex">
-                      {items.map(item => (
-                        <div key={item.label} style={{ width: `${item.val / total * 100}%`, backgroundColor: item.color }} />
-                      ))}
-                    </div>
-                  </>
-                );
-              })()}
-            </div>
-          )}
-
-          <h3 className={`text-xs font-semibold ${theme.text} mb-2 uppercase tracking-wide`}>
-            {simulationSettings.showMonteCarloSimulation ? '100通りの未来予測' : '資産推移'}
-          </h3>
-          <ResponsiveContainer width="100%" height={250}>
-            {simulationSettings.showMonteCarloSimulation ? (
-              <AreaChart data={monteCarloChartData}>
-                <defs>
-                  <linearGradient id="colorRange" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.accent} stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor={theme.accent} stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#262626' : '#f5f5f5'} />
-                <XAxis dataKey="年" stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px', fontWeight: 500 }} />
-                <YAxis stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px', fontWeight: 500 }} tickFormatter={v => `¥${(v/1000000).toFixed(0)}M`} />
-                <Tooltip formatter={v => `¥${v.toLocaleString()}`} contentStyle={{ backgroundColor: darkMode ? '#171717' : '#fff', border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`, borderRadius: '8px', fontSize: '11px', fontWeight: 500 }} />
-                <Area type="monotone" dataKey="最大" stroke="none" fill="none" />
-                <Area type="monotone" dataKey="範囲上限" stroke="none" fill={theme.accent} fillOpacity={0.2} />
-                <Area type="monotone" dataKey="範囲下限" stroke="none" fill={theme.accent} fillOpacity={0.2} />
-                <Line type="monotone" dataKey="平均" stroke={theme.accent} strokeWidth={3} dot={false} />
-              </AreaChart>
-            ) : (
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="colorSavings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.6}/><stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorInvest" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.6}/><stop offset="95%" stopColor="#a855f7" stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorNisa" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.green} stopOpacity={0.6}/><stop offset="95%" stopColor={theme.green} stopOpacity={0.1}/>
-                  </linearGradient>
-                  <linearGradient id="colorDryPowder" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={theme.accent} stopOpacity={0.6}/><stop offset="95%" stopColor={theme.accent} stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#262626' : '#f5f5f5'} />
-                <XAxis dataKey="年" stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px', fontWeight: 500 }} />
-                <YAxis stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px', fontWeight: 500 }} tickFormatter={v => `¥${(v/1000000).toFixed(0)}M`} />
-                <Tooltip formatter={v => `¥${v.toLocaleString()}`} contentStyle={{ backgroundColor: darkMode ? '#171717' : '#fff', border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`, borderRadius: '8px', fontSize: '11px', fontWeight: 500 }} />
-                <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 500 }} />
-                <Area type="monotone" dataKey="貯金" stackId="1" stroke="#3b82f6" fill="url(#colorSavings)" />
-                <Area type="monotone" dataKey="課税口座" stackId="1" stroke="#a855f7" fill="url(#colorInvest)" />
-                {simulationSettings.useNisa && <Area type="monotone" dataKey="NISA" stackId="1" stroke={theme.green} fill="url(#colorNisa)" />}
-                <Area type="monotone" dataKey="待機資金" stackId="1" stroke={theme.accent} fill="url(#colorDryPowder)" />
-                {simulationSettings.inflationRate > 0 && (
-                  <Line type="monotone" dataKey="実質価値" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="5 3" />
-                )}
-              </AreaChart>
             )}
-          </ResponsiveContainer>
-        </div>
-      </div>
 
-      {scenarioResults && (
-        <div className={`${theme.cardGlass} rounded-xl p-4`}>
-          <h2 className={`text-sm font-semibold ${theme.text} mb-1 uppercase tracking-wide`}>シナリオ比較</h2>
-          <p className={`text-xs ${theme.textSecondary} mb-3`}>積立額を増やした場合の{simulationSettings.years}年後の差</p>
-          <div className="space-y-3 mb-4">
-            {scenarioResults.map((s) => {
-              const val    = s.results[s.results.length - 1]?.totalValue || 0;
-              const maxVal = scenarioResults[scenarioResults.length - 1].results[scenarioResults[scenarioResults.length - 1].results.length - 1]?.totalValue || 1;
+            {/* 直近3ヶ月平均 → ライフプランとの乖離 */}
+            {recentMonthlyAverages && (() => {
+              const avgExp = recentMonthlyAverages.avgExpense;
+              const planExp = lifePlan.monthlyExpense;
+              const diff = avgExp - planExp;
+              const needsUpdate = Math.abs(diff) > 10000;
               return (
-                <div key={s.label}>
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
-                      <span className={`text-xs font-medium ${theme.text}`}>{s.label}</span>
+                <div style={{ padding: '12px 14px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: txt, marginBottom: 8 }}>
+                    直近{recentMonthlyAverages.months}ヶ月の実績平均
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: needsUpdate ? 10 : 0 }}>
+                    {[
+                      { label: '月収入',  val: recentMonthlyAverages.avgIncome,     color: green  },
+                      { label: '月支出',  val: recentMonthlyAverages.avgExpense,    color: red    },
+                      { label: '月余剰',  val: recentMonthlyAverages.avgSurplus,    color: blue   },
+                    ].map(({ label, val, color }) => (
+                      <div key={label}>
+                        <p style={{ fontSize: 10, color: sub, marginBottom: 2 }}>{label}</p>
+                        <p style={{ fontSize: 13, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>
+                          ¥{(val/10000).toFixed(1)}万
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {needsUpdate && (
+                    <div style={{
+                      padding: '8px 10px',
+                      background: darkMode ? '#1a2a1a' : '#f0fdf4',
+                      borderRadius: 8, border: `1px solid ${darkMode ? '#166534' : '#bbf7d0'}`,
+                    }}>
+                      <p style={{ fontSize: 11, color: green, fontWeight: 600, marginBottom: 3 }}>
+                        💡 ライフプランの支出設定と{Math.abs(diff) > 0 ? (diff > 0 ? '+' : '') : ''}¥{(diff/10000).toFixed(1)}万の乖離があります
+                      </p>
+                      <button
+                        onClick={() => {
+                          // 実績平均をlifePlanに反映
+                          props.setLifePlan(prev => ({ ...prev, monthlyExpense: avgExp }));
+                        }}
+                        style={{
+                          padding: '5px 10px', background: green, border: 'none',
+                          borderRadius: 6, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                        }}
+                      >
+                        実績（¥{avgExp.toLocaleString()}）に更新する
+                      </button>
                     </div>
-                    <span className="text-xs font-bold tabular-nums" style={{ color: s.color }}>¥{val.toLocaleString()}</span>
-                  </div>
-                  <div className={`w-full h-2 ${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'} rounded-full overflow-hidden`}>
-                    <div className="h-2 rounded-full" style={{ width: `${(val / maxVal) * 100}%`, backgroundColor: s.color }} />
-                  </div>
+                  )}
                 </div>
               );
-            })}
-          </div>
-          <div className="grid grid-cols-2 gap-2 mb-3">
-            {scenarioResults.slice(1).map((s) => {
-              const base = scenarioResults[0].results[scenarioResults[0].results.length - 1]?.totalValue || 0;
-              const val  = s.results[s.results.length - 1]?.totalValue || 0;
+            })()}
+
+            {/* 実績ベースの収入成長率 */}
+            {incomeGrowthEstimate !== null && (() => {
+              const planRate = lifePlan.incomeGrowthRate ?? 1;
+              const diff = incomeGrowthEstimate - planRate;
+              if (Math.abs(diff) < 0.3) return null;
               return (
-                <div key={s.label} className={`rounded-xl p-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                  <p className={`text-xs ${theme.textSecondary} mb-0.5`}>{s.label} の上乗せ</p>
-                  <p className="text-base font-bold tabular-nums" style={{ color: s.color }}>+¥{(val - base).toLocaleString()}</p>
+                <div style={{ padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 10 }}>
+                  <p style={{ fontSize: 11, color: sub, marginBottom: 4 }}>
+                    過去12ヶ月の実績から推定した収入成長率:
+                    <strong style={{ color: blue, marginLeft: 4 }}>{incomeGrowthEstimate}%/年</strong>
+                    <span style={{ marginLeft: 6, color: diff > 0 ? green : amber }}>
+                      （設定{planRate}%より{diff > 0 ? '+' : ''}{diff.toFixed(1)}%）
+                    </span>
+                  </p>
+                  <button
+                    onClick={() => props.setLifePlan(prev => ({ ...prev, incomeGrowthRate: incomeGrowthEstimate }))}
+                    style={{
+                      padding: '4px 10px', background: 'none',
+                      border: `1px solid ${blue}`, borderRadius: 6,
+                      color: blue, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    実績値（{incomeGrowthEstimate}%）に更新
+                  </button>
                 </div>
               );
-            })}
+            })()}
+
           </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={Array.from({ length: simulationSettings.years }, (_, i) => {
-              const row = { year: i + 1 };
-              scenarioResults.forEach(s => { row[s.label] = s.results[i]?.totalValue || 0; });
-              return row;
-            })}>
-              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#262626' : '#f5f5f5'} />
-              <XAxis dataKey="year" stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `${v}年`} />
-              <YAxis stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `¥${(v/10000).toFixed(0)}万`} />
-              <Tooltip formatter={v => `¥${Number(v).toLocaleString()}`} contentStyle={{ backgroundColor: darkMode ? '#171717' : '#fff', border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`, borderRadius: '8px', fontSize: '11px' }} />
-              <Legend wrapperStyle={{ fontSize: '11px' }} />
-              {scenarioResults.map((s, i) => (
-                <Line key={s.label} type="monotone" dataKey={s.label} stroke={s.color} strokeWidth={2}
-                  dot={false} strokeDasharray={i === 0 ? '5 3' : undefined} />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
         </div>
       )}
 
-      {simulationSettings.useWithdrawal && withdrawalSim && (() => {
-        const { results, depletedYear, sustainableYears } = withdrawalSim;
-        return (
-          <div className={`${theme.cardGlass} rounded-xl p-4`}>
-            <h2 className="text-sm font-semibold mb-1 uppercase tracking-wide" style={{ color: '#ef4444' }}>取り崩しフェーズ</h2>
-            <p className={`text-xs ${theme.textSecondary} mb-3`}>
-              {simulationSettings.years}年後の資産から月¥{simulationSettings.withdrawalMonthly.toLocaleString()}ずつ取り崩した場合
-            </p>
-            <div className={`rounded-xl p-4 mb-3 ${depletedYear ? (darkMode ? 'bg-red-950/30' : 'bg-red-50') : (darkMode ? 'bg-green-950/30' : 'bg-green-50')}`}>
-              <p className="text-xs font-semibold mb-1" style={{ color: depletedYear ? '#ef4444' : '#10b981' }}>
-                {depletedYear
-                  ? `⚠️ ${depletedYear}年目に資産枯渇`
-                  : `✅ ${sustainableYears}間持続可能`}
-              </p>
-              <p className={`text-xs ${theme.textSecondary}`}>
-                {depletedYear
-                  ? `設定した${simulationSettings.withdrawalYears}年間を完走できません`
-                  : `設定した${simulationSettings.withdrawalYears}年間の取り崩しを完走できます`}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              {[
-                { label: '取り崩し開始資産', val: `¥${finalValue.toLocaleString()}`, color: theme.accent },
-                { label: '累計取り崩し額', val: `¥${(results[results.length - 1]?.cumulativeWithdrawn || 0).toLocaleString()}`, color: '#f59e0b' },
-                { label: 'インフレ率', val: `${simulationSettings.withdrawalInflationRate}%/年`, color: '#a78bfa' },
-                { label: '最終月取り崩し額', val: `¥${(results[results.length - 1]?.monthlyWithdrawal || 0).toLocaleString()}`, color: '#ef4444' },
-              ].map(item => (
-                <div key={item.label} className={`rounded-xl p-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                  <p className={`text-xs ${theme.textSecondary} mb-0.5`}>{item.label}</p>
-                  <p className="text-sm font-bold tabular-nums" style={{ color: item.color }}>{item.val}</p>
-                </div>
-              ))}
-            </div>
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={results.map(r => ({ year: r.year, 残高: r.balance, 実質価値: r.realValue }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#262626' : '#f5f5f5'} />
-                <XAxis dataKey="year" stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `${v}年`} />
-                <YAxis stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `¥${(v/10000).toFixed(0)}万`} />
-                <Tooltip formatter={v => `¥${Number(v).toLocaleString()}`} contentStyle={{ backgroundColor: darkMode ? '#171717' : '#fff', border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`, borderRadius: '8px', fontSize: '11px' }} />
-                <Legend wrapperStyle={{ fontSize: '11px' }} />
-                <Line type="monotone" dataKey="残高" stroke="#ef4444" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="実質価値" stroke="#f59e0b" strokeWidth={2} dot={false} strokeDasharray="5 3" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        );
-      })()}
+      {/* ══════════════════════════════════════════════════════════════════
+          4. ライフプラン設定
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+        <SectionTitle
+          action={
+            <button onClick={() => setShowLifePlanSettings(true)} style={{
+              display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
+              background: darkMode ? '#2a2a2a' : '#f5f5f5',
+              border: 'none', borderRadius: 8, cursor: 'pointer',
+            }}>
+              <Settings2 size={12} color={sub} />
+              <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>編集</span>
+            </button>
+          }
+        >
+          ライフプランの前提
+        </SectionTitle>
 
-      <div className={`${theme.cardGlass} rounded-xl p-4`}>
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide flex items-center gap-2`}>
-              <Home size={14} /> 持ち家 vs 賃貸
-            </h2>
-            {!housingComparison && <p className={`text-xs ${theme.textSecondary} mt-0.5`}>条件を設定してシミュレーション</p>}
-          </div>
-          <button onClick={() => setShowHousingModal(true)}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-            style={{ backgroundColor: '#3b82f6' }}>
-            {housingComparison ? '設定を変更' : '設定する'}
-          </button>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {[
+            { label: '年収',       value: `¥${(lifePlan.annualIncome/10000).toFixed(0)}万` },
+            { label: '昇給率',     value: `${lifePlan.incomeGrowthRate}%/年` },
+            { label: '月間生活費', value: `¥${lifePlan.monthlyExpense.toLocaleString()}` },
+            { label: 'リタイア',   value: `${retirementAge}歳` },
+            { label: '老後月収',   value: `¥${lifePlan.retirementMonthlyIncome.toLocaleString()}` },
+            { label: '老後月支出', value: `¥${lifePlan.retirementMonthlyExpense.toLocaleString()}` },
+          ].map(({ label, value }) => (
+            <div key={label} style={{ padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 10 }}>
+              <p style={{ fontSize: 10, color: sub, marginBottom: 3 }}>{label}</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: txt, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+            </div>
+          ))}
         </div>
 
-        {!housingComparison && (
-          <div className={`rounded-xl p-6 text-center ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-            <p className="text-3xl mb-2">🏠</p>
-            <p className={`text-sm font-semibold ${theme.text} mb-1`}>購入 vs 賃貸+投資の比較</p>
-            <p className={`text-xs ${theme.textSecondary}`}>物件価格・ローン条件・家賃を入力すると<br />どちらが有利かを純資産で比較します</p>
-          </div>
-        )}
-
-        {housingComparison && (() => {
-          const { buyScenarios, rentScenario, summary } = housingComparison;
-          const refBuy = buyScenarios.find(s => s.key === 'fixed' || s.key === 'neutral') || buyScenarios[0];
-          const hp = housingParams;
-          const chartData3 = Array.from({ length: hp.compareYears }, (_, i) => {
-            const row = { year: i + 1 };
-            buyScenarios.forEach(s => { row[s.label] = s.yearlyData[i]?.netAssets || 0; });
-            row['賃貸+投資'] = rentScenario.yearlyData[i]?.netAssets || 0;
-            return row;
-          });
-          return (
-            <div className="space-y-3">
-              <div className={`rounded-xl p-4 ${summary.winner === 'buy' ? (darkMode ? 'bg-blue-950/40' : 'bg-blue-50') : (darkMode ? 'bg-purple-950/40' : 'bg-purple-50')}`}>
-                <p className={`text-xs font-medium mb-1 ${theme.textSecondary}`}>{hp.compareYears}年後の純資産比較</p>
-                <p className="text-xl font-bold" style={{ color: summary.winner === 'buy' ? '#3b82f6' : '#a78bfa' }}>
-                  {summary.winner === 'buy' ? '🏠 購入が有利' : '🔑 賃貸+投資が有利'} 差額 ¥{summary.diff.toLocaleString()}
-                </p>
-                {summary.crossoverYear && <p className={`text-xs mt-1 ${theme.textSecondary}`}>{summary.crossoverYear}年目に逆転</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { label: '🏠 購入', value: summary.buyFinal, color: '#3b82f6',
-                    lines: [`金融資産 ¥${((refBuy.yearlyData[hp.compareYears-1]?.financialAssets||0)/10000).toFixed(0)}万`, `不動産 ¥${(refBuy.finalProperty/10000).toFixed(0)}万`, `残債 -¥${(refBuy.finalLoan/10000).toFixed(0)}万`] },
-                  { label: '🔑 賃貸+投資', value: summary.rentFinal, color: '#a78bfa',
-                    lines: [`金融資産 ¥${(rentScenario.finalNetAssets/10000).toFixed(0)}万`, `総家賃 -¥${(rentScenario.totalRentPaid/10000).toFixed(0)}万`, ''] },
-                ].map(s => (
-                  <div key={s.label} className={`rounded-xl p-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                    <p className={`text-xs font-semibold mb-1 ${theme.textSecondary}`}>{s.label}</p>
-                    <p className="text-base font-bold tabular-nums mb-2" style={{ color: s.color }}>¥{s.value.toLocaleString()}</p>
-                    {s.lines.map((line, i) => <p key={i} className={`text-xs tabular-nums ${theme.textSecondary}`}>{line}</p>)}
-                  </div>
-                ))}
-              </div>
-
-              <h3 className={`text-xs font-semibold ${theme.text} uppercase tracking-wide`}>純資産推移</h3>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={chartData3}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#262626' : '#f5f5f5'} />
-                  <XAxis dataKey="year" stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `${v}年`} />
-                  <YAxis stroke={darkMode ? '#737373' : '#a3a3a3'} style={{ fontSize: '10px' }} tickFormatter={v => `¥${(v/10000).toFixed(0)}万`} />
-                  <Tooltip formatter={(v, name) => [`¥${Number(v).toLocaleString()}`, name]} contentStyle={{ backgroundColor: darkMode ? '#171717' : '#fff', border: `1px solid ${darkMode ? '#262626' : '#e5e5e5'}`, borderRadius: '8px', fontSize: '11px' }} />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  {summary.crossoverYear && (
-                    <ReferenceLine x={summary.crossoverYear} stroke="#f59e0b" strokeDasharray="4 2"
-                      label={{ value: `${summary.crossoverYear}年逆転`, position: 'top', fontSize: 9, fill: '#f59e0b' }} />
-                  )}
-                  {[...buyScenarios.map(s => s.label), '賃貸+投資'].map((label, i) => (
-                    <Line key={label} type="monotone" dataKey={label}
-                      stroke={[...buyScenarios.map(s => s.color), '#a78bfa'][i]}
-                      strokeWidth={label === '賃貸+投資' ? 2.5 : 2}
-                      dot={false} strokeDasharray={label === '賃貸+投資' ? '5 3' : undefined} />
-                  ))}
-                </LineChart>
-              </ResponsiveContainer>
-
-              <div className={`rounded-xl p-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                <p className={`text-xs font-semibold ${theme.text} mb-2`}>住宅ローン詳細</p>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  {[
-                    ['総返済額', `¥${refBuy.totalRepayment.toLocaleString()}`],
-                    ['うち利息', `¥${refBuy.totalInterest.toLocaleString()}`],
-                    ['諸費用（3%）', `¥${(refBuy.acquisitionCost||0).toLocaleString()}`],
-                    ['売却コスト（3%）', `¥${(refBuy.saleCost||0).toLocaleString()}`],
-                    ...(refBuy.totalPrepay > 0 ? [['繰り上げ返済（累計）', `¥${refBuy.totalPrepay.toLocaleString()}`]] : []),
-                    ['ローン控除（累計）', `¥${refBuy.totalTaxCredit.toLocaleString()}`],
-                    ['実質総コスト', `¥${(refBuy.totalRepayment + (refBuy.acquisitionCost||0) + (refBuy.saleCost||0) - refBuy.totalTaxCredit).toLocaleString()}`],
-                    ['完済予定', refBuy.finalLoan === 0 ? `${new Date().getFullYear() + hp.loanMonths/12}年頃` : '比較期間後も継続'],
-                    ['控除適用期間', '最大13年（年収2,000万以下）'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between">
-                      <span className={`text-xs ${theme.textSecondary}`}>{k}</span>
-                      <span className={`text-xs font-bold tabular-nums ${theme.text}`}>{v}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {hp.rateType === 'variable' && buyScenarios.length > 1 && (
-                <div className={`rounded-xl p-3 ${darkMode ? 'bg-yellow-950/30' : 'bg-yellow-50'}`}>
-                  <p className="text-xs font-semibold mb-2" style={{ color: '#d97706' }}>変動金利シナリオ別の純資産</p>
-                  {buyScenarios.map(s => (
-                    <div key={s.key} className="flex justify-between items-center py-1">
-                      <span className="text-xs font-medium" style={{ color: s.color }}>{s.label}</span>
-                      <span className="text-xs font-bold tabular-nums" style={{ color: s.color }}>¥{s.finalNetAssets.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })()}
+        {/* 投資設定へのリンク */}
+        <button onClick={() => setActiveTab('settings')} style={{
+          width: '100%', marginTop: 10, padding: '11px 14px',
+          background: 'none', border: `1px solid ${bdr}`, borderRadius: 12,
+          cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <span style={{ fontSize: 12, color: sub }}>投資設定（積立額・利回り・NISA）</span>
+          <ChevronRight size={14} color={sub} />
+        </button>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          4. ライフイベント
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+        <SectionTitle
+          action={
+            <button onClick={() => { setEditingLifeEvent(null); setShowLifeEventModal(true); }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
+                background: theme.accent, border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+              <Plus size={11} color="#fff" />
+              <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>追加</span>
+            </button>
+          }
+        >
+          ライフイベント
+        </SectionTitle>
+
+        {/* 住宅購入ショートカット */}
+        <button onClick={() => setShowHousingModal(true)} style={{
+          width: '100%', marginBottom: 12, padding: '12px 14px',
+          background: darkMode ? '#0d1a2b' : '#eff6ff',
+          border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`,
+          borderRadius: 12, cursor: 'pointer',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>🏠</span>
+            <div style={{ textAlign: 'left' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: blue }}>
+                {housingParams ? '住宅購入プラン設定済み' : '住宅購入を検討する'}
+              </p>
+              <p style={{ fontSize: 10, color: sub }}>
+                {housingParams
+                  ? `¥${(housingParams.propertyPrice/10000).toFixed(0)}万 · ${housingParams.rateType === 'fixed' ? '固定' : '変動'}${housingParams.interestRate}%`
+                  : '購入 vs 賃貸継続を比較・資産推移に統合'}
+              </p>
+            </div>
+          </div>
+          <ChevronRight size={14} color={blue} />
+        </button>
+
+        {/* イベント一覧 */}
+        {lifeEvents.length === 0 ? (
+          <p style={{ fontSize: 12, color: sub, textAlign: 'center', padding: '12px 0' }}>
+            イベントを追加するとグラフに反映されます
+          </p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {(expandEvents ? lifeEvents : lifeEvents.slice(0, 4))
+                .sort((a, b) => a.date.localeCompare(b.date))
+                .map(ev => {
+                  const evYear = parseInt(ev.date?.slice(0, 4));
+                  const evAge  = currentAge + (evYear - new Date().getFullYear());
+                  return (
+                    <div key={ev.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12,
+                    }}>
+                      <span style={{ fontSize: 20 }}>{ev.icon}</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 13, fontWeight: 600, color: txt }}>{ev.name}</p>
+                        <p style={{ fontSize: 10, color: sub }}>{ev.date} · {evAge}歳</p>
+                      </div>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums' }}>
+                        -¥{(ev.amount/10000).toFixed(0)}万
+                      </p>
+                      <button onClick={() => { setEditingLifeEvent(ev); setShowLifeEventModal(true); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 3px' }}>✏️</button>
+                      <button onClick={() => deleteLifeEvent(ev.id)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 3px' }}>🗑️</button>
+                    </div>
+                  );
+                })}
+            </div>
+            {lifeEvents.length > 4 && (
+              <button onClick={() => setExpandEvents(v => !v)} style={{
+                width: '100%', marginTop: 8, padding: '8px', background: 'none',
+                border: 'none', cursor: 'pointer', fontSize: 11, color: sub, fontWeight: 600,
+              }}>
+                {expandEvents ? '折りたたむ ▲' : `他 ${lifeEvents.length - 4} 件を見る ▼`}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          5. フェーズ別内訳（リタイア前後の資産構成）
+      ══════════════════════════════════════════════════════════════════ */}
+      <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+        <SectionTitle>フェーズ別スナップショット</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { label: '現在', age: currentAge },
+            { label: `${Math.round((currentAge + retirementAge)/2)}歳`, age: Math.round((currentAge + retirementAge)/2) },
+            { label: `${retirementAge}歳（リタイア）`, age: retirementAge },
+            { label: `${Math.round((retirementAge + lifeExpectancy)/2)}歳`, age: Math.round((retirementAge + lifeExpectancy)/2) },
+            { label: `${lifeExpectancy}歳（寿命）`, age: lifeExpectancy },
+          ].map(({ label, age }) => {
+            const snap = byAge.find(r => r.age === age) || byAge[byAge.length - 1];
+            if (!snap) return null;
+            const total = Math.max(1, snap.totalAssets + snap.propertyValue);
+            const bars = [
+              { label: '貯金',    val: snap.savings,       color: blue   },
+              { label: '投資',    val: snap.regularInvest + snap.nisaInvest, color: '#a855f7' },
+              { label: '不動産',  val: snap.propertyValue, color: amber  },
+            ].filter(b => b.val > 0);
+            return (
+              <div key={age} style={{ padding: '12px 14px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: txt }}>{label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 900, color: snap.netWorth >= 0 ? blue : red, fontVariantNumeric: 'tabular-nums' }}>
+                    {fmtMan(snap.netWorth)}
+                  </span>
+                </div>
+                <div style={{ height: 5, borderRadius: 3, overflow: 'hidden', display: 'flex', background: darkMode ? '#333' : '#e5e7eb' }}>
+                  {bars.map(b => (
+                    <div key={b.label} style={{ width: `${b.val/total*100}%`, background: b.color }} />
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 10, marginTop: 5 }}>
+                  {bars.map(b => (
+                    <span key={b.label} style={{ fontSize: 10, color: sub }}>
+                      <span style={{ color: b.color, fontWeight: 700 }}>■</span> {b.label} {fmtMan(b.val)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── モーダル ──────────────────────────────────────────────────── */}
+      {showLifePlanSettings && (
+        <LifePlanSettingsModal
+          lifePlan={lifePlan} setLifePlan={setLifePlan}
+          onClose={() => setShowLifePlanSettings(false)}
+          theme={theme} darkMode={darkMode}
+        />
+      )}
 
       {showHousingModal && (
         <HousingComparisonModal
@@ -505,24 +626,23 @@ export default function SimulationTab(props) {
       )}
 
       {shareModal && shareUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
-          <div className={`${theme.cardGlass} rounded-2xl p-4 max-w-sm w-full`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className={`text-sm font-semibold ${theme.text}`}>シェア画像</p>
-              <button onClick={() => setShareModal(false)} className={theme.textSecondary}><X size={18} /></button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 60 }}>
+          <div style={{ background: card, borderRadius: 20, padding: 20, maxWidth: 360, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: txt }}>シェア画像</p>
+              <button onClick={() => setShareModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub }}><X size={18} /></button>
             </div>
-            <img src={shareUrl} alt="share" className="w-full rounded-xl mb-3" />
-            <div className="flex gap-2">
-              <a href={shareUrl} download="money-planner.png"
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white"
-                style={{ backgroundColor: theme.accent }}>
-                <Download size={14} /> 保存
-              </a>
-            </div>
+            <img src={shareUrl} alt="share" style={{ width: '100%', borderRadius: 12, marginBottom: 14 }} />
+            <a href={shareUrl} download="lifeplan.png" style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              padding: 12, background: theme.accent, borderRadius: 12, color: '#fff',
+              fontSize: 13, fontWeight: 700, textDecoration: 'none',
+            }}>
+              <Download size={14} /> 保存
+            </a>
           </div>
         </div>
       )}
-
     </div>
   );
 }
