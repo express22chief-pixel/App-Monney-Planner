@@ -251,9 +251,13 @@ export function getLast6MonthsTrend(transactions, recurringTransactions) {
 }
 
 // --- シミュレーション計算 -----------------------------------------------------
-export function calculateSimulation(simulationSettings, assetData, lifeEvents) {
-  const { years, monthlyInvestment, monthlySavings, savingsInterestRate, returnRate, useNisa, useLumpSum, lumpSumAmount, lumpSumMonths,
-    inflationRate = 0, incomeGrowthRate = 0 } = simulationSettings;
+export function calculateSimulation(simulationSettings, assetData, lifeEvents, overrides = {}) {
+  const { years: _years, monthlyInvestment, monthlySavings, savingsInterestRate, returnRate, useNisa, useLumpSum, lumpSumAmount, lumpSumMonths,
+    inflationRate = 0 } = simulationSettings;
+  // incomeGrowthRate は lifePlan から overrides で渡す。後方互換のため simulationSettings にもある場合はそちらを使う
+  const incomeGrowthRate = overrides.incomeGrowthRate ?? simulationSettings.incomeGrowthRate ?? 0;
+  // years は overrides（リタイアまでの年数）か設定値
+  const years = overrides.years ?? _years ?? 10;
   const monthlyRate = returnRate / 100 / 12;
   const savingsMonthlyRate = savingsInterestRate / 100 / 12;
   const TAX_RATE = 0.20315;
@@ -854,25 +858,29 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
   const nowYear              = new Date().getFullYear();
 
   // 住宅設定
-  // housingParams があれば「現時点で住宅購入済み」として扱う
-  // 購入年齢はライフイベントの type==='housing' から取得、なければ currentAge
+  // purchaseAge を最優先。ない場合はライフイベント、それもなければ currentAge
   let loanBalance         = 0;
   let loanRemainingMonths = 0;
   let housingPurchaseAge  = null;
 
   if (housingParams) {
-    // ライフイベントに住宅購入イベントがあればその年齢を使う
-    const housingEvent = lifeEvents.find(e => e.type === 'housing');
-    if (housingEvent) {
-      const evYear = parseInt(housingEvent.date?.slice(0, 4));
-      housingPurchaseAge = currentAge + (evYear - nowYear);
+    if (housingParams.purchaseAge && housingParams.purchaseAge > currentAge) {
+      // ★ purchaseAge 指定あり → 将来の購入として扱う
+      housingPurchaseAge = housingParams.purchaseAge;
     } else {
-      // ライフイベントにない場合は「今すぐ購入」として currentAge を使う
-      housingPurchaseAge = currentAge;
-      const dp        = housingParams.downPayment || 0;
-      const principal = (housingParams.propertyPrice || 0) - dp;
-      loanBalance         = Math.max(0, principal);
-      loanRemainingMonths = housingParams.loanMonths || 360;
+      // ライフイベントに住宅購入イベントがあればその年齢を使う
+      const housingEvent = lifeEvents.find(e => e.type === 'housing');
+      if (housingEvent) {
+        const evYear = parseInt(housingEvent.date?.slice(0, 4));
+        housingPurchaseAge = currentAge + (evYear - nowYear);
+      } else {
+        // purchaseAge も ライフイベントもない → 今すぐ購入
+        housingPurchaseAge = currentAge;
+        const dp        = housingParams.downPayment || 0;
+        const principal = (housingParams.propertyPrice || 0) - dp;
+        loanBalance         = Math.max(0, principal);
+        loanRemainingMonths = housingParams.loanMonths || 360;
+      }
     }
   }
 
