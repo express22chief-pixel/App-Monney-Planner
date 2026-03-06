@@ -13,21 +13,25 @@ const DEFAULT_PARAMS = {
   // 物件
   propertyPrice:   40000000,
   downPayment:     4000000,
-  propertyType:    'new_eco',   // new_eco / new_other / used
-  landRatio:       0.3,
+  propertyType:    'new_eco',
+  landRatio:       0.2,
   depreciationRate:1.0,
+  landAppreciationRate: 0,
   // ローン
-  loanMonths:      360,          // 30年
+  loanMonths:      360,
   interestRate:    0.5,
-  rateType:        'variable',   // fixed / variable
+  rateType:        'variable',
   variableScenario:'neutral',
   // ランニングコスト
-  managementFee:   20000,        // 月額
-  propertyTax:     120000,       // 年額
+  managementFee:   20000,
+  propertyTax:     120000,
+  renovationCycles: 0,         // 大規模修繕積立上昇額（月額, 15年後）
+  // 繰り上げ返済
+  prepaymentYearly: 0,         // 年間繰り上げ返済額
   // 賃貸
   monthlyRent:     120000,
   renewalFee:      120000,
-  rentInflationRate:1.0,
+  rentInflationRate:1,
   // その他
   annualIncome:    6000000,
   compareYears:    30,
@@ -111,6 +115,29 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
           ]}
         />
       </div>
+      <div>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>不動産価値シナリオ</label>
+        <SegmentControl
+          value={String(params.landAppreciationRate)}
+          onChange={v => {
+            const rate = Number(v);
+            // 建物減価率もシナリオに連動
+            const dep = rate >= 1 ? 0.5 : rate <= -1 ? 2.0 : 1.0;
+            set('landAppreciationRate', rate);
+            set('depreciationRate', dep);
+          }}
+          options={[
+            { value: '-1', label: '下落 (-1%/年)' },
+            { value: '0',  label: '横ばい' },
+            { value: '1',  label: '上昇 (+1%/年)' },
+          ]}
+        />
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
+          {params.landAppreciationRate < 0 && '地方・郊外・人口減少エリアを想定。購入の優位性が下がります'}
+          {params.landAppreciationRate === 0 && '地方主要都市・一般的な住宅地を想定'}
+          {params.landAppreciationRate > 0 && '都市部・駅近・再開発エリアを想定。購入の優位性が上がります'}
+        </p>
+      </div>
     </div>,
 
     // -- STEP 1: ローン ----------------------------------------------------
@@ -174,6 +201,21 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
         hint="マンション：15,000〜30,000円が目安。戸建の場合は0円でOK" />
       <NumInput label="固定資産税（年額）" value={params.propertyTax} onChange={v => set('propertyTax', v)}
         hint="物件価格の0.2〜0.3%が目安。購入3年後から本格的に発生" />
+      <div>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>大規模修繕積立の上昇（15年後）</label>
+        <SegmentControl
+          value={String(params.renovationCycles)}
+          onChange={v => set('renovationCycles', Number(v))}
+          options={[
+            { value: '0',     label: 'なし' },
+            { value: '5000',  label: '+¥5,000/月' },
+            { value: '10000', label: '+¥10,000/月' },
+          ]}
+        />
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>マンションは15年前後で修繕積立金が値上がりするケースが多い</p>
+      </div>
+      <NumInput label="年間繰り上げ返済額（任意）" value={params.prepaymentYearly} onChange={v => set('prepaymentYearly', v)}
+        hint="毎年末にこの金額を繰り上げ返済。0円で繰り上げなし" />
       <div style={{ padding: '12px 16px', background: '#f9fafb', borderRadius: 12 }}>
         <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>月々の総支出（概算）</p>
         {(() => {
@@ -206,8 +248,8 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
           onChange={v => set('rentInflationRate', Number(v))}
           options={[
             { value: '0',   label: '変わらない' },
-            { value: '1.0', label: '1%/年' },
-            { value: '2.0', label: '2%/年' },
+            { value: '1',   label: '1%/年' },
+            { value: '2',   label: '2%/年' },
           ]}
         />
       </div>
@@ -248,6 +290,8 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
           ['借入額',   `¥${loanAmount.toLocaleString()}`],
           ['金利',     `${params.rateType === 'fixed' ? '固定' : '変動'} ${params.interestRate}%`],
           ['返済期間', `${params.loanMonths / 12}年`],
+          ['繰り上げ返済', params.prepaymentYearly > 0 ? `¥${params.prepaymentYearly.toLocaleString()}/年` : 'なし'],
+          ['修繕積立上昇', params.renovationCycles > 0 ? `+¥${params.renovationCycles.toLocaleString()}/月（15年後）` : 'なし'],
           ['月額家賃（比較）', `¥${params.monthlyRent.toLocaleString()}`],
           ['比較期間', `${params.compareYears}年`],
         ].map(([k, v]) => (
