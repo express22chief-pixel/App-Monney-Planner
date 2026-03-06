@@ -96,6 +96,9 @@ export default function SimulationTab(props) {
   const lifeExpectancy = lifePlan.lifeExpectancy ?? 90;
 
   const { byAge, summary } = lifePlanSimulation ?? { byAge: [], summary: {} };
+  const retirementTarget = lifePlan.retirementTargetAmount ?? 30000000;
+  const retirementSnap   = byAge.find(r => r.age === retirementAge);
+  const targetAchieved   = retirementSnap ? retirementSnap.netWorth >= retirementTarget : false;
 
   // ─── グラフデータ ────────────────────────────────────────────────────
   const chartData = useMemo(() => {
@@ -189,6 +192,15 @@ export default function SimulationTab(props) {
                 <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
                   {lifeExpectancy}歳時点の純資産: {fmtMan(finalWorth)}
                 </p>
+                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{
+                    padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700,
+                    background: targetAchieved ? (darkMode ? '#065f46' : '#d1fae5') : (darkMode ? '#78350f' : '#fef3c7'),
+                    color: targetAchieved ? green : amber,
+                  }}>
+                    {targetAchieved ? `🎯 目標 ${fmtMan(retirementTarget)} 達成` : `📍 目標 ${fmtMan(retirementTarget)} まで ${fmtMan(retirementTarget - (retirementSnap?.netWorth ?? 0))} 不足`}
+                  </span>
+                </div>
               </>
             ) : (
               <>
@@ -269,6 +281,13 @@ export default function SimulationTab(props) {
             {/* リタイア縦線 */}
             <ReferenceLine x={retirementAge} stroke={amber} strokeDasharray="4 3" strokeWidth={1.5}
               label={{ value: 'リタイア', position: 'insideTopRight', fontSize: 9, fill: amber, dy: -2 }} />
+
+            {/* 目標資産ライン */}
+            {(lifePlan.retirementTargetAmount ?? 30000000) > 0 && (
+              <ReferenceLine y={lifePlan.retirementTargetAmount ?? 30000000}
+                stroke={green} strokeDasharray="5 3" strokeWidth={1.5} strokeOpacity={0.8}
+                label={{ value: '目標', position: 'insideTopRight', fontSize: 9, fill: green }} />
+            )}
 
             {/* ライフイベントピン */}
             {eventPins.map(ev => (
@@ -462,6 +481,7 @@ export default function SimulationTab(props) {
           {[
             { label: '年収',       value: fmtMan(lifePlan.annualIncome) },
             { label: '昇給率',     value: `${lifePlan.incomeGrowthRate}%/年` },
+            { label: 'リタイア目標', value: (() => { const v = lifePlan.retirementTargetAmount ?? 30000000; return v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万`; })() },
             { label: '月間生活費', value: `¥${lifePlan.monthlyExpense.toLocaleString()}` },
             { label: 'リタイア',   value: `${retirementAge}歳` },
             { label: '老後月収',   value: `¥${lifePlan.retirementMonthlyIncome.toLocaleString()}` },
@@ -579,45 +599,191 @@ export default function SimulationTab(props) {
         <SectionTitle>フェーズ別スナップショット</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            { label: '現在', age: currentAge },
-            { label: `${Math.round((currentAge + retirementAge)/2)}歳`, age: Math.round((currentAge + retirementAge)/2) },
-            { label: `${retirementAge}歳（リタイア）`, age: retirementAge },
-            { label: `${Math.round((retirementAge + lifeExpectancy)/2)}歳`, age: Math.round((retirementAge + lifeExpectancy)/2) },
-            { label: `${lifeExpectancy}歳（寿命）`, age: lifeExpectancy },
+            { label: '現在',                                          age: currentAge },
+            { label: `${Math.round((currentAge+retirementAge)/2)}歳`, age: Math.round((currentAge+retirementAge)/2) },
+            { label: `${retirementAge}歳（リタイア）`,                age: retirementAge },
+            { label: `${Math.round((retirementAge+lifeExpectancy)/2)}歳`, age: Math.round((retirementAge+lifeExpectancy)/2) },
+            { label: `${lifeExpectancy}歳（寿命）`,                   age: lifeExpectancy },
           ].map(({ label, age }) => {
             const snap = byAge.find(r => r.age === age) || byAge[byAge.length - 1];
             if (!snap) return null;
-            const total = Math.max(1, snap.totalAssets + snap.propertyValue);
+            const grossAssets = snap.totalAssets + snap.propertyValue;
+            const total = Math.max(1, grossAssets);
             const bars = [
-              { label: '貯金',    val: snap.savings,       color: blue   },
-              { label: '投資',    val: snap.regularInvest + snap.nisaInvest, color: '#a855f7' },
-              { label: '不動産',  val: snap.propertyValue, color: amber  },
+              { label: '貯金',   val: snap.savings,                        color: blue    },
+              { label: '投資',   val: snap.regularInvest + snap.nisaInvest, color: '#a855f7' },
+              { label: '不動産', val: snap.propertyValue,                  color: amber   },
             ].filter(b => b.val > 0);
+            const hasLoan = snap.loanBalance > 0;
             return (
               <div key={age} style={{ padding: '12px 14px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                {/* ヘッダー行 */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: txt }}>{label}</span>
-                  <span style={{ fontSize: 14, fontWeight: 900, color: snap.netWorth >= 0 ? blue : red, fontVariantNumeric: 'tabular-nums' }}>
-                    {fmtMan(snap.netWorth)}
-                  </span>
+                  <div style={{ textAlign: 'right' }}>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: snap.netWorth >= 0 ? blue : red, fontVariantNumeric: 'tabular-nums', display: 'block' }}>
+                      純資産 {fmtMan(snap.netWorth)}
+                    </span>
+                    {hasLoan && (
+                      <span style={{ fontSize: 11, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums' }}>
+                        ローン残債 -{fmtMan(snap.loanBalance)}
+                      </span>
+                    )}
+                  </div>
                 </div>
+
+                {/* 資産バー */}
                 <div style={{ height: 5, borderRadius: 3, overflow: 'hidden', display: 'flex', background: darkMode ? '#333' : '#e5e7eb' }}>
                   {bars.map(b => (
                     <div key={b.label} style={{ width: `${b.val/total*100}%`, background: b.color }} />
                   ))}
                 </div>
-                <div style={{ display: 'flex', gap: 10, marginTop: 5 }}>
-                  {bars.map(b => (
-                    <span key={b.label} style={{ fontSize: 10, color: sub }}>
-                      <span style={{ color: b.color, fontWeight: 700 }}>■</span> {b.label} {fmtMan(b.val)}
+
+                {/* 凡例 + 負債 */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6, justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {bars.map(b => (
+                      <span key={b.label} style={{ fontSize: 10, color: sub }}>
+                        <span style={{ color: b.color, fontWeight: 700 }}>■</span> {b.label} {fmtMan(b.val)}
+                      </span>
+                    ))}
+                  </div>
+                  {hasLoan && (
+                    <span style={{ fontSize: 10, color: red, fontWeight: 600 }}>
+                      ▼ 負債 {fmtMan(snap.loanBalance)}
                     </span>
-                  ))}
+                  )}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════════════
+          6. 購入 vs 賃貸 比較
+      ══════════════════════════════════════════════════════════════════ */}
+      {housingParams && housingComparison && (() => {
+        const hc  = housingComparison;
+        const yrs = housingParams.compareYears ?? 30;
+        const buyTotal  = hc.buyTotalCost  ?? 0;
+        const rentTotal = hc.rentTotalCost ?? 0;
+        const buyEnd    = hc.buyEndAsset   ?? 0;
+        const rentEnd   = hc.rentEndAsset  ?? 0;
+        const netDiff   = (buyEnd - buyTotal) - (rentEnd - rentTotal); // 正なら購入有利
+        const isBuyWin  = netDiff >= 0;
+        const pAge      = housingParams.purchaseAge ?? currentAge;
+
+        return (
+          <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+            <SectionTitle
+              action={
+                <button onClick={() => setShowHousingModal(true)} style={{
+                  padding: '5px 10px', background: 'none',
+                  border: `1px solid ${blue}`, borderRadius: 8,
+                  color: blue, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                }}>設定変更</button>
+              }
+            >
+              購入 vs 賃貸 比較（{yrs}年間）
+            </SectionTitle>
+
+            {/* 購入年齢バナー */}
+            <div style={{
+              marginBottom: 12, padding: '10px 12px',
+              background: darkMode ? '#0d1a2b' : '#eff6ff',
+              borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <span style={{ fontSize: 16 }}>📅</span>
+              <p style={{ fontSize: 12, color: blue, fontWeight: 600 }}>
+                {pAge > currentAge
+                  ? `${pAge}歳（あと${pAge-currentAge}年）で購入予定`
+                  : `現時点で購入済みとして計算`}
+              </p>
+            </div>
+
+            {/* 勝敗バナー */}
+            <div style={{
+              padding: '14px 16px', borderRadius: 12, marginBottom: 12,
+              background: isBuyWin
+                ? (darkMode ? '#0d2b1a' : '#f0fdf4')
+                : (darkMode ? '#1a0d2b' : '#faf5ff'),
+              border: `1.5px solid ${isBuyWin ? (darkMode?'#166534':'#a7f3d0') : (darkMode?'#4c1d95':'#ddd6fe')}`,
+            }}>
+              <p style={{ fontSize: 13, fontWeight: 800, color: isBuyWin ? '#10b981' : '#8b5cf6', marginBottom: 4 }}>
+                {isBuyWin ? '🏠 購入が有利' : '🔑 賃貸が有利'}
+                <span style={{ fontSize: 11, fontWeight: 600, marginLeft: 8 }}>
+                  差額 {fmtMan(Math.abs(netDiff))}
+                </span>
+              </p>
+              <p style={{ fontSize: 11, color: sub }}>
+                {yrs}年後の純資産ベースで比較。不動産売却益・運用益を含む。
+              </p>
+            </div>
+
+            {/* コスト比較グリッド */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[
+                { icon: '🏠', label: '購入', totalCost: buyTotal,  endAsset: buyEnd,  color: blue   },
+                { icon: '🔑', label: '賃貸', totalCost: rentTotal, endAsset: rentEnd, color: '#a855f7' },
+              ].map(({ icon, label, totalCost, endAsset, color }) => (
+                <div key={label} style={{ padding: '12px', background: darkMode ? '#1c1c1e' : '#fff', borderRadius: 12, border: `1px solid ${darkMode?'#2a2a2a':'#e5e7eb'}` }}>
+                  <p style={{ fontSize: 12, fontWeight: 700, color, marginBottom: 8 }}>{icon} {label}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div>
+                      <p style={{ fontSize: 10, color: sub }}>総コスト</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: red, fontVariantNumeric: 'tabular-nums' }}>-{fmtMan(totalCost)}</p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 10, color: sub }}>{yrs}年後の資産</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: green, fontVariantNumeric: 'tabular-nums' }}>+{fmtMan(endAsset)}</p>
+                    </div>
+                    <div style={{ paddingTop: 4, borderTop: `1px solid ${darkMode?'#2a2a2a':'#e5e7eb'}` }}>
+                      <p style={{ fontSize: 10, color: sub }}>純損益</p>
+                      <p style={{ fontSize: 15, fontWeight: 900, color: (endAsset-totalCost)>=0?green:red, fontVariantNumeric: 'tabular-nums' }}>
+                        {endAsset-totalCost>=0?'+':''}{fmtMan(endAsset-totalCost)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* 月次コスト比較 */}
+            {(() => {
+              const loanAmt = (housingParams.propertyPrice||0) - (housingParams.downPayment||0);
+              const monthlyLoan = loanAmt > 0
+                ? Math.round(loanAmt*(housingParams.interestRate/100/12)*Math.pow(1+housingParams.interestRate/100/12,housingParams.loanMonths)/(Math.pow(1+housingParams.interestRate/100/12,housingParams.loanMonths)-1))
+                : 0;
+              const monthlyBuy  = monthlyLoan + (housingParams.managementFee||0) + Math.round((housingParams.propertyTax||0)/12);
+              const monthlyRent = housingParams.monthlyRent || 0;
+              const diff = monthlyBuy - monthlyRent;
+              return (
+                <div style={{ marginTop: 10, padding: '10px 14px', background: darkMode?'#252525':'#f9fafb', borderRadius: 10 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: sub, marginBottom: 8 }}>月次コスト（購入年齢時点）</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: sub }}>購入月額</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: blue, fontVariantNumeric: 'tabular-nums' }}>¥{monthlyBuy.toLocaleString()}</p>
+                    </div>
+                    <span style={{ color: sub, fontSize: 16 }}>vs</span>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: sub }}>賃貸月額</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: '#a855f7', fontVariantNumeric: 'tabular-nums' }}>¥{monthlyRent.toLocaleString()}</p>
+                    </div>
+                    <div style={{ flex: 1, textAlign: 'center' }}>
+                      <p style={{ fontSize: 10, color: sub }}>差額</p>
+                      <p style={{ fontSize: 14, fontWeight: 800, color: diff>0?red:green, fontVariantNumeric: 'tabular-nums' }}>
+                        {diff>0?'+':''}{diff<0?'-':''}¥{Math.abs(diff).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
 
       {/* ── モーダル ──────────────────────────────────────────────────── */}
       {showLifePlanSettings && (
@@ -634,6 +800,7 @@ export default function SimulationTab(props) {
           housingParams={housingParams}
           setHousingParams={setHousingParams}
           setShowHousingModal={setShowHousingModal}
+          userInfo={userInfo}
         />
       )}
 

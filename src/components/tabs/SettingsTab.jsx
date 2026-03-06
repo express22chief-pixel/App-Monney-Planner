@@ -70,6 +70,7 @@ export default function SettingsTab(props) {
     handleRenameDefaultCategory, handleDeleteDefaultCategory,
     deleteCustomCategory, deleteRecurring,
     transactions, setTransactions, setMonthlyHistory,
+    lifePlan,
   } = props;
   const deletedExp = customCategories?.deletedDefaults?.expense || [];
   const deletedInc = customCategories?.deletedDefaults?.income || [];
@@ -162,14 +163,11 @@ export default function SettingsTab(props) {
               darkMode={darkMode} theme={theme}>
               <div className="space-y-4 pt-3">
                 {[
-                  { key: 'targetAmount', label: '目標金額', min: 1000000, max: 500000000, step: 1000000, fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${(v/10000).toFixed(0)}万` },
-                  { key: 'years', label: '運用期間', min: 1, max: 50, step: 1, fmt: v => `${v}年` },
-                  { key: 'monthlySavings', label: '月々の貯金', min: 0, max: 2000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
-                  { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 2000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
-                  { key: 'returnRate', label: '想定利回り', min: 0, max: 15, step: 0.5, fmt: v => `${v}%` },
-                  { key: 'savingsInterestRate', label: '預金金利', min: 0, max: 5, step: 0.1, fmt: v => `${v}%` },
-                  { key: 'inflationRate', label: 'インフレ率', min: 0, max: 5, step: 0.5, fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
-                  { key: 'incomeGrowthRate', label: '収入成長率（年昇給）', min: 0, max: 10, step: 0.5, fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
+                  { key: 'monthlySavings',      label: '月々の貯金',     min: 0, max: 2000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
+                  { key: 'monthlyInvestment',   label: '月々の積立投資', min: 0, max: 2000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
+                  { key: 'returnRate',          label: '想定利回り',     min: 0, max: 15,      step: 0.5,   fmt: v => `${v}%` },
+                  { key: 'savingsInterestRate', label: '預金金利',       min: 0, max: 5,       step: 0.1,   fmt: v => `${v}%` },
+                  { key: 'inflationRate',       label: 'インフレ率',     min: 0, max: 5,       step: 0.5,   fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
                 ].map(({ key, label, min, max, step, fmt }) => (
                   <div key={key}>
                     <div className="flex justify-between items-center mb-1">
@@ -281,44 +279,30 @@ export default function SettingsTab(props) {
               </div>
             </AccSection>
 
-            <AccSection id="withdrawal" icon="📉" title="取り崩しフェーズ" expanded={settingsExpanded['withdrawal']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
+            <AccSection id="withdrawal" icon="📉" title="老後・取り崩し設定" expanded={settingsExpanded['withdrawal']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
-              <div className="space-y-4 pt-3">
-                <div className={`text-xs ${theme.textSecondary} leading-relaxed px-1`}>
-                  積み立て完了後、資産を毎月取り崩すフェーズをシミュレーションします。FIREやリタイア後の計画に使えます。
+              <div className="pt-3 space-y-3">
+                <div className={`rounded-xl p-4 ${darkMode ? 'bg-neutral-800' : 'bg-blue-50'}`}>
+                  <p className={`text-xs font-bold mb-1 ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>💡 シミュレーションタブで設定できます</p>
+                  <p className={`text-xs ${darkMode ? 'text-neutral-400' : 'text-blue-600'}`}>
+                    老後の収支・取り崩し・年金・リタイア年齢は<br/>
+                    シミュレーション → ライフプランの前提「編集」から設定してください。
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <label className={`text-xs font-medium ${theme.text}`}>取り崩しシミュレーションを使う</label>
-                  <button onClick={() => setSimulationSettings({ ...simulationSettings, useWithdrawal: !simulationSettings.useWithdrawal })}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${simulationSettings.useWithdrawal ? 'bg-red-500' : darkMode ? 'bg-gray-700' : 'bg-gray-300'}`}>
-                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${simulationSettings.useWithdrawal ? 'translate-x-6' : 'translate-x-1'}`} />
-                  </button>
-                </div>
-                {simulationSettings.useWithdrawal && (
-                  <div className="space-y-4">
-                    {[
-                      { key: 'withdrawalMonthly',      label: '月々の取り崩し額',   min: 50000,  max: 1000000, step: 10000, fmt: v => `¥${v.toLocaleString()}` },
-                      { key: 'withdrawalReturnRate',   label: '取り崩し期の利回り', min: 0,      max: 10,      step: 0.5,   fmt: v => `${v}%` },
-                      { key: 'withdrawalInflationRate',label: '想定インフレ率',     min: 0,      max: 5,       step: 0.5,   fmt: v => `${v}%` },
-                      { key: 'withdrawalYears',        label: '取り崩し期間',       min: 5,      max: 50,      step: 1,     fmt: v => `${v}年` },
-                    ].map(({ key, label, min, max, step, fmt }) => (
-                      <div key={key}>
-                        <div className="flex justify-between items-center mb-1">
-                          <label className={`text-xs font-medium ${theme.textSecondary}`}>{label}</label>
-                          <span className="text-xs font-bold tabular-nums" style={{ color: theme.accent }}>{fmt(simulationSettings[key] ?? min)}</span>
-                        </div>
-                        <PremiumSlider
-                          value={simulationSettings[key] ?? min} min={min} max={max} step={step}
-                          onChange={(v) => setSimulationSettings({ ...simulationSettings, [key]: v })}
-                          accent={'#ef4444'} darkMode={darkMode}
-                        />
-                      </div>
-                    ))}
-                    <div className={`rounded-xl p-3 text-xs space-y-1 ${darkMode ? 'bg-red-950/40' : 'bg-red-50'}`}>
-                      <p className="font-semibold" style={{ color: '#ef4444' }}>📊 シミュレーションタブで結果を確認できます</p>
+                <div className={`rounded-xl p-3 text-xs space-y-1.5 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  {[
+                    ['リタイア年齢', `${lifePlan.retirementAge}歳`],
+                    ['想定寿命',     `${lifePlan.lifeExpectancy}歳`],
+                    ['老後月収（年金等）', `¥${lifePlan.retirementMonthlyIncome.toLocaleString()}`],
+                    ['老後月間支出', `¥${lifePlan.retirementMonthlyExpense.toLocaleString()}`],
+                    ['老後月間収支', (() => { const cf = lifePlan.retirementMonthlyIncome - lifePlan.retirementMonthlyExpense; return (cf >= 0 ? '+' : '') + '¥' + cf.toLocaleString(); })()],
+                  ].map(([k, v]) => (
+                    <div key={k} className="flex justify-between">
+                      <span className={theme.textSecondary}>{k}</span>
+                      <span className={`font-bold tabular-nums ${theme.text}`}>{v}</span>
                     </div>
-                  </div>
-                )}
+                  ))}
+                </div>
               </div>
             </AccSection>
 
