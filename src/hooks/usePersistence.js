@@ -49,6 +49,7 @@ export function usePersistence(state) {
 
   useEffect(() => { save('wallets', state.wallets); }, [state.wallets]);
   useEffect(() => { if (state.housingParams) save('housingParams', state.housingParams); }, [state.housingParams]);
+  useEffect(() => { if (state.lifePlan) save('lifePlan', state.lifePlan); }, [state.lifePlan]);
   useEffect(() => { save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates]);
   useEffect(() => { save('walletAdjustments', state.walletAdjustments); }, [state.walletAdjustments]);
 }

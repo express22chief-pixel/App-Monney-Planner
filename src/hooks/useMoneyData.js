@@ -21,6 +21,10 @@ import {
   getUnclosedMonths, calculateBudgetAnalysis, calculateCategoryExpenses,
   getLast6MonthsTrend, calculateSimulation, runMonteCarloSimulation,
   getRecurringTargetDates, calculateBenchmark, calculateHousingComparison,
+  calculateLifePlanSimulation,
+  calcRecentMonthlyAverages,
+  calcFutureImpact,
+  estimateIncomeGrowthRate,
 } from '../utils/calc';
 // --- リスクプロファイル定数（UIでも参照するためexport） ---------------------
 export const RISK_PROFILES = {
@@ -125,6 +129,16 @@ export function useMoneyData() {
   const [lifeEvents, setLifeEvents]             = useState(() => load('lifeEvents', []));
   const [housingParams, setHousingParams]       = useState(() => load('housingParams', null));
   const [showHousingModal, setShowHousingModal] = useState(false);
+
+  const [lifePlan, setLifePlan] = useState(() => load('lifePlan', {
+    retirementAge:           65,
+    lifeExpectancy:          90,
+    annualIncome:            6000000,
+    incomeGrowthRate:        1,
+    monthlyExpense:          200000,
+    retirementMonthlyIncome:  150000,
+    retirementMonthlyExpense: 200000,
+  }));
 
   const [monthlyBudget, setMonthlyBudget] = useState(() =>
     load('monthlyBudget', {
@@ -324,6 +338,42 @@ export function useMoneyData() {
       assetData,
     });
   }, [housingParams, simulationSettings.returnRate, assetData]);
+
+  const lifePlanSimulation = useMemo(() => {
+    const currentAge = userInfo?.age ? Number(userInfo.age) : 30;
+    return calculateLifePlanSimulation(
+      { ...lifePlan, currentAge },
+      simulationSettings,
+      assetData,
+      lifeEvents,
+      housingParams,
+    );
+  }, [lifePlan, simulationSettings, assetData, lifeEvents, housingParams, userInfo]);
+
+  // 直近3ヶ月の実績平均
+  const recentMonthlyAverages = useMemo(
+    () => calcRecentMonthlyAverages(transactions, recurringTransactions, monthlyHistory, 3),
+    [transactions, recurringTransactions, monthlyHistory]
+  );
+
+  // 実績から推定した収入成長率
+  const incomeGrowthEstimate = useMemo(
+    () => estimateIncomeGrowthRate(transactions, recurringTransactions, 12),
+    [transactions, recurringTransactions]
+  );
+
+  // 今月の実績 vs 計画のズレ → 将来影響
+  const monthlyGapImpact = useMemo(() => {
+    const currentAge = userInfo?.age ? Number(userInfo.age) : 30;
+    const yearsRemaining = (lifePlan.retirementAge ?? 65) - currentAge;
+    if (yearsRemaining <= 0) return null;
+    const plannedSurplus = (budgetAnalysis?.surplus?.planned ?? 0);
+    const actualSurplus  = (budgetAnalysis?.surplus?.actual  ?? 0);
+    const diff = actualSurplus - plannedSurplus;
+    if (diff === 0) return null;
+    const impact = calcFutureImpact(diff, yearsRemaining, simulationSettings.returnRate);
+    return { diff, impact, yearsRemaining };
+  }, [budgetAnalysis, lifePlan, userInfo, simulationSettings.returnRate]);
 
   const monteCarloResults = useMemo(
     () => simulationSettings.showMonteCarloSimulation
@@ -862,6 +912,8 @@ export function useMoneyData() {
     simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData,
     housingParams, setHousingParams, housingComparison,
     showHousingModal, setShowHousingModal,
+    lifePlan, setLifePlan, lifePlanSimulation,
+    recentMonthlyAverages, incomeGrowthEstimate, monthlyGapImpact,
     // -- アクション -------------------------------------------------------------
     resetAllData,
     applyRiskProfile,
