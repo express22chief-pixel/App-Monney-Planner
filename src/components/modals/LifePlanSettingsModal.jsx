@@ -13,7 +13,7 @@ function Row({ label, hint, children }) {
   );
 }
 
-function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, min = 0 }) {
+function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, min = 0, darkMode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
       {prefix && <span style={{ fontSize: 12, color: '#9ca3af', flexShrink: 0 }}>{prefix}</span>}
@@ -24,9 +24,12 @@ function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, m
         step={step}
         min={min}
         style={{
-          flex: 1, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e5e7eb',
+          flex: 1, padding: '10px 12px', borderRadius: 10,
+          border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,
           fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
-          background: '#f9fafb', outline: 'none',
+          background: darkMode ? '#2a2a2a' : '#f9fafb',
+          color: darkMode ? '#f5f5f5' : '#111',
+          outline: 'none',
         }}
       />
       {suffix && <span style={{ fontSize: 12, color: '#9ca3af', flexShrink: 0 }}>{suffix}</span>}
@@ -34,16 +37,16 @@ function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, m
   );
 }
 
-function Seg({ value, onChange, options }) {
+function Seg({ value, onChange, options, darkMode }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: '#f2f2f7', borderRadius: 10, padding: 3 }}>
+    <div style={{ display: 'flex', gap: 4, background: darkMode ? '#2a2a2a' : '#f2f2f7', borderRadius: 10, padding: 3 }}>
       {options.map(o => (
         <button key={o.value} onClick={() => onChange(o.value)} style={{
           flex: 1, padding: '7px 4px', borderRadius: 8, border: 'none', cursor: 'pointer',
           fontSize: 12, fontWeight: 700,
-          background: value === o.value ? '#fff' : 'transparent',
-          color: value === o.value ? '#111' : '#9ca3af',
-          boxShadow: value === o.value ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+          background: value === o.value ? (darkMode ? '#444' : '#fff') : 'transparent',
+          color: value === o.value ? (darkMode ? '#f5f5f5' : '#111') : '#9ca3af',
+          boxShadow: value === o.value ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
           transition: 'all 0.15s',
         }}>{o.label}</button>
       ))}
@@ -99,15 +102,15 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>現役フェーズ</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <Row label="現在の年収" hint="税込み。手取りは約80%で計算します">
-                  <NumInput value={local.annualIncome} onChange={v => set('annualIncome', v)} step={100000} />
+                  <NumInput darkMode={darkMode} value={local.annualIncome} onChange={v => set('annualIncome', v)} step={100000} />
                   <p style={{ fontSize: 11, color: sub }}>手取り月収 ≈ ¥{monthlyNet.toLocaleString()}</p>
                 </Row>
                 <Row label="昇給率" hint="年収の毎年の増加率">
-                  <Seg value={local.incomeGrowthRate} onChange={v => set('incomeGrowthRate', v)}
+                  <Seg darkMode={darkMode} value={local.incomeGrowthRate} onChange={v => set('incomeGrowthRate', v)}
                     options={[{value:0,label:'0%'},{value:1,label:'1%'},{value:2,label:'2%'},{value:3,label:'3%'}]} />
                 </Row>
                 <Row label="月間生活費" hint="住居費・食費・光熱費などすべて込み（ローン除く）">
-                  <NumInput value={local.monthlyExpense} onChange={v => set('monthlyExpense', v)} />
+                  <NumInput darkMode={darkMode} value={local.monthlyExpense} onChange={v => set('monthlyExpense', v)} />
                   {surplus >= 0
                     ? <p style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>月間余剰 ≈ ¥{surplus.toLocaleString()}（積立・貯金に回ります）</p>
                     : <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>⚠️ 収入が生活費を下回っています</p>
@@ -123,11 +126,11 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <Row label="リタイア年齢">
-                  <Seg value={local.retirementAge} onChange={v => set('retirementAge', v)}
+                  <Seg darkMode={darkMode} value={local.retirementAge} onChange={v => set('retirementAge', v)}
                     options={[{value:55,label:'55歳'},{value:60,label:'60歳'},{value:65,label:'65歳'},{value:70,label:'70歳'}]} />
                 </Row>
                 <Row label="想定寿命">
-                  <Seg value={local.lifeExpectancy} onChange={v => set('lifeExpectancy', v)}
+                  <Seg darkMode={darkMode} value={local.lifeExpectancy} onChange={v => set('lifeExpectancy', v)}
                     options={[{value:80,label:'80歳'},{value:85,label:'85歳'},{value:90,label:'90歳'},{value:95,label:'95歳'}]} />
                 </Row>
               </div>
@@ -140,11 +143,11 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>老後の収支</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <Row label="老後の月収（年金・配当等）">
-                  <NumInput value={local.retirementMonthlyIncome} onChange={v => set('retirementMonthlyIncome', v)} />
+                  <NumInput darkMode={darkMode} value={local.retirementMonthlyIncome} onChange={v => set('retirementMonthlyIncome', v)} />
                   <p style={{ fontSize: 11, color: sub }}>国民年金のみの場合は約¥65,000。厚生年金込みで¥130,000〜¥200,000が目安</p>
                 </Row>
                 <Row label="老後の月間支出">
-                  <NumInput value={local.retirementMonthlyExpense} onChange={v => set('retirementMonthlyExpense', v)} />
+                  <NumInput darkMode={darkMode} value={local.retirementMonthlyExpense} onChange={v => set('retirementMonthlyExpense', v)} />
                   {(() => {
                     const cf = local.retirementMonthlyIncome - local.retirementMonthlyExpense;
                     return cf >= 0
