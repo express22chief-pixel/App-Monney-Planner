@@ -317,7 +317,12 @@ export function useMoneyData() {
 
   const housingComparison = useMemo(() => {
     if (!housingParams) return null;
-    return calculateHousingComparison(housingParams, { returnRate: simulationSettings.returnRate, assetData });
+    return calculateHousingComparison(housingParams, {
+      returnRate:      simulationSettings.returnRate,
+      incomeGrowthRate: simulationSettings.incomeGrowthRate ?? 0,
+      monthlyIncome:   currentBalance?.plIncome ?? 0,
+      assetData,
+    });
   }, [housingParams, simulationSettings.returnRate, assetData]);
 
   const monteCarloResults = useMemo(
