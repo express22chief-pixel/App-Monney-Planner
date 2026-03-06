@@ -131,13 +131,14 @@ export function useMoneyData() {
   const [showHousingModal, setShowHousingModal] = useState(false);
 
   const [lifePlan, setLifePlan] = useState(() => load('lifePlan', {
-    retirementAge:           65,
-    lifeExpectancy:          90,
-    annualIncome:            6000000,
-    incomeGrowthRate:        1,
-    monthlyExpense:          200000,
+    retirementAge:            65,
+    lifeExpectancy:           90,
+    annualIncome:             6000000,
+    incomeGrowthRate:         1,     // ← simulationSettings から一本化
+    monthlyExpense:           200000,
     retirementMonthlyIncome:  150000,
     retirementMonthlyExpense: 200000,
+    retirementTargetAmount:   30000000, // リタイア時の目標純資産（旧 targetAmount）
   }));
 
   const [monthlyBudget, setMonthlyBudget] = useState(() =>
@@ -183,14 +184,14 @@ export function useMoneyData() {
 
   const [simulationSettings, setSimulationSettings] = useState(() =>
     load('simulationSettings', {
-      targetAmount: 10000000, years: 10, monthlyInvestment: 30000, monthlySavings: 20000,
+      // 投資・積立設定（ライフプランと重複しない項目のみ）
+      monthlyInvestment: 30000, monthlySavings: 20000,
       savingsInterestRate: 0.2, returnRate: 5, useNisa: true, useLumpSum: true,
       lumpSumAmount: 500000, lumpSumFrequency: 2, lumpSumMonths: [6, 12],
       riskProfile: 'standard', showMonteCarloSimulation: false,
-      inflationRate: 0, incomeGrowthRate: 0,
-      // 取り崩しフェーズ
-      useWithdrawal: false, withdrawalMonthly: 150000, withdrawalReturnRate: 3,
-      withdrawalInflationRate: 2, withdrawalYears: 30,
+      inflationRate: 0,
+      // ▼ 以下は lifePlan に移行したが後方互換のため残す（参照しない）
+      // targetAmount, years, incomeGrowthRate, withdrawalYears 等は lifePlan を使うこと
     })
   );
 
@@ -314,26 +315,36 @@ export function useMoneyData() {
     [transactions, monthlyHistory]
   );
 
+  // incomeGrowthRate と years は lifePlan から計算して渡す（一本化）
+  const simOverrides = useMemo(() => {
+    const currentAge = userInfo?.age ? Number(userInfo.age) : 30;
+    const yearsToRetire = Math.max(1, (lifePlan.retirementAge ?? 65) - currentAge);
+    return {
+      incomeGrowthRate: lifePlan.incomeGrowthRate ?? 0,
+      years: yearsToRetire,
+    };
+  }, [lifePlan, userInfo]);
+
   const simulationResults = useMemo(
-    () => calculateSimulation(simulationSettings, assetData, lifeEvents),
-    [simulationSettings, assetData, lifeEvents]
+    () => calculateSimulation(simulationSettings, assetData, lifeEvents, simOverrides),
+    [simulationSettings, assetData, lifeEvents, simOverrides]
   );
 
   // 複数シナリオ比較（現状 / 積立+1万 / 積立+3万）
   const scenarioResults = useMemo(() => {
     const base = simulationSettings.monthlyInvestment;
     return [
-      { label: '現状', color: '#3b82f6', results: calculateSimulation(simulationSettings, assetData, lifeEvents) },
-      { label: `+¥10,000`, color: '#10b981', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 10000 }, assetData, lifeEvents) },
-      { label: `+¥30,000`, color: '#f59e0b', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 30000 }, assetData, lifeEvents) },
+      { label: '現状',     color: '#3b82f6', results: calculateSimulation(simulationSettings, assetData, lifeEvents, simOverrides) },
+      { label: `+¥10,000`, color: '#10b981', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 10000  }, assetData, lifeEvents, simOverrides) },
+      { label: `+¥30,000`, color: '#f59e0b', results: calculateSimulation({ ...simulationSettings, monthlyInvestment: base + 30000  }, assetData, lifeEvents, simOverrides) },
     ];
-  }, [simulationSettings, assetData, lifeEvents]);
+  }, [simulationSettings, assetData, lifeEvents, simOverrides]);
 
   const housingComparison = useMemo(() => {
     if (!housingParams) return null;
     return calculateHousingComparison(housingParams, {
       returnRate:      simulationSettings.returnRate,
-      incomeGrowthRate: simulationSettings.incomeGrowthRate ?? 0,
+      incomeGrowthRate: lifePlan.incomeGrowthRate ?? 0,
       monthlyIncome:   currentBalance?.plIncome ?? 0,
       assetData,
     });
@@ -909,7 +920,7 @@ export function useMoneyData() {
     // -- 派生データ -------------------------------------------------------------
     expenseCategories, incomeCategories,
     currentMonth, currentBalance, budgetAnalysis, unclosedMonths,
-    simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData,
+    simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData, simOverrides,
     housingParams, setHousingParams, housingComparison,
     showHousingModal, setShowHousingModal,
     lifePlan, setLifePlan, lifePlanSimulation,
