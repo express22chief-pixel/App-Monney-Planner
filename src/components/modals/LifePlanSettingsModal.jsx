@@ -138,6 +138,21 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: darkMode ? '#2a2a2a' : '#f0f0f0' }} />
 
+            {/* ── リタイア目標 ────────────────────────────────────────── */}
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア目標資産</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <Row label="リタイア時の目標純資産" hint="この金額を達成できるかをグラフに反映します">
+                  <NumInput darkMode={darkMode} value={local.retirementTargetAmount ?? 30000000} onChange={v => set('retirementTargetAmount', v)} step={1000000} />
+                </Row>
+                <p style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>
+                  ≈ {(() => { const v = local.retirementTargetAmount ?? 30000000; return v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${(v/10000).toFixed(0)}万`; })()}（老後30年間の生活費 ¥{((local.retirementMonthlyExpense ?? 200000) * 12 * 30 / 10000).toFixed(0)}万の参考値）
+                </p>
+              </div>
+            </div>
+
+            <div style={{ height: 1, background: darkMode ? '#2a2a2a' : '#f0f0f0' }} />
+
             {/* ── 老後収支 ──────────────────────────────────────────── */}
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>老後の収支</p>

@@ -1,56 +1,55 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronLeft, Home, TrendingUp, X } from 'lucide-react';
+import { ChevronRight, ChevronLeft, TrendingUp, X } from 'lucide-react';
 
 const STEPS = [
-  { id: 'property', label: '物件', icon: '🏠' },
+  { id: 'when',     label: '時期',   icon: '📅' },
+  { id: 'property', label: '物件',   icon: '🏠' },
   { id: 'loan',     label: 'ローン', icon: '🏦' },
   { id: 'running',  label: 'コスト', icon: '💴' },
-  { id: 'rent',     label: '賃貸', icon: '🔑' },
-  { id: 'other',    label: 'その他', icon: '⚙️' },
+  { id: 'rent',     label: '賃貸',   icon: '🔑' },
+  { id: 'summary',  label: '確認',   icon: '✅' },
 ];
 
 const DEFAULT_PARAMS = {
-  // 物件
+  purchaseAge:     35,          // ★ 購入予定年齢（新規追加）
   propertyPrice:   40000000,
   downPayment:     4000000,
   propertyType:    'new_eco',
   landRatio:       0.2,
-  depreciationRate:1.0,
+  depreciationRate: 1.0,
   landAppreciationRate: 0,
-  // ローン
   loanMonths:      360,
   interestRate:    0.5,
   rateType:        'variable',
   variableScenario:'neutral',
-  // ランニングコスト
   managementFee:   20000,
   propertyTax:     120000,
-  renovationCycles: 0,         // 大規模修繕積立上昇額（月額, 15年後）
-  // 繰り上げ返済
-  prepaymentYearly: 0,         // 年間繰り上げ返済額
-  // 賃貸
+  renovationCycles: 0,
+  prepaymentYearly: 0,
   monthlyRent:     120000,
   renewalFee:      120000,
-  rentInflationRate:1,
-  // その他
+  rentInflationRate: 1,
   annualIncome:    6000000,
   compareYears:    30,
 };
 
-function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint }) {
+function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, darkMode }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{label}</label>
+      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{label}</label>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         {prefix && <span style={{ fontSize: 13, color: '#9ca3af' }}>{prefix}</span>}
         <input
           type="text" inputMode="numeric"
           value={value.toLocaleString()}
-          onChange={e => {
-            const v = Number(e.target.value.replace(/[^0-9]/g, ''));
-            if (!isNaN(v)) onChange(v);
+          onChange={e => { const v = Number(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) onChange(v); }}
+          style={{
+            flex: 1, padding: '10px 12px', borderRadius: 10,
+            border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,
+            fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums', outline: 'none',
+            background: darkMode ? '#2a2a2a' : '#fff',
+            color: darkMode ? '#f5f5f5' : '#111',
           }}
-          style={{ flex: 1, padding: '10px 12px', borderRadius: 10, border: '1.5px solid #e5e7eb', fontSize: 15, fontWeight: 600, fontVariantNumeric: 'tabular-nums', outline: 'none', background: '#fff' }}
         />
         {suffix && <span style={{ fontSize: 13, color: '#9ca3af' }}>{suffix}</span>}
       </div>
@@ -59,274 +58,255 @@ function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint }) 
   );
 }
 
-function SegmentControl({ options, value, onChange }) {
+function Seg({ label, options, value, onChange, darkMode }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: '#f3f4f6', borderRadius: 10, padding: 3 }}>
-      {options.map(o => (
-        <button key={o.value} onClick={() => onChange(o.value)}
-          style={{ flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
-            background: value === o.value ? '#fff' : 'transparent',
-            color: value === o.value ? '#111827' : '#9ca3af',
-            boxShadow: value === o.value ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-          }}>{o.label}</button>
-      ))}
+    <div>
+      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>{label}</label>}
+      <div style={{ display: 'flex', gap: 4, background: darkMode ? '#2a2a2a' : '#f3f4f6', borderRadius: 10, padding: 3 }}>
+        {options.map(o => (
+          <button key={o.value} onClick={() => onChange(o.value)}
+            style={{
+              flex: 1, padding: '8px 0', borderRadius: 8, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
+              background: value === o.value ? (darkMode ? '#444' : '#fff') : 'transparent',
+              color: value === o.value ? (darkMode ? '#f5f5f5' : '#111827') : '#9ca3af',
+              boxShadow: value === o.value ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+            }}>{o.label}</button>
+        ))}
+      </div>
     </div>
   );
 }
 
-export default function HousingComparisonModal({ theme, darkMode, housingParams, setHousingParams, setShowHousingModal }) {
+function InfoRow({ label, value, accent }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingBottom: 6, marginBottom: 6, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+      <span style={{ color: '#6b7280' }}>{label}</span>
+      <span style={{ fontWeight: 700, color: accent || '#111827', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
+    </div>
+  );
+}
+
+export default function HousingComparisonModal({ theme, darkMode, housingParams, setHousingParams, setShowHousingModal, userInfo }) {
   const [step, setStep]     = useState(0);
-  const [params, setParams] = useState(housingParams || DEFAULT_PARAMS);
+  const currentAge          = userInfo?.age ? Number(userInfo.age) : 30;
+  const [params, setParams] = useState(() => ({
+    ...DEFAULT_PARAMS,
+    purchaseAge: Math.max(currentAge, housingParams?.purchaseAge ?? Math.max(currentAge + 3, 35)),
+    ...(housingParams || {}),
+  }));
   const set = (key, val) => setParams(p => ({ ...p, [key]: val }));
 
-  const loanAmount = params.propertyPrice - params.downPayment;
+  const loanAmount   = params.propertyPrice - params.downPayment;
+  const monthlyLoan  = loanAmount > 0
+    ? Math.round(loanAmount * (params.interestRate/100/12) * Math.pow(1+params.interestRate/100/12, params.loanMonths) / (Math.pow(1+params.interestRate/100/12, params.loanMonths)-1))
+    : 0;
+  const monthlyBuy   = monthlyLoan + params.managementFee + Math.round(params.propertyTax/12);
+  const monthlyDiff  = monthlyBuy - params.monthlyRent;
+
+  const bg   = darkMode ? '#1c1c1e' : '#fff';
+  const sub  = '#9ca3af';
+  const blue = '#3b82f6';
+
+  // 購入年齢の選択肢（現在年齢+1 〜 60歳）
+  const ageOptions = [];
+  for (let a = currentAge + 1; a <= 60; a += (a < 40 ? 1 : 5)) ageOptions.push(a);
 
   const stepContent = [
-    // -- STEP 0: 物件 ------------------------------------------------------
-    <div key="property" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <NumInput label="物件価格" value={params.propertyPrice} onChange={v => set('propertyPrice', v)}
-        hint={`頭金 ¥${params.downPayment.toLocaleString()} → 借入 ¥${loanAmount.toLocaleString()}`} />
-      <NumInput label="頭金" value={params.downPayment} onChange={v => set('downPayment', v)}
-        hint="物件価格の10〜20%が目安" />
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>物件タイプ</label>
-        <SegmentControl
-          value={params.propertyType}
-          onChange={v => set('propertyType', v)}
-          options={[
-            { value: 'new_eco',   label: '新築省エネ' },
-            { value: 'new_other', label: '新築その他' },
-            { value: 'used',      label: '中古' },
-          ]}
-        />
-        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
-          ローン控除上限：新築省エネ 35万円/年、新築その他 21万円/年、中古 14万円/年
+
+    // ── STEP 0: 購入時期 ─────────────────────────────────────────────
+    <div key="when" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ padding: '16px', background: darkMode ? '#0d1a2b' : '#eff6ff', borderRadius: 14 }}>
+        <p style={{ fontSize: 13, fontWeight: 700, color: blue, marginBottom: 4 }}>📅 いつ購入する予定ですか？</p>
+        <p style={{ fontSize: 11, color: sub, lineHeight: 1.6 }}>
+          購入年齢を設定しておけば、それまでは賃貸として計算されます。<br/>
+          資産タイムラインにも正しく反映されます。
         </p>
       </div>
+
       <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>土地比率（資産価値に影響）</label>
-        <SegmentControl
-          value={String(params.landRatio)}
-          onChange={v => set('landRatio', Number(v))}
-          options={[
-            { value: '0.2', label: 'マンション (20%)' },
-            { value: '0.4', label: '郊外戸建 (40%)' },
-            { value: '0.6', label: '都市戸建 (60%)' },
-          ]}
-        />
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8 }}>購入予定年齢</label>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+          {ageOptions.slice(0, 12).map(age => (
+            <button key={age} onClick={() => set('purchaseAge', age)} style={{
+              padding: '10px 4px', borderRadius: 10, border: `2px solid ${params.purchaseAge === age ? blue : (darkMode ? '#3a3a3a' : '#e5e7eb')}`,
+              background: params.purchaseAge === age ? (darkMode ? '#0d1a2b' : '#eff6ff') : (darkMode ? '#252525' : '#f9fafb'),
+              color: params.purchaseAge === age ? blue : sub,
+              fontSize: 13, fontWeight: params.purchaseAge === age ? 800 : 500, cursor: 'pointer',
+            }}>{age}歳</button>
+          ))}
+        </div>
+
+        {/* 直接入力 */}
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12, color: sub }}>または直接入力:</span>
+          <input
+            type="number" min={currentAge + 1} max={70}
+            value={params.purchaseAge}
+            onChange={e => set('purchaseAge', Number(e.target.value))}
+            style={{
+              width: 70, padding: '6px 10px', borderRadius: 8,
+              border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,
+              background: darkMode ? '#2a2a2a' : '#f9fafb',
+              color: darkMode ? '#f5f5f5' : '#111',
+              fontSize: 15, fontWeight: 700, outline: 'none',
+            }}
+          />
+          <span style={{ fontSize: 12, color: sub }}>歳</span>
+        </div>
       </div>
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>不動産価値シナリオ</label>
-        <SegmentControl
-          value={String(params.landAppreciationRate)}
-          onChange={v => {
-            const rate = Number(v);
-            // 建物減価率もシナリオに連動
-            const dep = rate >= 1 ? 0.5 : rate <= -1 ? 2.0 : 1.0;
-            set('landAppreciationRate', rate);
-            set('depreciationRate', dep);
-          }}
-          options={[
-            { value: '-1', label: '下落 (-1%/年)' },
-            { value: '0',  label: '横ばい' },
-            { value: '1',  label: '上昇 (+1%/年)' },
-          ]}
-        />
-        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>
-          {params.landAppreciationRate < 0 && '地方・郊外・人口減少エリアを想定。購入の優位性が下がります'}
-          {params.landAppreciationRate === 0 && '地方主要都市・一般的な住宅地を想定'}
-          {params.landAppreciationRate > 0 && '都市部・駅近・再開発エリアを想定。購入の優位性が上がります'}
+
+      <div style={{ padding: '12px 14px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
+        <p style={{ fontSize: 12, color: sub }}>
+          現在 <strong style={{ color: darkMode ? '#f5f5f5' : '#111' }}>{currentAge}歳</strong> →
+          <strong style={{ color: blue, marginLeft: 6 }}>{params.purchaseAge}歳で購入</strong>
+          （あと{params.purchaseAge - currentAge}年）
+        </p>
+        <p style={{ fontSize: 11, color: sub, marginTop: 4 }}>
+          それまでの{params.purchaseAge - currentAge}年間は賃貸コストとして計算されます
         </p>
       </div>
     </div>,
 
-    // -- STEP 1: ローン ----------------------------------------------------
+    // ── STEP 1: 物件 ─────────────────────────────────────────────────
+    <div key="property" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <NumInput darkMode={darkMode} label="物件価格" value={params.propertyPrice} onChange={v => set('propertyPrice', v)}
+        hint={`頭金 ¥${params.downPayment.toLocaleString()} → 借入 ¥${loanAmount.toLocaleString()}`} />
+      <NumInput darkMode={darkMode} label="頭金" value={params.downPayment} onChange={v => set('downPayment', v)}
+        hint="物件価格の10〜20%が目安" />
+      <Seg darkMode={darkMode} label="物件タイプ" value={params.propertyType} onChange={v => set('propertyType', v)}
+        options={[{value:'new_eco',label:'新築省エネ'},{value:'new_other',label:'新築その他'},{value:'used',label:'中古'}]} />
+      <p style={{ fontSize: 11, color: sub, marginTop: -8 }}>
+        ローン控除：新築省エネ 35万/年・新築その他 21万/年・中古 14万/年
+      </p>
+      <Seg darkMode={darkMode} label="土地比率（資産価値に影響）" value={String(params.landRatio)} onChange={v => set('landRatio', Number(v))}
+        options={[{value:'0.2',label:'マンション(20%)'},{value:'0.4',label:'郊外戸建(40%)'},{value:'0.6',label:'都市戸建(60%)'}]} />
+      <Seg darkMode={darkMode} label="不動産価値シナリオ" value={String(params.landAppreciationRate)}
+        onChange={v => { const r = Number(v); set('landAppreciationRate', r); set('depreciationRate', r>=1?0.5:r<=-1?2.0:1.0); }}
+        options={[{value:'-1',label:'下落(-1%)'},{value:'0',label:'横ばい'},{value:'1',label:'上昇(+1%)'}]} />
+    </div>,
+
+    // ── STEP 2: ローン ───────────────────────────────────────────────
     <div key="loan" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ padding: '12px 16px', background: '#eff6ff', borderRadius: 12 }}>
-        <p style={{ fontSize: 12, color: '#2563eb', fontWeight: 600 }}>借入額</p>
-        <p style={{ fontSize: 24, fontWeight: 800, color: '#1d4ed8', fontVariantNumeric: 'tabular-nums' }}>
-          ¥{loanAmount.toLocaleString()}
-        </p>
+      <div style={{ padding: '12px 16px', background: darkMode ? '#0d1a2b' : '#eff6ff', borderRadius: 12 }}>
+        <p style={{ fontSize: 11, color: blue }}>借入額</p>
+        <p style={{ fontSize: 24, fontWeight: 800, color: blue, fontVariantNumeric: 'tabular-nums' }}>¥{loanAmount.toLocaleString()}</p>
       </div>
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>返済期間</label>
-        <SegmentControl
-          value={String(params.loanMonths)}
-          onChange={v => set('loanMonths', Number(v))}
-          options={[
-            { value: '240', label: '20年' },
-            { value: '300', label: '25年' },
-            { value: '360', label: '30年' },
-            { value: '420', label: '35年' },
-          ]}
-        />
-      </div>
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>金利タイプ</label>
-        <SegmentControl
-          value={params.rateType}
-          onChange={v => set('rateType', v)}
-          options={[
-            { value: 'fixed',    label: '固定金利' },
-            { value: 'variable', label: '変動金利' },
-          ]}
-        />
-      </div>
-      <NumInput label={params.rateType === 'fixed' ? '固定金利' : '現在の変動金利'} value={params.interestRate}
-        onChange={v => set('interestRate', v)} prefix="" suffix="%" hint="2024年現在：変動 0.4〜0.6%、固定 1.5〜2.0%が目安" />
+      <Seg darkMode={darkMode} label="返済期間" value={String(params.loanMonths)} onChange={v => set('loanMonths', Number(v))}
+        options={[{value:'240',label:'20年'},{value:'300',label:'25年'},{value:'360',label:'30年'},{value:'420',label:'35年'}]} />
+      <Seg darkMode={darkMode} label="金利タイプ" value={params.rateType} onChange={v => set('rateType', v)}
+        options={[{value:'fixed',label:'固定金利'},{value:'variable',label:'変動金利'}]} />
+      <NumInput darkMode={darkMode} label={params.rateType==='fixed'?'固定金利':'現在の変動金利'} value={params.interestRate}
+        onChange={v => set('interestRate', v)} prefix="" suffix="%"
+        hint="2024年現在：変動 0.4〜0.6%、固定 1.5〜2.0%が目安" />
       {params.rateType === 'variable' && (
-        <div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>金利上昇シナリオ</label>
-          <SegmentControl
-            value={params.variableScenario}
-            onChange={v => set('variableScenario', v)}
-            options={[
-              { value: 'optimistic',  label: '楽観（現状維持）' },
-              { value: 'neutral',     label: '中立（段階上昇）' },
-              { value: 'pessimistic', label: '悲観（急上昇）' },
-            ]}
-          />
-          <div style={{ marginTop: 8, padding: '10px 12px', background: '#fef9c3', borderRadius: 10, fontSize: 11, color: '#854d0e' }}>
-            {params.variableScenario === 'optimistic' && '現状（0.5%前後）が継続するシナリオ'}
-            {params.variableScenario === 'neutral'    && '5年後に+1%、10年後に+2%まで段階的に上昇'}
-            {params.variableScenario === 'pessimistic'&& '3年後から毎年+0.5%ずつ上昇（上限3%）'}
-          </div>
-        </div>
+        <Seg darkMode={darkMode} label="金利上昇シナリオ" value={params.variableScenario} onChange={v => set('variableScenario', v)}
+          options={[{value:'optimistic',label:'楽観（現状維持）'},{value:'neutral',label:'中立（段階上昇）'},{value:'pessimistic',label:'悲観（急上昇）'}]} />
       )}
     </div>,
 
-    // -- STEP 2: ランニングコスト ------------------------------------------
+    // ── STEP 3: ランニングコスト ────────────────────────────────────
     <div key="running" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <NumInput label="管理費・修繕積立金（月額）" value={params.managementFee} onChange={v => set('managementFee', v)}
-        hint="マンション：15,000〜30,000円が目安。戸建の場合は0円でOK" />
-      <NumInput label="固定資産税（年額）" value={params.propertyTax} onChange={v => set('propertyTax', v)}
-        hint="物件価格の0.2〜0.3%が目安。購入3年後から本格的に発生" />
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>大規模修繕積立の上昇（15年後）</label>
-        <SegmentControl
-          value={String(params.renovationCycles)}
-          onChange={v => set('renovationCycles', Number(v))}
-          options={[
-            { value: '0',     label: 'なし' },
-            { value: '5000',  label: '+¥5,000/月' },
-            { value: '10000', label: '+¥10,000/月' },
-          ]}
-        />
-        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>マンションは15年前後で修繕積立金が値上がりするケースが多い</p>
-      </div>
-      <NumInput label="年間繰り上げ返済額（任意）" value={params.prepaymentYearly} onChange={v => set('prepaymentYearly', v)}
-        hint="毎年末にこの金額を繰り上げ返済。0円で繰り上げなし" />
-      <div style={{ padding: '12px 16px', background: '#f9fafb', borderRadius: 12 }}>
-        <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>月々の総支出（概算）</p>
-        {(() => {
-          const monthly = loanAmount > 0
-            ? Math.round(loanAmount * (params.interestRate / 100 / 12) * Math.pow(1 + params.interestRate / 100 / 12, params.loanMonths) / (Math.pow(1 + params.interestRate / 100 / 12, params.loanMonths) - 1))
-            : 0;
-          const total = monthly + params.managementFee + Math.round(params.propertyTax / 12);
-          return (
-            <>
-              <p style={{ fontSize: 22, fontWeight: 800, color: '#111827', fontVariantNumeric: 'tabular-nums' }}>¥{total.toLocaleString()}</p>
-              <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
-                ローン返済 ¥{monthly.toLocaleString()} ＋ 管理費 ¥{params.managementFee.toLocaleString()} ＋ 固定資産税 ¥{Math.round(params.propertyTax / 12).toLocaleString()}
-              </p>
-            </>
-          );
-        })()}
-      </div>
-    </div>,
-
-    // -- STEP 3: 賃貸 ------------------------------------------------------
-    <div key="rent" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <NumInput label="月額家賃" value={params.monthlyRent} onChange={v => set('monthlyRent', v)}
-        hint="購入予定物件と同等の賃貸相場を入力" />
-      <NumInput label="更新料（1回あたり）" value={params.renewalFee} onChange={v => set('renewalFee', v)}
-        hint="一般的には家賃1ヶ月分（2年ごとに発生）" />
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>家賃上昇率（年）</label>
-        <SegmentControl
-          value={String(params.rentInflationRate)}
-          onChange={v => set('rentInflationRate', Number(v))}
-          options={[
-            { value: '0',   label: '変わらない' },
-            { value: '1',   label: '1%/年' },
-            { value: '2',   label: '2%/年' },
-          ]}
-        />
-      </div>
-      <div style={{ padding: '12px 16px', background: '#fef3c7', borderRadius: 12 }}>
-        <p style={{ fontSize: 11, color: '#92400e', fontWeight: 500 }}>
-          💡 購入との月々差額（¥{Math.max(0, (() => {
-            const monthly = loanAmount > 0
-              ? Math.round(loanAmount * (params.interestRate / 100 / 12) * Math.pow(1 + params.interestRate / 100 / 12, params.loanMonths) / (Math.pow(1 + params.interestRate / 100 / 12, params.loanMonths) - 1))
-              : 0;
-            return monthly + params.managementFee + Math.round(params.propertyTax / 12) - params.monthlyRent;
-          })()).toLocaleString()}）を毎月インデックス投資に回す想定でシミュレーションします
+      <NumInput darkMode={darkMode} label="管理費・修繕積立（月額）" value={params.managementFee} onChange={v => set('managementFee', v)}
+        hint="マンション：15,000〜30,000円が目安。戸建は0円でOK" />
+      <NumInput darkMode={darkMode} label="固定資産税（年額）" value={params.propertyTax} onChange={v => set('propertyTax', v)}
+        hint="物件価格の0.2〜0.3%が目安" />
+      <Seg darkMode={darkMode} label="大規模修繕積立の上昇（15年後）" value={String(params.renovationCycles)} onChange={v => set('renovationCycles', Number(v))}
+        options={[{value:'0',label:'なし'},{value:'5000',label:'+¥5,000/月'},{value:'10000',label:'+¥10,000/月'}]} />
+      <NumInput darkMode={darkMode} label="年間繰り上げ返済額（任意）" value={params.prepaymentYearly} onChange={v => set('prepaymentYearly', v)}
+        hint="毎年末に繰り上げ返済。0で繰り上げなし" />
+      <div style={{ padding: '12px 16px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
+        <p style={{ fontSize: 11, color: sub, marginBottom: 4 }}>月々の総支出（概算）</p>
+        <p style={{ fontSize: 22, fontWeight: 800, color: darkMode ? '#f5f5f5' : '#111', fontVariantNumeric: 'tabular-nums' }}>¥{monthlyBuy.toLocaleString()}</p>
+        <p style={{ fontSize: 11, color: sub, marginTop: 2 }}>
+          ローン¥{monthlyLoan.toLocaleString()} ＋ 管理費¥{params.managementFee.toLocaleString()} ＋ 固定資産税¥{Math.round(params.propertyTax/12).toLocaleString()}
         </p>
       </div>
     </div>,
 
-    // -- STEP 4: その他 ----------------------------------------------------
-    <div key="other" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <NumInput label="購入時点の年収" value={params.annualIncome} onChange={v => set('annualIncome', v)}
-        hint="住宅ローン控除の計算に使用（控除は所得税から控除。年収2,000万超は対象外）" />
-      <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>比較期間</label>
-        <SegmentControl
-          value={String(params.compareYears)}
-          onChange={v => set('compareYears', Number(v))}
-          options={[
-            { value: '10', label: '10年' },
-            { value: '20', label: '20年' },
-            { value: '30', label: '30年' },
-            { value: '40', label: '40年' },
-          ]}
-        />
-      </div>
-      <div style={{ padding: '12px 16px', background: '#ecfdf5', borderRadius: 12 }}>
-        <p style={{ fontSize: 12, color: '#065f46', fontWeight: 600, marginBottom: 6 }}>設定内容の確認</p>
-        {[
-          ['物件価格', `¥${params.propertyPrice.toLocaleString()}`],
-          ['頭金',     `¥${params.downPayment.toLocaleString()}`],
-          ['借入額',   `¥${loanAmount.toLocaleString()}`],
-          ['金利',     `${params.rateType === 'fixed' ? '固定' : '変動'} ${params.interestRate}%`],
-          ['返済期間', `${params.loanMonths / 12}年`],
-          ['繰り上げ返済', params.prepaymentYearly > 0 ? `¥${params.prepaymentYearly.toLocaleString()}/年` : 'なし'],
-          ['修繕積立上昇', params.renovationCycles > 0 ? `+¥${params.renovationCycles.toLocaleString()}/月（15年後）` : 'なし'],
-          ['月額家賃（比較）', `¥${params.monthlyRent.toLocaleString()}`],
-          ['比較期間', `${params.compareYears}年`],
-        ].map(([k, v]) => (
-          <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingBottom: 3, borderBottom: '1px solid #a7f3d0', marginBottom: 3 }}>
-            <span style={{ color: '#6b7280' }}>{k}</span>
-            <span style={{ fontWeight: 600, color: '#111827', fontVariantNumeric: 'tabular-nums' }}>{v}</span>
+    // ── STEP 4: 賃貸 ─────────────────────────────────────────────────
+    <div key="rent" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <NumInput darkMode={darkMode} label="月額家賃" value={params.monthlyRent} onChange={v => set('monthlyRent', v)}
+        hint="購入予定物件と同等の賃貸相場を入力" />
+      <NumInput darkMode={darkMode} label="更新料（1回あたり）" value={params.renewalFee} onChange={v => set('renewalFee', v)}
+        hint="一般的には家賃1ヶ月分（2年ごとに発生）" />
+      <Seg darkMode={darkMode} label="家賃上昇率（年）" value={String(params.rentInflationRate)} onChange={v => set('rentInflationRate', Number(v))}
+        options={[{value:'0',label:'変わらない'},{value:'1',label:'1%/年'},{value:'2',label:'2%/年'}]} />
+      <div style={{ padding: '12px 14px', background: darkMode ? '#2b1a08' : '#fffbeb', borderRadius: 12 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#d97706', marginBottom: 4 }}>💡 月々コスト比較</p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <div>
+            <p style={{ fontSize: 10, color: sub }}>購入（月）</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: '#3b82f6', fontVariantNumeric: 'tabular-nums' }}>¥{monthlyBuy.toLocaleString()}</p>
           </div>
-        ))}
+          <div style={{ fontSize: 18, color: sub, alignSelf: 'center' }}>vs</div>
+          <div>
+            <p style={{ fontSize: 10, color: sub }}>賃貸（月）</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: '#a855f7', fontVariantNumeric: 'tabular-nums' }}>¥{params.monthlyRent.toLocaleString()}</p>
+          </div>
+          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+            <p style={{ fontSize: 10, color: sub }}>差額</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: monthlyDiff > 0 ? '#ef4444' : '#10b981', fontVariantNumeric: 'tabular-nums' }}>
+              {monthlyDiff > 0 ? '+' : ''}{monthlyDiff < 0 ? '-' : ''}¥{Math.abs(monthlyDiff).toLocaleString()}
+            </p>
+          </div>
+        </div>
+        {monthlyDiff > 0 && (
+          <p style={{ fontSize: 11, color: '#92400e', marginTop: 6 }}>
+            賃貸のほうが月¥{Math.abs(monthlyDiff).toLocaleString()}安い分を投資に回す想定でシミュレーションします
+          </p>
+        )}
       </div>
+    </div>,
+
+    // ── STEP 5: 確認 ─────────────────────────────────────────────────
+    <div key="summary" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ padding: '14px 16px', background: darkMode ? '#0d2b1a' : '#ecfdf5', borderRadius: 14 }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: '#065f46', marginBottom: 10 }}>設定内容の確認</p>
+        <InfoRow label="📅 購入予定年齢"   value={`${params.purchaseAge}歳（あと${params.purchaseAge-currentAge}年）`} accent={blue} />
+        <InfoRow label="物件価格"          value={`¥${params.propertyPrice.toLocaleString()}`} />
+        <InfoRow label="頭金"              value={`¥${params.downPayment.toLocaleString()}`} />
+        <InfoRow label="借入額"            value={`¥${loanAmount.toLocaleString()}`} accent="#ef4444" />
+        <InfoRow label="月々返済"          value={`¥${monthlyLoan.toLocaleString()}`} />
+        <InfoRow label="金利"              value={`${params.rateType==='fixed'?'固定':'変動'} ${params.interestRate}%`} />
+        <InfoRow label="返済期間"          value={`${params.loanMonths/12}年`} />
+        <InfoRow label="月々総支出（購入）" value={`¥${monthlyBuy.toLocaleString()}`} />
+        <InfoRow label="月々家賃（賃貸）"  value={`¥${params.monthlyRent.toLocaleString()}`} />
+        <InfoRow label="月々差額"          value={`${monthlyDiff>0?'+':''}¥${monthlyDiff.toLocaleString()}`} accent={monthlyDiff>0?'#ef4444':'#10b981'} />
+        <InfoRow label="比較期間"          value={`${params.compareYears}年`} />
+      </div>
+      <div>
+        <label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 6 }}>比較期間</label>
+        <Seg darkMode={darkMode} value={String(params.compareYears)} onChange={v => set('compareYears', Number(v))}
+          options={[{value:'10',label:'10年'},{value:'20',label:'20年'},{value:'30',label:'30年'},{value:'40',label:'40年'}]} />
+      </div>
+      <NumInput darkMode={darkMode} label="購入時点の年収（ローン控除計算用）" value={params.annualIncome} onChange={v => set('annualIncome', v)}
+        hint="控除は所得税から。年収2,000万超は対象外" />
     </div>,
   ];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
-      <div style={{ width: '100%', maxWidth: 480, background: '#fff', borderRadius: '24px 24px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: bg, borderRadius: '24px 24px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}>
 
-        {/* ヘッ-ー */}
+        {/* ヘッダー */}
         <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
-              <p style={{ fontSize: 11, color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>シミュレーター</p>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#111827' }}>🏠 持ち家 vs 賃貸</h2>
+              <p style={{ fontSize: 11, color: sub, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>シミュレーター</p>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: darkMode ? '#f5f5f5' : '#111' }}>🏠 持ち家 vs 賃貸</h2>
             </div>
-            <button onClick={() => setShowHousingModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#f3f4f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <X size={16} color="#6b7280" />
+            <button onClick={() => setShowHousingModal(false)} style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: darkMode ? '#2a2a2a' : '#f3f4f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={16} color={sub} />
             </button>
           </div>
 
           {/* ステップインジケーター */}
-          <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 3, marginBottom: 18 }}>
             {STEPS.map((s, i) => (
               <div key={s.id} onClick={() => i < step && setStep(i)} style={{ flex: 1, cursor: i < step ? 'pointer' : 'default' }}>
-                <div style={{ height: 4, borderRadius: 2, background: i <= step ? '#3b82f6' : '#e5e7eb', transition: 'background 0.3s' }} />
-                <p style={{ fontSize: 10, color: i === step ? '#3b82f6' : '#9ca3af', fontWeight: i === step ? 700 : 400, textAlign: 'center', marginTop: 3 }}>
-                  {s.icon} {s.label}
+                <div style={{ height: 3, borderRadius: 2, background: i <= step ? blue : (darkMode ? '#2a2a2a' : '#e5e7eb'), transition: 'background 0.3s' }} />
+                <p style={{ fontSize: 9, color: i === step ? blue : sub, fontWeight: i === step ? 700 : 400, textAlign: 'center', marginTop: 3 }}>
+                  {s.icon}
                 </p>
               </div>
             ))}
@@ -334,26 +314,26 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
         </div>
 
         {/* コンテンツ */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
           {stepContent[step]}
         </div>
 
-        {/* フッターボタン */}
-        <div style={{ padding: 20, flexShrink: 0, display: 'flex', gap: 8, borderTop: '1px solid #f3f4f6' }}>
+        {/* フッター */}
+        <div style={{ padding: '14px 20px', flexShrink: 0, display: 'flex', gap: 8, borderTop: `1px solid ${darkMode ? '#2a2a2a' : '#f3f4f6'}` }}>
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '13px 20px', borderRadius: 14, border: '1.5px solid #e5e7eb', background: '#fff', fontSize: 14, fontWeight: 600, color: '#374151', cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '13px 18px', borderRadius: 14, border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`, background: 'none', fontSize: 14, fontWeight: 600, color: sub, cursor: 'pointer' }}>
               <ChevronLeft size={16} /> 戻る
             </button>
           )}
           {step < STEPS.length - 1 ? (
             <button onClick={() => setStep(s => s + 1)}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 14, border: 'none', background: blue, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
               次へ <ChevronRight size={16} />
             </button>
           ) : (
             <button onClick={() => { setHousingParams(params); setShowHousingModal(false); }}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px 0', borderRadius: 14, border: 'none', background: '#10b981', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 14, border: 'none', background: '#10b981', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
               <TrendingUp size={16} /> シミュレーション開始
             </button>
           )}
