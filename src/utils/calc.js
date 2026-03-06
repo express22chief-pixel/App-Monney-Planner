@@ -532,11 +532,18 @@ export function calculateWithdrawalSimulation(principal, withdrawalSettings) {
     if (balance <= 0) break;
   }
 
+  // ループが years 回全部回りきった場合は持続可能
+  const completed = results.length === years && (results[results.length - 1]?.balance ?? 0) > 0;
+
   return {
     results,
     depletedYear,
     finalValue: Math.round(Math.max(0, balance)),
-    sustainableYears: depletedYear ?? (balance > 0 ? years + '+' : 0),
+    sustainableYears: depletedYear
+      ? depletedYear
+      : completed
+        ? `${years}年以上`
+        : results.length,
   };
 }
 
@@ -583,36 +590,41 @@ export function calcMortgageTaxCredit(loanBalance, propertyType, annualIncome, y
 }
 
 /** 不動産時価の計算 */
-export function calcPropertyValue(purchasePrice, landRatio, depreciationRate, years) {
-  // 土地部分は価値維持、建物部分のみ減価
-  const landValue = purchasePrice * landRatio;
+export function calcPropertyValue(purchasePrice, landRatio, depreciationRate, years, landAppreciationRate = 0) {
+  // 土地部分は地価変動率に連動、建物部分は減価
+  const landValue = purchasePrice * landRatio * Math.pow(1 + landAppreciationRate / 100, years);
   const buildingValue = purchasePrice * (1 - landRatio);
   const depreciatedBuilding = buildingValue * Math.pow(1 - depreciationRate / 100, years);
-  return landValue + depreciatedBuilding;
+  return Math.max(0, landValue + depreciatedBuilding);
 }
 
 // --- 持ち家 vs 賃貸 比較シミュレーション ------------------------------------
 /**
  * @param {object} p - housing params
  * @param {object} s - simulation base settings
- * @returns {{ buy: Array, rent: Array, summary: object }}
  */
 export function calculateHousingComparison(p, s) {
   const {
-    propertyPrice, downPayment, loanMonths, interestRate, rateType, variableScenario,
-    managementFee, propertyTax, propertyType, landRatio, depreciationRate,
+    propertyPrice, downPayment, loanMonths, interestRate, rateType,
+    managementFee, propertyTax, propertyType, landRatio, depreciationRate, landAppreciationRate = 0,
     monthlyRent, renewalFee, rentInflationRate,
     annualIncome, compareYears,
+    prepaymentYearly = 0,
+    renovationCycles = 0,
   } = p;
-  const { returnRate, assetData } = s;
+  const {
+    returnRate,
+    assetData,
+    incomeGrowthRate = 0,
+    monthlyIncome    = 0,
+  } = s;
 
-  const principal      = propertyPrice - downPayment;
-  const totalMonths    = loanMonths;
-  const compareMonths  = compareYears * 12;
-  const investRate     = returnRate / 100 / 12;
-  const TAX_RATE       = 0.20315;
+  const principal     = propertyPrice - downPayment;
+  const totalMonths   = loanMonths;
+  const compareMonths = compareYears * 12;
+  const investRate    = returnRate / 100 / 12;
+  const TAX_RATE      = 0.20315;
 
-  // 変動金利スケジュール
   const rateSchedules = {
     fixed:       Array(compareMonths).fill(interestRate),
     optimistic:  buildRateSchedule(interestRate, 'optimistic', compareMonths),
@@ -628,55 +640,75 @@ export function calculateHousingComparison(p, s) {
         { key: 'pessimistic', label: '変動（悲観）', color: '#ef4444' },
       ];
 
+  const acquisitionCost = propertyPrice * 0.03;
+  const saleCost        = propertyPrice * 0.03;
+
   // -- 購入シナリオ ----------------------------------------------------------
   const buyResults = scenarios.map(scenario => {
-    let loanBalance      = principal;
-    let financialAssets  = assetData ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder) : 0;
-    financialAssets     -= downPayment; // 頭金を頭出し
-    let totalInterest    = 0;
-    let totalTaxCredit   = 0;
-    const yearlyData     = [];
+    let loanBalance     = principal;
+    let financialAssets = assetData
+      ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder)
+      : 0;
+    financialAssets -= downPayment + acquisitionCost;
+
+    let totalInterest  = 0;
+    let totalTaxCredit = 0;
+    let totalPrepay    = 0;
+    const yearlyData   = [];
 
     for (let year = 1; year <= compareYears; year++) {
+      const incomeGrowthMult = Math.pow(1 + incomeGrowthRate / 100, year - 1);
+      const extraMgmt = (renovationCycles > 0 && year >= 15) ? renovationCycles : 0;
       let yearInterest = 0;
+
       for (let m = 0; m < 12; m++) {
-        const monthIdx = (year - 1) * 12 + m;
+        const monthIdx       = (year - 1) * 12 + m;
         if (monthIdx >= compareMonths) break;
-        const rate = rateSchedules[scenario.key][monthIdx];
+        const rate           = rateSchedules[scenario.key][monthIdx];
         const monthlyPayment = loanBalance > 0
           ? calcMonthlyPayment(loanBalance, rate, Math.max(1, totalMonths - monthIdx))
           : 0;
         const monthInterest  = loanBalance * (rate / 100 / 12);
         const monthPrincipal = Math.min(loanBalance, monthlyPayment - monthInterest);
-        yearInterest += monthInterest;
+        yearInterest  += monthInterest;
         totalInterest += monthInterest;
-        loanBalance   = Math.max(0, loanBalance - monthPrincipal);
+        loanBalance    = Math.max(0, loanBalance - monthPrincipal);
 
-        // 金融資産は毎月複利成長（税引き後）
-        const grossReturn = financialAssets * investRate;
-        financialAssets  += grossReturn * (1 - TAX_RATE); // 税引き後
+        const buyMonthlyTotal = monthlyPayment + managementFee + extraMgmt + propertyTax / 12;
+        const rentThisMonth   = monthlyRent * Math.pow(1 + rentInflationRate / 100, year - 1);
+        const surplus         = Math.max(0, (rentThisMonth * incomeGrowthMult) - buyMonthlyTotal);
+
+        if (financialAssets > 0) {
+          financialAssets += financialAssets * investRate * (1 - TAX_RATE);
+        }
+        financialAssets += surplus;
       }
 
-      // ローン控除
-      const taxCredit = calcMortgageTaxCredit(loanBalance, propertyType, annualIncome, year);
-      totalTaxCredit += taxCredit;
-      financialAssets += taxCredit; // 控除分は金融資産に加算
+      // 繰り上げ返済（年1回、年末）
+      if (prepaymentYearly > 0 && loanBalance > 0) {
+        const actual     = Math.min(prepaymentYearly, loanBalance);
+        loanBalance     -= actual;
+        financialAssets -= actual;
+        totalPrepay     += actual;
+      }
 
-      // 不動産時価
-      const propertyValue = calcPropertyValue(propertyPrice, landRatio, depreciationRate, year);
-      // ランニングコスト（管理費・固定資産税）
-      const runningCost = managementFee * 12 + propertyTax;
-      const netAssets = financialAssets + propertyValue - loanBalance;
+      const taxCredit   = calcMortgageTaxCredit(loanBalance, propertyType, annualIncome, year);
+      totalTaxCredit   += taxCredit;
+      financialAssets  += taxCredit;
+
+      const propertyValue = calcPropertyValue(propertyPrice, landRatio, depreciationRate, year, landAppreciationRate);
+      const saleCostAdj   = year === compareYears ? saleCost : 0;
+      const netAssets     = financialAssets + propertyValue - loanBalance - saleCostAdj;
 
       yearlyData.push({
         year,
-        financialAssets:  Math.round(financialAssets),
-        propertyValue:    Math.round(propertyValue),
-        loanBalance:      Math.round(loanBalance),
-        netAssets:        Math.round(netAssets),
-        yearInterest:     Math.round(yearInterest),
-        taxCredit:        Math.round(taxCredit),
-        runningCost:      Math.round(runningCost),
+        financialAssets: Math.round(financialAssets),
+        propertyValue:   Math.round(propertyValue),
+        loanBalance:     Math.round(loanBalance),
+        netAssets:       Math.round(netAssets),
+        yearInterest:    Math.round(yearInterest),
+        taxCredit:       Math.round(taxCredit),
+        runningCost:     Math.round((managementFee + extraMgmt) * 12 + propertyTax),
       });
     }
 
@@ -687,40 +719,50 @@ export function calculateHousingComparison(p, s) {
       totalInterest:   Math.round(totalInterest),
       totalTaxCredit:  Math.round(totalTaxCredit),
       totalRepayment:  Math.round(principal + totalInterest),
+      totalPrepay:     Math.round(totalPrepay),
+      acquisitionCost: Math.round(acquisitionCost),
+      saleCost:        Math.round(saleCost),
       finalNetAssets:  last.netAssets,
       finalProperty:   last.propertyValue,
       finalLoan:       last.loanBalance,
     };
   });
 
-  // -- 賃貸＋投資シナリオ ----------------------------------------------------
-  // 購入シナリオのfixedまたはneutralのローン月払いを基準に差額を投資
-  const refBuy      = buyResults.find(r => r.key === 'fixed' || r.key === 'neutral') || buyResults[0];
-  let rentAssets    = assetData ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder) : 0;
+  // -- 賃貸+投資シナリオ -------------------------------------------------------
+  const refBuy   = buyResults.find(r => r.key === 'fixed' || r.key === 'neutral') || buyResults[0];
+  const refRates = rateSchedules[refBuy.key];
+
+  let rentAssets    = assetData
+    ? (assetData.savings + assetData.investments + assetData.nisa + assetData.dryPowder)
+    : 0;
+  rentAssets       += downPayment + acquisitionCost;
   let totalRentPaid = 0;
   const rentYearlyData = [];
 
   for (let year = 1; year <= compareYears; year++) {
-    const inflationMult = Math.pow(1 + rentInflationRate / 100, year - 1);
-    const currentRent   = monthlyRent * inflationMult;
-    const renewal       = year % 2 === 0 ? renewalFee * inflationMult : 0; // 2年ごと更新料
+    const incomeGrowthMult = Math.pow(1 + incomeGrowthRate / 100, year - 1);
+    const inflationMult    = Math.pow(1 + rentInflationRate / 100, year - 1);
+    const currentRent      = monthlyRent * inflationMult;
+    const renewal          = year % 2 === 0 ? renewalFee * inflationMult : 0;
+    const extraMgmt        = (renovationCycles > 0 && year >= 15) ? renovationCycles : 0;
 
-    // 購入シナリオの月支出（その年の実際のローン残高ベースで再計算）
-    const yearData = refBuy.yearlyData[year - 1];
-    const remainingMonths = Math.max(1, loanMonths - (year - 1) * 12);
-    const refLoanBalance  = year === 1 ? principal : (refBuy.yearlyData[year - 2]?.loanBalance || 0);
-    const refBuyMonthly   = yearData
-      ? (yearData.runningCost / 12 +
-         (refLoanBalance > 0 ? calcMonthlyPayment(refLoanBalance, interestRate, remainingMonths) : 0))
-      : 0;
+    // 購入側の年初ローン残高（月次で正確に追う）
+    const yearStartLoanBal = year === 1 ? principal : (refBuy.yearlyData[year - 2]?.loanBalance || 0);
 
     for (let m = 0; m < 12; m++) {
-      // 更新料は発生月（年末）に一括
+      const monthIdx   = (year - 1) * 12 + m;
+      const rate       = refRates[Math.min(monthIdx, refRates.length - 1)];
+      // 月次で残高を再計算（年内の元本返済を追う）
+      const refMonthly = yearStartLoanBal > 0
+        ? calcMonthlyPayment(yearStartLoanBal, rate, Math.max(1, loanMonths - (year - 1) * 12))
+        : 0;
+      const refMonthlyTotal = refMonthly + managementFee + extraMgmt + propertyTax / 12;
+
       const renewalThisMonth = m === 11 ? renewal : 0;
-      const surplus = Math.max(0, refBuyMonthly - currentRent - renewalThisMonth);
-      // 毎月複利成長（税引き後）＋余剰CF投資
-      const grossReturn = rentAssets * investRate;
-      rentAssets = rentAssets + grossReturn * (1 - TAX_RATE) + surplus;
+      const rentTotal        = currentRent + renewalThisMonth;
+      const surplus          = Math.max(0, (refMonthlyTotal * incomeGrowthMult) - rentTotal);
+
+      rentAssets += rentAssets * investRate * (1 - TAX_RATE) + surplus;
     }
     totalRentPaid += currentRent * 12 + renewal;
 
@@ -732,31 +774,345 @@ export function calculateHousingComparison(p, s) {
     });
   }
 
-  // -- サマリー --------------------------------------------------------------
+  // -- サマリー ---------------------------------------------------------------
   const rentFinal = rentYearlyData[rentYearlyData.length - 1]?.netAssets || 0;
   const buyFinal  = refBuy.finalNetAssets;
   const diff      = rentFinal - buyFinal;
 
   return {
     buyScenarios: buyResults,
-    rentScenario: { yearlyData: rentYearlyData, finalNetAssets: rentFinal, totalRentPaid: Math.round(totalRentPaid) },
+    rentScenario: {
+      yearlyData:     rentYearlyData,
+      finalNetAssets: rentFinal,
+      totalRentPaid:  Math.round(totalRentPaid),
+    },
     summary: {
       winner:    diff > 0 ? 'rent' : 'buy',
       diff:      Math.abs(diff),
       buyFinal,
       rentFinal,
       crossoverYear: (() => {
-        for (let i = 0; i < compareYears; i++) {
-          const buyVal  = refBuy.yearlyData[i]?.netAssets || 0;
-          const rentVal = rentYearlyData[i]?.netAssets   || 0;
-          if (i > 0) {
-            const prevBuy  = refBuy.yearlyData[i-1]?.netAssets || 0;
-            const prevRent = rentYearlyData[i-1]?.netAssets   || 0;
-            if ((prevBuy - prevRent) * (buyVal - rentVal) < 0) return i + 1;
-          }
+        for (let i = 1; i < compareYears; i++) {
+          const prevBuy  = refBuy.yearlyData[i-1]?.netAssets || 0;
+          const prevRent = rentYearlyData[i-1]?.netAssets   || 0;
+          const curBuy   = refBuy.yearlyData[i]?.netAssets   || 0;
+          const curRent  = rentYearlyData[i]?.netAssets      || 0;
+          if ((prevBuy - prevRent) * (curBuy - curRent) < 0) return i + 1;
         }
         return null;
       })(),
     },
   };
+}
+
+
+// ============================================================================
+// ライフプランシミュレーション
+// ============================================================================
+/**
+ * calculateLifePlanSimulation
+ *
+ * 現在年齢〜想定寿命まで、ライフフェーズをまたいで資産推移を計算する。
+ *
+ * フェーズ1: 現在 〜 リタイア  → 収入あり・積立あり
+ * フェーズ2: リタイア 〜 寿命  → 年金収入・取り崩し
+ *
+ * @param {object} lifePlan   - ライフプラン設定
+ * @param {object} simSettings - 既存 simulationSettings（投資設定を流用）
+ * @param {object} assetData  - 現在の資産
+ * @param {Array}  lifeEvents - ライフイベント一覧
+ * @param {object} housingParams - 住宅購入パラメータ（null なら賃貸継続）
+ * @returns {{ byAge: Array, summary: object }}
+ */
+export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, lifeEvents, housingParams) {
+  const {
+    currentAge      = 30,
+    retirementAge   = 65,
+    lifeExpectancy  = 90,
+    annualIncome    = 6000000,
+    incomeGrowthRate = 1,       // %/年
+    monthlyExpense  = 200000,   // 現役時の月間生活費（住居費含む）
+    retirementMonthlyIncome  = 150000,  // 老後の月収（年金等）
+    retirementMonthlyExpense = 200000,  // 老後の月間支出
+  } = lifePlan;
+
+  const {
+    returnRate      = 5,
+    useNisa         = true,
+    monthlyInvestment = 30000,
+    savingsInterestRate = 0.2,
+  } = simSettings;
+
+  const TAX_RATE           = 0.20315;
+  const NISA_TSUMITATE_LIMIT = 3600000;
+  const NISA_GROWTH_LIMIT    = 2400000;
+  const NISA_TOTAL_LIMIT     = 18000000;
+  const monthlyRate          = returnRate / 100 / 12;
+  const savingsMonthlyRate   = savingsInterestRate / 100 / 12;
+
+  const totalYears  = lifeExpectancy - currentAge;
+  const workYears   = retirementAge  - currentAge;
+
+  // 住宅ローンのセットアップ
+  let loanBalance   = 0;
+  let loanMonthlyPayment = 0;
+  let loanRemainingMonths = 0;
+  let housingPurchaseAge = null;
+  let monthlyRentCost = 0; // 賃貸の場合
+
+  if (housingParams) {
+    const purchaseDate = housingParams.purchaseAge
+      ? housingParams.purchaseAge
+      : null;
+    housingPurchaseAge = purchaseDate;
+    monthlyRentCost = housingParams.monthlyRent || 0;
+  }
+
+  // 初期資産
+  let savings         = assetData?.savings         || 0;
+  let regularInvest   = assetData?.investments     || 0;
+  let nisaInvest      = assetData?.nisa            || 0;
+  let dryPowder       = assetData?.dryPowder       || 0;
+  let nisaTotalUsed   = nisaInvest;
+
+  const byAge = [];
+  let depletionAge = null;
+
+  for (let y = 0; y < totalYears; y++) {
+    const age        = currentAge + y;
+    const isRetired  = age >= retirementAge;
+    const growthMult = Math.pow(1 + incomeGrowthRate / 100, Math.min(y, workYears - 1));
+
+    // 年次ローン状態スナップショット（住宅ローン）
+    let yearLoanBalance = loanBalance;
+
+    let nisaUsedThisYear = 0;
+
+    for (let m = 0; m < 12; m++) {
+      const monthIdx = y * 12 + m;
+
+      // ── ローン返済 ──────────────────────────────────────────────────
+      if (loanBalance > 0 && loanRemainingMonths > 0) {
+        const mp = calcMonthlyPayment(loanBalance, housingParams?.interestRate || 0.5, loanRemainingMonths);
+        const mi = loanBalance * ((housingParams?.interestRate || 0.5) / 100 / 12);
+        const mprin = Math.min(loanBalance, mp - mi);
+        loanBalance = Math.max(0, loanBalance - mprin);
+        loanRemainingMonths = Math.max(0, loanRemainingMonths - 1);
+        // ローン返済分は月間支出から除外しない（別途管理）
+      }
+
+      // ── 収支 ────────────────────────────────────────────────────────
+      if (!isRetired) {
+        // 現役：月収から生活費・ローン・積立を差し引いた余剰が貯金へ
+        const monthlyGrossIncome = (annualIncome * growthMult) / 12;
+        const monthlyNet = monthlyGrossIncome * 0.8; // 手取り概算80%
+        const livingCost = monthlyExpense;
+        const loanCost   = loanBalance > 0
+          ? calcMonthlyPayment(loanBalance + (loanBalance > 0 ? (calcMonthlyPayment(loanBalance, housingParams?.interestRate||0.5, loanRemainingMonths||1) - loanBalance*((housingParams?.interestRate||0.5)/100/12)) : 0), housingParams?.interestRate||0.5, loanRemainingMonths||1)
+          : (housingParams ? 0 : monthlyRentCost); // 賃貸コスト
+        const investAmt  = Math.min(monthlyInvestment * growthMult, Math.max(0, monthlyNet - livingCost - loanCost));
+        const surplus    = Math.max(0, monthlyNet - livingCost - loanCost - investAmt);
+
+        savings += surplus;
+        savings += savings * savingsMonthlyRate;
+
+        // NISA / 課税口座への積立
+        if (investAmt > 0) {
+          if (useNisa && nisaTotalUsed < NISA_TOTAL_LIMIT && nisaUsedThisYear < (NISA_TSUMITATE_LIMIT + NISA_GROWTH_LIMIT)) {
+            const space = Math.min(investAmt, NISA_TOTAL_LIMIT - nisaTotalUsed, (NISA_TSUMITATE_LIMIT + NISA_GROWTH_LIMIT) - nisaUsedThisYear);
+            nisaInvest    += space;
+            nisaTotalUsed += space;
+            nisaUsedThisYear += space;
+            const rem = investAmt - space;
+            if (rem > 0) regularInvest += rem;
+          } else {
+            regularInvest += investAmt;
+          }
+        }
+      } else {
+        // リタイア後：年金収入 − 生活費 → 不足分を資産から取り崩し
+        const monthlyCashflow = retirementMonthlyIncome - retirementMonthlyExpense;
+        if (monthlyCashflow >= 0) {
+          savings += monthlyCashflow;
+        } else {
+          const deficit = -monthlyCashflow;
+          if (savings >= deficit) {
+            savings -= deficit;
+          } else {
+            const fromSav = savings; savings = 0;
+            const rem1 = deficit - fromSav;
+            if (dryPowder >= rem1) { dryPowder -= rem1; }
+            else {
+              const fromDry = dryPowder; dryPowder = 0;
+              const rem2 = rem1 - fromDry;
+              if (regularInvest >= rem2) { regularInvest -= rem2; }
+              else {
+                const fromReg = regularInvest; regularInvest = 0;
+                nisaInvest = Math.max(0, nisaInvest - (rem2 - fromReg));
+              }
+            }
+          }
+        }
+      }
+
+      // ── 投資運用益 ──────────────────────────────────────────────────
+      const nisaProfit    = nisaInvest    * monthlyRate;
+      const regularProfit = regularInvest * monthlyRate;
+      nisaInvest    += nisaProfit;
+      regularInvest += regularProfit * (1 - TAX_RATE);
+    }
+
+    // ── ライフイベント（年次処理）─────────────────────────────────────
+    const currentYear = new Date().getFullYear() + y;
+    lifeEvents.forEach(event => {
+      const eventYear = parseInt(event.date?.slice(0, 4));
+      const eventAge  = currentAge + (eventYear - new Date().getFullYear());
+      if (eventAge !== age) return;
+
+      // 住宅購入イベントはhousingParamsと連携（頭金を資産から控除）
+      if (event.type === 'housing' && housingParams) {
+        const acqCost = (housingParams.propertyPrice || 0) * 0.03;
+        const dp      = housingParams.downPayment || 0;
+        const total   = dp + acqCost;
+        const principal = (housingParams.propertyPrice || 0) - dp;
+        loanBalance          = principal;
+        loanRemainingMonths  = housingParams.loanMonths || 360;
+        if (savings >= total)       { savings -= total; }
+        else if (dryPowder >= total) { dryPowder -= total; }
+        else { savings = Math.max(0, savings - total); }
+        return;
+      }
+
+      const amount = event.amount || 0;
+      if (dryPowder >= amount)      { dryPowder -= amount; }
+      else if (savings >= amount)   { savings   -= amount; }
+      else {
+        const fromSav = savings; savings = 0;
+        const rem = amount - fromSav;
+        if (regularInvest >= rem) { regularInvest -= rem; }
+        else {
+          const fromReg = regularInvest; regularInvest = 0;
+          nisaInvest = Math.max(0, nisaInvest - (rem - fromReg));
+        }
+      }
+    });
+
+    // 住宅資産価値（購入後）
+    let propertyValue = 0;
+    if (housingParams && housingPurchaseAge !== null && age >= (housingPurchaseAge ?? retirementAge)) {
+      const yearsOwned = age - (housingPurchaseAge ?? retirementAge);
+      propertyValue = calcPropertyValue(
+        housingParams.propertyPrice || 0,
+        housingParams.landRatio || 0.2,
+        housingParams.depreciationRate || 1,
+        yearsOwned,
+        housingParams.landAppreciationRate || 0
+      );
+    }
+
+    const totalAssets = Math.max(0, savings) + Math.max(0, regularInvest) + Math.max(0, nisaInvest) + Math.max(0, dryPowder);
+    const netWorth    = totalAssets + propertyValue - loanBalance;
+
+    if (netWorth <= 0 && depletionAge === null && age >= retirementAge) {
+      depletionAge = age;
+    }
+
+    byAge.push({
+      age,
+      totalAssets:   Math.round(totalAssets),
+      netWorth:      Math.round(netWorth),
+      savings:       Math.round(Math.max(0, savings)),
+      regularInvest: Math.round(Math.max(0, regularInvest)),
+      nisaInvest:    Math.round(Math.max(0, nisaInvest)),
+      dryPowder:     Math.round(Math.max(0, dryPowder)),
+      propertyValue: Math.round(propertyValue),
+      loanBalance:   Math.round(loanBalance),
+      isRetired,
+    });
+  }
+
+  const atRetirement = byAge.find(r => r.age === retirementAge) || byAge[workYears - 1];
+  const atEnd        = byAge[byAge.length - 1];
+
+  return {
+    byAge,
+    summary: {
+      retirementNetWorth: atRetirement?.netWorth ?? 0,
+      finalNetWorth:      atEnd?.netWorth ?? 0,
+      depletionAge,
+      isSafe: depletionAge === null,
+    },
+  };
+}
+
+// ============================================================================
+// 家計実績 ↔ シミュレーション連動ユーティリティ
+// ============================================================================
+
+/**
+ * 直近N ヶ月の平均収支を計算
+ * @returns {{ avgIncome, avgExpense, avgSurplus, avgInvestment, months }}
+ */
+export function calcRecentMonthlyAverages(transactions, recurringTransactions, monthlyHistory, n = 3) {
+  const today = new Date();
+  const results = [];
+  for (let i = 1; i <= n; i++) {
+    const d  = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const bal = calculateMonthlyBalance(ym, transactions, recurringTransactions);
+    const hist = monthlyHistory[ym];
+    results.push({
+      ym,
+      income:     bal.plIncome,
+      expense:    bal.plExpense,
+      surplus:    bal.plBalance,
+      investment: hist?.investAmount ?? 0,
+    });
+  }
+  const closed = results.filter(r => r.income > 0 || r.expense > 0);
+  if (closed.length === 0) return null;
+  return {
+    avgIncome:     Math.round(closed.reduce((s, r) => s + r.income,     0) / closed.length),
+    avgExpense:    Math.round(closed.reduce((s, r) => s + r.expense,    0) / closed.length),
+    avgSurplus:    Math.round(closed.reduce((s, r) => s + r.surplus,    0) / closed.length),
+    avgInvestment: Math.round(closed.reduce((s, r) => s + r.investment, 0) / closed.length),
+    months: closed.length,
+  };
+}
+
+/**
+ * 月次の差額（実績 - 計画）が将来資産に与える影響を複利計算
+ * 例: 今月 -20,000 円 → 30年後に複利でいくらの差になるか
+ */
+export function calcFutureImpact(monthlyDiff, yearsRemaining, annualReturnRate = 5) {
+  if (monthlyDiff === 0 || yearsRemaining <= 0) return 0;
+  const r = annualReturnRate / 100 / 12;
+  const n = yearsRemaining * 12;
+  // 毎月の差額が複利で積み上がった場合の将来価値
+  const fv = r === 0
+    ? monthlyDiff * n
+    : monthlyDiff * ((Math.pow(1 + r, n) - 1) / r);
+  return Math.round(fv);
+}
+
+/**
+ * 過去実績ベースの収入成長率を推定（monthlyHistoryから）
+ */
+export function estimateIncomeGrowthRate(transactions, recurringTransactions, monthsBack = 12) {
+  const today = new Date();
+  const monthly = [];
+  for (let i = 1; i <= monthsBack; i++) {
+    const d  = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const bal = calculateMonthlyBalance(ym, transactions, recurringTransactions);
+    if (bal.plIncome > 0) monthly.push({ i, income: bal.plIncome });
+  }
+  if (monthly.length < 6) return null;
+  // 前半・後半の平均で成長率を推定
+  const half = Math.floor(monthly.length / 2);
+  const older = monthly.slice(half).reduce((s, r) => s + r.income, 0) / (monthly.length - half);
+  const newer = monthly.slice(0, half).reduce((s, r) => s + r.income, 0) / half;
+  if (older === 0) return null;
+  const annualGrowth = (newer / older - 1) * (12 / half) * 100;
+  return Math.round(Math.max(-5, Math.min(10, annualGrowth)) * 10) / 10; // -5% 〜 +10% にクリップ
 }
