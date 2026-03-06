@@ -142,7 +142,7 @@ export default function SimulationTab(props) {
     g.addColorStop(0, '#0a0a0a'); g.addColorStop(1, '#0f2027');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 1080, 1080);
     ctx.fillStyle = '#10b981'; ctx.font = '800 88px sans-serif';
-    ctx.fillText(`¥${(retireWorth/10000).toFixed(0)}万`, 80, 220);
+    ctx.fillText(fmtMan(retireWorth), 80, 220);
     ctx.fillStyle = '#94a3b8'; ctx.font = '500 34px sans-serif';
     ctx.fillText(`${retirementAge}歳時点の純資産`, 80, 280);
     ctx.fillStyle = isSafe ? '#10b981' : '#ef4444';
@@ -153,7 +153,14 @@ export default function SimulationTab(props) {
   }, [retireWorth, retirementAge, isSafe, lifeExpectancy, depletionAge]);
 
   // ─── 年収フォーマット ─────────────────────────────────────────────────
-  const fmtMan = v => `¥${(v/10000).toFixed(0)}万`;
+  // ─── 数値フォーマット（億対応）──────────────────────────────────────
+  const fmtMan = v => {
+    const abs = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    if (abs >= 100_000_000) return `${sign}¥${(abs / 100_000_000).toFixed(1)}億`;
+    if (abs >= 10_000)      return `${sign}¥${Math.round(abs / 10_000)}万`;
+    return `${sign}¥${abs.toLocaleString()}`;
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -245,7 +252,12 @@ export default function SimulationTab(props) {
               ticks={Array.from({ length: Math.ceil((lifeExpectancy - currentAge) / 5) + 1 }, (_, i) => currentAge + i * 5).filter(a => a <= lifeExpectancy)}
             />
             <YAxis tick={{ fontSize: 10, fill: sub }}
-              tickFormatter={v => v === 0 ? '0' : `${(v/10000).toFixed(0)}万`}
+              tickFormatter={v => {
+              const abs = Math.abs(v);
+              if (v === 0) return '0';
+              if (abs >= 100_000_000) return `${(v/100_000_000).toFixed(1)}億`;
+              return `${Math.round(v/10000)}万`;
+            }}
               width={48}
             />
 
@@ -335,7 +347,7 @@ export default function SimulationTab(props) {
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
                     <p style={{ fontSize: 20, fontWeight: 900, color: monthlyGapImpact.impact >= 0 ? green : red, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
-                      {monthlyGapImpact.impact >= 0 ? '+' : ''}¥{(monthlyGapImpact.impact / 10000).toFixed(0)}万
+                      {monthlyGapImpact.impact >= 0 ? '+' : ''}{fmtMan(Math.abs(monthlyGapImpact.impact))}
                     </p>
                     <p style={{ fontSize: 10, color: sub }}>の影響</p>
                   </div>
@@ -363,7 +375,7 @@ export default function SimulationTab(props) {
                       <div key={label}>
                         <p style={{ fontSize: 10, color: sub, marginBottom: 2 }}>{label}</p>
                         <p style={{ fontSize: 13, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>
-                          ¥{(val/10000).toFixed(1)}万
+                          {fmtMan(val)}
                         </p>
                       </div>
                     ))}
@@ -375,7 +387,7 @@ export default function SimulationTab(props) {
                       borderRadius: 8, border: `1px solid ${darkMode ? '#166534' : '#bbf7d0'}`,
                     }}>
                       <p style={{ fontSize: 11, color: green, fontWeight: 600, marginBottom: 3 }}>
-                        💡 ライフプランの支出設定と{Math.abs(diff) > 0 ? (diff > 0 ? '+' : '') : ''}¥{(diff/10000).toFixed(1)}万の乖離があります
+                        💡 ライフプランの支出設定と{Math.abs(diff) > 0 ? (diff > 0 ? '+' : '') : ''}{fmtMan(Math.abs(diff))}の乖離があります
                       </p>
                       <button
                         onClick={() => {
@@ -448,7 +460,7 @@ export default function SimulationTab(props) {
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           {[
-            { label: '年収',       value: `¥${(lifePlan.annualIncome/10000).toFixed(0)}万` },
+            { label: '年収',       value: fmtMan(lifePlan.annualIncome) },
             { label: '昇給率',     value: `${lifePlan.incomeGrowthRate}%/年` },
             { label: '月間生活費', value: `¥${lifePlan.monthlyExpense.toLocaleString()}` },
             { label: 'リタイア',   value: `${retirementAge}歳` },
@@ -506,7 +518,7 @@ export default function SimulationTab(props) {
               </p>
               <p style={{ fontSize: 10, color: sub }}>
                 {housingParams
-                  ? `¥${(housingParams.propertyPrice/10000).toFixed(0)}万 · ${housingParams.rateType === 'fixed' ? '固定' : '変動'}${housingParams.interestRate}%`
+                  ? `${fmtMan(housingParams.propertyPrice)} · ${housingParams.rateType === 'fixed' ? '固定' : '変動'}${housingParams.interestRate}%`
                   : '購入 vs 賃貸継続を比較・資産推移に統合'}
               </p>
             </div>
@@ -538,7 +550,7 @@ export default function SimulationTab(props) {
                         <p style={{ fontSize: 10, color: sub }}>{ev.date} · {evAge}歳</p>
                       </div>
                       <p style={{ fontSize: 13, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums' }}>
-                        -¥{(ev.amount/10000).toFixed(0)}万
+                        -{fmtMan(ev.amount)}
                       </p>
                       <button onClick={() => { setEditingLifeEvent(ev); setShowLifeEventModal(true); }}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 3px' }}>✏️</button>
