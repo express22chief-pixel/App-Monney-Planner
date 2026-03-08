@@ -37,10 +37,16 @@ export default function LifeEventPlanner({
     return currentAge + (y - nowYear);
   };
 
-  const bg    = darkMode ? '#1c1c1e' : '#fff';
+  // カラーはthemeから統一取得（propsのblue/green/red/amberより優先）
+  const _blue  = theme?.accent  || blue  || '#3b82f6';
+  const _green = theme?.green   || green || '#10b981';
+  const _red   = theme?.red     || red   || '#ef4444';
+  const _amber = theme?.orange  || amber || '#f59e0b';
+
+  const bg    = card  || (darkMode ? '#1c1c1e' : '#fff');
   const bg2   = darkMode ? '#252525' : '#f9fafb';
   const bg3   = darkMode ? '#2a2a2a' : '#f2f2f7';
-  const green2 = '#10b981';
+  const green2 = _green;
 
   // イベントカテゴリーグループ（表示順）
   const GROUPS = [
@@ -54,12 +60,12 @@ export default function LifeEventPlanner({
     const evAge = dateToAge(ev.date);
     const isHousing = ev.type === 'housing_choice';
     const isBuy = ev.housingChoice === 'buy';
-    const accentColor = ev.enabled ? (isHousing ? amber : blue) : sub;
+    const accentColor = ev.enabled ? (isHousing ? _amber : _blue) : sub;
 
     return (
       <div style={{
-        borderRadius: 14, overflow: 'hidden',
-        border: `1.5px solid ${ev.enabled ? (isHousing ? (darkMode ? '#78350f' : '#fde68a') : (darkMode ? '#1e3a5f' : '#dbeafe')) : bdr}`,
+        borderRadius: 12, overflow: 'hidden',
+        border: `1.5px solid ${ev.enabled ? (isHousing ? (darkMode ? 'rgba(255,159,10,0.3)' : '#fde68a') : (darkMode ? 'rgba(10,132,255,0.2)' : '#dbeafe')) : bdr}`,
         background: ev.enabled ? bg2 : bg3,
         opacity: ev.enabled ? 1 : 0.65,
         transition: 'all 0.2s',
@@ -100,7 +106,7 @@ export default function LifeEventPlanner({
 
           {/* 金額バッジ */}
           {ev.enabled && !isHousing && ev.amount > 0 && (
-            <span style={{ fontSize: 12, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: _red, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
               -{fmtMan(ev.amount)}
             </span>
           )}
@@ -108,7 +114,7 @@ export default function LifeEventPlanner({
             <span style={{
               fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6,
               background: isBuy ? (darkMode ? '#78350f' : '#fef3c7') : (darkMode ? '#1a2e1a' : '#f0fdf4'),
-              color: isBuy ? amber : green2,
+              color: isBuy ? _amber : _green,
             }}>
               {isBuy ? '購入' : '賃貸'}
             </span>
@@ -135,7 +141,7 @@ export default function LifeEventPlanner({
                       style={{
                         flex: 1, padding: '10px 6px', borderRadius: 10, border: 'none', cursor: 'pointer',
                         background: ev.housingChoice === opt.key
-                          ? (opt.key === 'buy' ? amber : green2)
+                          ? (opt.key === 'buy' ? _amber : _green)
                           : bg3,
                         color: ev.housingChoice === opt.key ? '#fff' : sub,
                         fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
@@ -149,17 +155,17 @@ export default function LifeEventPlanner({
                   <button onClick={() => setShowHousingModal(true)} style={{
                     width: '100%', marginTop: 8, padding: '9px 12px',
                     background: darkMode ? '#0d1a2b' : '#eff6ff',
-                    border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`,
+                    border: `1px solid ${darkMode ? 'rgba(10,132,255,0.3)' : '#bfdbfe'}`,
                     borderRadius: 10, cursor: 'pointer',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Home size={12} color={blue} />
-                      <span style={{ fontSize: 11, color: blue, fontWeight: 600 }}>
+                      <Home size={12} color={_blue} />
+                      <span style={{ fontSize: 11, color: _blue, fontWeight: 600 }}>
                         {housingParams ? `購入設定済み（${fmtMan(housingParams.propertyPrice ?? 0)}）` : '住宅購入の詳細を設定する →'}
                       </span>
                     </div>
-                    <ChevronRight size={12} color={blue} />
+                    <ChevronRight size={12} color={_blue} />
                   </button>
                 )}
               </div>
@@ -179,7 +185,7 @@ export default function LifeEventPlanner({
                   min={currentAge + 1} max={currentAge + 40} step={1}
                   value={evAge}
                   onChange={e => updateEvent(ev.id, { date: ageToDate(Number(e.target.value)), age: Number(e.target.value) })}
-                  style={{ width: '100%', accentColor: accentColor }}
+                  style={{ width: '100%', accentColor: accentColor, transition: 'accent-color 0.2s' }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: sub, marginTop: 1 }}>
                   <span>{currentAge + 1}歳</span><span>{currentAge + 40}歳</span>
@@ -192,7 +198,7 @@ export default function LifeEventPlanner({
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                   <span style={{ fontSize: 10, color: sub }}>予算</span>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: red, fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: _red, fontVariantNumeric: 'tabular-nums' }}>
                     {fmtMan(ev.amount)}
                   </span>
                 </div>
@@ -200,7 +206,7 @@ export default function LifeEventPlanner({
                   min={ev.amountRange[0]} max={ev.amountRange[1]} step={ev.amountStep || 100000}
                   value={ev.amount}
                   onChange={e => updateEvent(ev.id, { amount: Number(e.target.value) })}
-                  style={{ width: '100%', accentColor: red }}
+                  style={{ width: '100%', accentColor: _red }}
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: sub, marginTop: 1 }}>
                   <span>{fmtMan(ev.amountRange[0])}</span><span>{fmtMan(ev.amountRange[1])}</span>
@@ -221,7 +227,7 @@ export default function LifeEventPlanner({
   };
 
   return (
-    <div style={{ background: card, borderRadius: 18, padding: 18 }}>
+    <div style={{ background: card, borderRadius: 16, padding: 18 }}>
       {/* ── ヘッダー ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <div>
@@ -233,8 +239,9 @@ export default function LifeEventPlanner({
         <button onClick={() => { setEditingLifeEvent(null); setShowLifeEventModal(true); }}
           style={{
             display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px',
-            background: blue, border: 'none', borderRadius: 8, cursor: 'pointer',
-          }}>
+            background: _blue, border: 'none', borderRadius: 8, cursor: 'pointer',
+            transition: 'opacity 0.15s',
+          }} onMouseOver={e=>e.currentTarget.style.opacity='0.8'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
           <Plus size={11} color="#fff" />
           <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>カスタム</span>
         </button>
@@ -248,13 +255,13 @@ export default function LifeEventPlanner({
         return (
           <div style={{
             marginBottom: 14, padding: '10px 14px', borderRadius: 12,
-            background: darkMode ? '#200a0a' : '#fef2f2',
+            background: darkMode ? 'rgba(255,69,58,0.12)' : '#fef2f2',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
             <span style={{ fontSize: 11, color: sub }}>
               ライフイベント合計支出（{activeEvents.length}件）
             </span>
-            <span style={{ fontSize: 15, fontWeight: 900, color: red, fontVariantNumeric: 'tabular-nums' }}>
+            <span style={{ fontSize: 15, fontWeight: 900, color: _red, fontVariantNumeric: 'tabular-nums' }}>
               -{fmtMan(total)}
             </span>
           </div>
@@ -304,7 +311,7 @@ export default function LifeEventPlanner({
                       <p style={{ fontSize: 13, fontWeight: 600, color: txt, margin: 0 }}>{ev.name}</p>
                       <p style={{ fontSize: 10, color: sub, margin: 0, marginTop: 1 }}>{ev.date} · {evAge}歳</p>
                     </div>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: _red, fontVariantNumeric: 'tabular-nums' }}>
                       -{fmtMan(ev.amount)}
                     </p>
                     <button onClick={() => { setEditingLifeEvent(ev); setShowLifeEventModal(true); }}

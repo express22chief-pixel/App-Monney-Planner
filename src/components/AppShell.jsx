@@ -39,7 +39,7 @@ const TABS = [
   { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
   { id: 'assets',     icon: <BarChart2 size={20} />,    label: '資産'   },
   { id: 'calendar',   icon: <Calendar size={20} />,    label: '履歴'   },
-  { id: 'simulation', icon: <TrendingUp size={20} />,  label: 'シミュ' },
+  { id: 'simulation', icon: <TrendingUp size={20} />,  label: '計画'   },
   { id: 'settings',   icon: <Settings size={20} />,    label: '設定'   },
 ];
 
@@ -58,33 +58,49 @@ export default function AppShell({ data }) {
   const tabProps = { ...data, theme, setShowAllTransactions };
 
   return (
-    <div className={`min-h-screen ${theme.bg} pb-20 transition-all duration-300`}>
+    <div className={`min-h-screen ${theme.bg} pb-20 transition-colors duration-200`}>
 
-      {/* --- ヘッダー（sticky固定）---------------------------------- */}
-      <div className={`sticky top-0 z-30 ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border} transition-colors duration-300`}>
-        <div className="max-w-md mx-auto px-4 py-3">
+      {/* --- ヘッダー ─────────────────────────────────────────── */}
+      <div
+        className="sticky top-0 z-30 transition-colors duration-200"
+        style={{
+          backgroundColor: theme.cardHex,
+          borderBottom: `1px solid ${theme.borderHex}`,
+        }}
+      >
+        <div className="max-w-md mx-auto px-4" style={{ paddingTop: 14, paddingBottom: 10 }}>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className={`text-xl font-semibold ${theme.text} tracking-tight`}>
-                Money Planner
+              <h1 style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 15,
+                fontWeight: 700,
+                letterSpacing: '-0.02em',
+                color: theme.textHex,
+              }}>
+                MONEY<span style={{ color: '#00e5ff' }}>.</span>PLANNER
                 {userInfo?.name && (
-                  <span className={`text-sm ml-2 font-normal ${theme.textSecondary}`}>{userInfo.name}</span>
+                  <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 8, color: theme.subHex, fontFamily: "'Noto Sans JP', sans-serif" }}>{userInfo.name}</span>
                 )}
               </h1>
-              <p className={`text-xs ${theme.textSecondary} font-medium tabular-nums`}>
-                {new Date().toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+              <p style={{ fontSize: 10, color: theme.subHex, fontFamily: "'JetBrains Mono', monospace", marginTop: 1, letterSpacing: '0.05em' }}>
+                {new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '.')}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`p-2 rounded-lg transition-all duration-200 hover-scale ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`}
-              >
-                {darkMode
-                  ? <Sun size={18} className="text-yellow-400" />
-                  : <Moon size={18} className="text-neutral-600" />}
-              </button>
-            </div>
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              style={{
+                width: 32, height: 32, borderRadius: 6,
+                border: `1px solid ${theme.borderHex}`,
+                background: 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'border-color 0.15s',
+              }}
+            >
+              {darkMode
+                ? <Sun size={15} style={{ color: '#00e5ff' }} />
+                : <Moon size={15} style={{ color: theme.subHex }} />}
+            </button>
           </div>
         </div>
       </div>
@@ -116,79 +132,109 @@ export default function AppShell({ data }) {
           {/* メニュー項目（展開時のみ表示） */}
           {fabOpen && (
             <div className="flex flex-col items-end gap-2 animate-fadeIn">
-              <button
-                onClick={() => { data.setShowPayPayImport(true); setFabOpen(false); }}
-                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
-                style={{ backgroundColor: '#FF4B4B', boxShadow: '0 4px 12px rgba(255,75,75,0.4)' }}
-              >
-                <span>🔴</span>
-                <span>PayPay読み込み</span>
-              </button>
-              <button
-                onClick={() => { data.setShowTemplateModal(true); setFabOpen(false); }}
-                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
-                style={{ backgroundColor: '#f59e0b', boxShadow: '0 4px 12px rgba(245,158,11,0.4)' }}
-              >
-                <span>⚡</span>
-                <span>テンプレから追加</span>
-              </button>
-              <button
-                onClick={() => { data.setShowAddTransaction(true); setFabOpen(false); }}
-                className="h-10 px-4 rounded-full text-white text-xs font-bold shadow-lg flex items-center gap-2"
-                style={{ backgroundColor: theme.accent, boxShadow: `0 4px 12px ${theme.accent}55` }}
-              >
-                <span>✏️</span>
-                <span>手動で追加</span>
-              </button>
+              {[
+                { label: 'PayPay', emoji: '🔴', color: '#ff3d57', action: () => { data.setShowPayPayImport(true); setFabOpen(false); } },
+                { label: 'テンプレ', emoji: '⚡', color: '#ff9100', action: () => { data.setShowTemplateModal(true); setFabOpen(false); } },
+                { label: '手動入力', emoji: '✏️', color: '#00e5ff', action: () => { data.setShowAddTransaction(true); setFabOpen(false); } },
+              ].map(({ label, emoji, color, action }) => (
+                <button
+                  key={label}
+                  onClick={action}
+                  style={{
+                    height: 38, paddingLeft: 14, paddingRight: 14,
+                    borderRadius: 4,
+                    border: `1px solid ${color}`,
+                    background: `${color}15`,
+                    color,
+                    fontSize: 11, fontWeight: 700,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    letterSpacing: '0.04em',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    boxShadow: `0 0 12px ${color}30`,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span>{emoji}</span>
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
           )}
 
           {/* メインFABボタン */}
           <button
             onClick={() => setFabOpen(v => !v)}
-            className="h-12 px-5 rounded-full text-white text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2"
             style={{
-              backgroundColor: theme.accent,
-              boxShadow: `0 4px 20px ${theme.accent}55`,
+              width: 48, height: 48,
+              borderRadius: 4,
+              border: '1.5px solid #00e5ff',
+              background: fabOpen ? 'rgba(0,229,255,0.2)' : 'rgba(0,229,255,0.08)',
+              color: '#00e5ff',
+              fontSize: 22, fontWeight: 300, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 16px rgba(0,229,255,0.35)',
+              cursor: 'pointer',
               transform: fabOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-              transition: 'transform 0.2s ease',
+              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.15s ease',
             }}
           >
-            <span className="text-xl font-light leading-none" style={{ transform: fabOpen ? 'none' : 'none' }}>+</span>
-            {!fabOpen && <span>取引を追加</span>}
+            +
           </button>
         </div>
       )}
 
-      {/* --- タブバー -------------------------------------------------- */}
+      {/* --- タブバー ─────────────────────────────────────────── */}
       <div
-        className="fixed bottom-0 left-0 right-0 transition-colors duration-300"
+        className="fixed bottom-0 left-0 right-0"
         style={{
-          backgroundColor: darkMode ? 'rgba(17,17,17,0.94)' : 'rgba(255,255,255,0.94)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)'}`,
-          paddingBottom: 'env(safe-area-inset-bottom)'
+          backgroundColor: theme.cardHex,
+          borderTop: `1px solid ${theme.borderHex}`,
+          paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        <div className="max-w-md mx-auto flex">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-2 flex flex-col items-center gap-0.5 transition-all duration-200 ${
-                activeTab === tab.id ? 'scale-110' : 'hover:scale-105'
-              }`}
-              style={{ color: activeTab === tab.id ? theme.accent : (darkMode ? '#8E8E93' : '#9ca3af') }}
-            >
-              <div className={`p-1.5 rounded-xl transition-all duration-200 ${
-                activeTab === tab.id ? (darkMode ? 'bg-neutral-800' : 'bg-blue-50') : ''
-              }`}>
-                {tab.icon}
-              </div>
-              <span className="text-[10px] font-semibold">{tab.label}</span>
-            </button>
-          ))}
+        <div className="max-w-md mx-auto flex" style={{ height: 56 }}>
+          {TABS.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  gap: 3, position: 'relative', background: 'none', border: 'none',
+                  cursor: 'pointer', transition: 'color 0.15s',
+                  color: isActive ? '#00e5ff' : theme.sub2Hex,
+                  paddingTop: 3,
+                }}
+              >
+                {/* active indicator — top line */}
+                {isActive && (
+                  <span style={{
+                    position: 'absolute', top: 0, left: '25%', right: '25%', height: 2,
+                    background: '#00e5ff',
+                    boxShadow: '0 0 6px rgba(0,229,255,0.8)',
+                    borderRadius: '0 0 2px 2px',
+                  }} />
+                )}
+                <span style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transform: isActive ? 'scale(1.15)' : 'scale(1)',
+                  filter: isActive ? 'drop-shadow(0 0 4px rgba(0,229,255,0.5))' : 'none',
+                }}>
+                  {tab.icon}
+                </span>
+                <span style={{
+                  fontSize: 9, fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: isActive ? 700 : 500,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                }}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
