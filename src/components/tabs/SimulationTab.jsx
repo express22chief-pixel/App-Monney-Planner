@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import HousingComparisonModal from '../modals/HousingComparisonModal';
 import LifePlanSettingsModal  from '../modals/LifePlanSettingsModal';
+import LifeEventPlanner      from '../LifeEventPlanner';
 import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
 
 // ─── 小コンポーネント ───────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ export default function SimulationTab(props) {
   const {
     theme, darkMode,
     simulationSettings, setSimulationSettings,
-    lifeEvents, setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
+    lifeEvents, setLifeEvents, setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
     addOrUpdateLifeEvent,
     userInfo, assetData,
     housingParams, setHousingParams, housingComparison,
@@ -103,10 +104,11 @@ export default function SimulationTab(props) {
   // ─── グラフデータ ────────────────────────────────────────────────────
   const chartData = useMemo(() => {
     return byAge.map(r => ({
-      age:          r.age,
-      純資産:        r.netWorth,
-      金融資産:      r.totalAssets,
-      不動産:        r.propertyValue,
+      age:       r.age,
+      純資産:    r.netWorth,
+      金融資産:  r.totalAssets,
+      不動産:    r.propertyValue > 0 ? r.propertyValue : undefined,
+      負債:      r.loanBalance  > 0 ? -r.loanBalance  : undefined,
     }));
   }, [byAge]);
 
@@ -304,6 +306,12 @@ export default function SimulationTab(props) {
             {/* 純資産メインライン */}
             <Area type="monotone" dataKey="純資産" stroke={blue} strokeWidth={2.5}
               fill="url(#gradNet)" dot={false} activeDot={{ r: 4, fill: blue }} />
+
+            {/* 負債ライン（ローンあるとき） */}
+            {byAge.some(r => r.loanBalance > 0) && (
+              <Line type="monotone" dataKey="負債" stroke={red} strokeWidth={1.5}
+                strokeDasharray="4 2" dot={false} connectNulls={false} />
+            )}
           </ComposedChart>
         </ResponsiveContainer>
 
@@ -312,6 +320,7 @@ export default function SimulationTab(props) {
           {[
             { color: blue,  label: '純資産' },
             ...(byAge.some(r => r.propertyValue > 0) ? [{ color: amber, label: '不動産' }] : []),
+            ...(byAge.some(r => r.loanBalance > 0)   ? [{ color: red,   label: '負債', dashed: true }] : []),
             { color: amber, label: 'リタイア', dashed: true },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -411,7 +420,7 @@ export default function SimulationTab(props) {
                       <button
                         onClick={() => {
                           // 実績平均をlifePlanに反映
-                          props.setLifePlan(prev => ({ ...prev, monthlyExpense: avgExp }));
+                          setLifePlan(prev => ({ ...prev, monthlyExpense: avgExp }));
                         }}
                         style={{
                           padding: '5px 10px', background: green, border: 'none',
@@ -441,7 +450,7 @@ export default function SimulationTab(props) {
                     </span>
                   </p>
                   <button
-                    onClick={() => props.setLifePlan(prev => ({ ...prev, incomeGrowthRate: incomeGrowthEstimate }))}
+                    onClick={() => setLifePlan(prev => ({ ...prev, incomeGrowthRate: incomeGrowthEstimate }))}
                     style={{
                       padding: '4px 10px', background: 'none',
                       border: `1px solid ${blue}`, borderRadius: 6,
@@ -459,7 +468,7 @@ export default function SimulationTab(props) {
       )}
 
       {/* ══════════════════════════════════════════════════════════════════
-          4. ライフプラン設定
+          4. ライフプラン調整パネル（インライン編集）
       ══════════════════════════════════════════════════════════════════ */}
       <div style={{ background: card, borderRadius: 18, padding: 18 }}>
         <SectionTitle
@@ -470,129 +479,182 @@ export default function SimulationTab(props) {
               border: 'none', borderRadius: 8, cursor: 'pointer',
             }}>
               <Settings2 size={12} color={sub} />
-              <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>編集</span>
+              <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>詳細設定</span>
             </button>
           }
         >
-          ライフプランの前提
+          ライフプラン調整
         </SectionTitle>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {/* ── 現役フェーズ ────────────────────────────────────── */}
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>現役フェーズ</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[
+              { key: 'annualIncome',   label: '年収',     min: 2000000, max: 30000000, step: 500000,
+                fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万` },
+              { key: 'monthlyExpense', label: '月間生活費', min: 50000, max: 800000, step: 10000,
+                fmt: v => `¥${v.toLocaleString()}` },
+              { key: 'incomeGrowthRate', label: '昇給率', min: 0, max: 5, step: 0.5,
+                fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
+            ].map(({ key, label, min, max, step, fmt }) => (
+              <div key={key}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: sub }}>{label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: txt, fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(lifePlan[key] ?? min)}
+                  </span>
+                </div>
+                <input type="range" min={min} max={max} step={step}
+                  value={lifePlan[key] ?? min}
+                  onChange={e => setLifePlan(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                  style={{ width: '100%', accentColor: blue }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
+
+        {/* ── リタイア ────────────────────────────────────────── */}
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>リタイア</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {/* リタイア年齢 - セグメント */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: sub }}>リタイア年齢</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: amber }}>{retirementAge}歳</span>
+              </div>
+              <div style={{ display: 'flex', gap: 4 }}>
+                {[55, 60, 65, 70].map(age => (
+                  <button key={age} onClick={() => setLifePlan(prev => ({ ...prev, retirementAge: age }))}
+                    style={{
+                      flex: 1, padding: '7px 0', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                      background: retirementAge === age ? amber : (darkMode ? '#2a2a2a' : '#f2f2f7'),
+                      color: retirementAge === age ? '#fff' : sub,
+                    }}>{age}歳</button>
+                ))}
+              </div>
+            </div>
+            {/* 目標資産 */}
+            {[
+              { key: 'retirementTargetAmount', label: 'リタイア目標資産', min: 5000000, max: 200000000, step: 1000000,
+                fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万` },
+            ].map(({ key, label, min, max, step, fmt }) => (
+              <div key={key}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: sub }}>{label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: green, fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(lifePlan[key] ?? 30000000)}
+                    {targetAchieved ? ' 🎯' : ' 📍'}
+                  </span>
+                </div>
+                <input type="range" min={min} max={max} step={step}
+                  value={lifePlan[key] ?? 30000000}
+                  onChange={e => setLifePlan(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                  style={{ width: '100%', accentColor: green }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
+
+        {/* ── 老後 ────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 14 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>老後の収支</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[
+              { key: 'retirementMonthlyIncome',  label: '月収（年金等）', min: 0, max: 500000, step: 5000,
+                fmt: v => `¥${v.toLocaleString()}` },
+              { key: 'retirementMonthlyExpense', label: '月間支出',       min: 50000, max: 500000, step: 5000,
+                fmt: v => `¥${v.toLocaleString()}` },
+            ].map(({ key, label, min, max, step, fmt }) => (
+              <div key={key}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: sub }}>{label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: txt, fontVariantNumeric: 'tabular-nums' }}>
+                    {fmt(lifePlan[key] ?? min)}
+                  </span>
+                </div>
+                <input type="range" min={min} max={max} step={step}
+                  value={lifePlan[key] ?? min}
+                  onChange={e => setLifePlan(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                  style={{ width: '100%', accentColor: '#a855f7' }}
+                />
+              </div>
+            ))}
+          </div>
+          {/* 老後収支サマリー */}
+          {(() => {
+            const cf = (lifePlan.retirementMonthlyIncome ?? 0) - (lifePlan.retirementMonthlyExpense ?? 0);
+            return (
+              <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 8, background: cf >= 0 ? (darkMode?'#0d2b1a':'#f0fdf4') : (darkMode?'#200a0a':'#fef2f2') }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: cf >= 0 ? green : red }}>
+                  老後月次収支 {cf >= 0 ? '+' : ''}{cf.toLocaleString()}円
+                  {cf < 0 ? '（毎月取り崩し）' : '（黒字・資産維持）'}
+                </p>
+              </div>
+            );
+          })()}
+        </div>
+
+        <div style={{ height: 1, background: bdr, marginBottom: 12 }} />
+
+        {/* ── 投資設定ショートカット ────────────────────────── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
-            { label: '年収',       value: fmtMan(lifePlan.annualIncome) },
-            { label: '昇給率',     value: `${lifePlan.incomeGrowthRate}%/年` },
-            { label: 'リタイア目標', value: (() => { const v = lifePlan.retirementTargetAmount ?? 30000000; return v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万`; })() },
-            { label: '月間生活費', value: `¥${lifePlan.monthlyExpense.toLocaleString()}` },
-            { label: 'リタイア',   value: `${retirementAge}歳` },
-            { label: '老後月収',   value: `¥${lifePlan.retirementMonthlyIncome.toLocaleString()}` },
-            { label: '老後月支出', value: `¥${lifePlan.retirementMonthlyExpense.toLocaleString()}` },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 10 }}>
-              <p style={{ fontSize: 10, color: sub, marginBottom: 3 }}>{label}</p>
-              <p style={{ fontSize: 14, fontWeight: 700, color: txt, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+            { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 200000, step: 5000,
+              fmt: v => `¥${v.toLocaleString()}`, color: '#a855f7', obj: 'sim' },
+            { key: 'returnRate',        label: '想定利回り',     min: 0, max: 12,     step: 0.5,
+              fmt: v => `${v}%`,                 color: blue,     obj: 'sim' },
+          ].map(({ key, label, min, max, step, fmt, color, obj }) => (
+            <div key={key}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: sub }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>
+                  {fmt(simulationSettings[key] ?? min)}
+                </span>
+              </div>
+              <input type="range" min={min} max={max} step={step}
+                value={simulationSettings[key] ?? min}
+                onChange={e => setSimulationSettings(prev => ({ ...prev, [key]: Number(e.target.value) }))}
+                style={{ width: '100%', accentColor: color }}
+              />
             </div>
           ))}
         </div>
-
-        {/* 投資設定へのリンク */}
-        <button onClick={() => setActiveTab('settings')} style={{
-          width: '100%', marginTop: 10, padding: '11px 14px',
-          background: 'none', border: `1px solid ${bdr}`, borderRadius: 12,
-          cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
-          <span style={{ fontSize: 12, color: sub }}>投資設定（積立額・利回り・NISA）</span>
-          <ChevronRight size={14} color={sub} />
-        </button>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
-          4. ライフイベント
+          4. ライフイベント（デフォルトテンプレート＋インライン調整）
       ══════════════════════════════════════════════════════════════════ */}
-      <div style={{ background: card, borderRadius: 18, padding: 18 }}>
-        <SectionTitle
-          action={
-            <button onClick={() => { setEditingLifeEvent(null); setShowLifeEventModal(true); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
-                background: theme.accent, border: 'none', borderRadius: 8, cursor: 'pointer' }}>
-              <Plus size={11} color="#fff" />
-              <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>追加</span>
-            </button>
-          }
-        >
-          ライフイベント
-        </SectionTitle>
+      <LifeEventPlanner
+        lifeEvents={lifeEvents}
+        setLifeEvents={setLifeEvents}
+        setShowHousingModal={setShowHousingModal}
+        housingParams={housingParams}
+        currentAge={currentAge}
+        darkMode={darkMode}
+        theme={theme}
+        card={card}
+        txt={txt}
+        sub={sub}
+        bdr={bdr}
+        blue={blue}
+        red={red}
+        green={green}
+        amber={amber}
+        fmtMan={fmtMan}
+        setShowLifeEventModal={setShowLifeEventModal}
+        setEditingLifeEvent={setEditingLifeEvent}
+        deleteLifeEvent={deleteLifeEvent}
+      />
 
-        {/* 住宅購入ショートカット */}
-        <button onClick={() => setShowHousingModal(true)} style={{
-          width: '100%', marginBottom: 12, padding: '12px 14px',
-          background: darkMode ? '#0d1a2b' : '#eff6ff',
-          border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`,
-          borderRadius: 12, cursor: 'pointer',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 20 }}>🏠</span>
-            <div style={{ textAlign: 'left' }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: blue }}>
-                {housingParams ? '住宅購入プラン設定済み' : '住宅購入を検討する'}
-              </p>
-              <p style={{ fontSize: 10, color: sub }}>
-                {housingParams
-                  ? `${fmtMan(housingParams.propertyPrice)} · ${housingParams.rateType === 'fixed' ? '固定' : '変動'}${housingParams.interestRate}%`
-                  : '購入 vs 賃貸継続を比較・資産推移に統合'}
-              </p>
-            </div>
-          </div>
-          <ChevronRight size={14} color={blue} />
-        </button>
-
-        {/* イベント一覧 */}
-        {lifeEvents.length === 0 ? (
-          <p style={{ fontSize: 12, color: sub, textAlign: 'center', padding: '12px 0' }}>
-            イベントを追加するとグラフに反映されます
-          </p>
-        ) : (
-          <>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {(expandEvents ? lifeEvents : lifeEvents.slice(0, 4))
-                .sort((a, b) => a.date.localeCompare(b.date))
-                .map(ev => {
-                  const evYear = parseInt(ev.date?.slice(0, 4));
-                  const evAge  = currentAge + (evYear - new Date().getFullYear());
-                  return (
-                    <div key={ev.id} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12,
-                    }}>
-                      <span style={{ fontSize: 20 }}>{ev.icon}</span>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: 13, fontWeight: 600, color: txt }}>{ev.name}</p>
-                        <p style={{ fontSize: 10, color: sub }}>{ev.date} · {evAge}歳</p>
-                      </div>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: red, fontVariantNumeric: 'tabular-nums' }}>
-                        -{fmtMan(ev.amount)}
-                      </p>
-                      <button onClick={() => { setEditingLifeEvent(ev); setShowLifeEventModal(true); }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 3px' }}>✏️</button>
-                      <button onClick={() => deleteLifeEvent(ev.id)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '2px 3px' }}>🗑️</button>
-                    </div>
-                  );
-                })}
-            </div>
-            {lifeEvents.length > 4 && (
-              <button onClick={() => setExpandEvents(v => !v)} style={{
-                width: '100%', marginTop: 8, padding: '8px', background: 'none',
-                border: 'none', cursor: 'pointer', fontSize: 11, color: sub, fontWeight: 600,
-              }}>
-                {expandEvents ? '折りたたむ ▲' : `他 ${lifeEvents.length - 4} 件を見る ▼`}
-              </button>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════════════
+            {/* ══════════════════════════════════════════════════════════════════
           5. フェーズ別内訳（リタイア前後の資産構成）
       ══════════════════════════════════════════════════════════════════ */}
       <div style={{ background: card, borderRadius: 18, padding: 18 }}>
@@ -664,15 +726,21 @@ export default function SimulationTab(props) {
           6. 購入 vs 賃貸 比較
       ══════════════════════════════════════════════════════════════════ */}
       {housingParams && housingComparison && (() => {
-        const hc  = housingComparison;
-        const yrs = housingParams.compareYears ?? 30;
-        const buyTotal  = hc.buyTotalCost  ?? 0;
-        const rentTotal = hc.rentTotalCost ?? 0;
-        const buyEnd    = hc.buyEndAsset   ?? 0;
-        const rentEnd   = hc.rentEndAsset  ?? 0;
-        const netDiff   = (buyEnd - buyTotal) - (rentEnd - rentTotal); // 正なら購入有利
-        const isBuyWin  = netDiff >= 0;
-        const pAge      = housingParams.purchaseAge ?? currentAge;
+        const hc      = housingComparison;
+        const yrs     = housingParams.compareYears ?? 30;
+        const summary = hc.summary ?? {};
+        const refBuy  = hc.buyScenarios?.find(s => s.key === 'fixed' || s.key === 'neutral') || hc.buyScenarios?.[0];
+        const buyEnd  = summary.buyFinal  ?? refBuy?.finalNetAssets ?? 0;
+        const rentEnd = summary.rentFinal ?? hc.rentScenario?.finalNetAssets ?? 0;
+        const isBuyWin = summary.winner === 'buy';
+        const netDiff  = summary.diff ?? Math.abs(buyEnd - rentEnd);
+        const pAge     = housingParams.purchaseAge ?? currentAge;
+        // 購入側の総コスト（頭金＋利息＋管理費等）
+        const buyTotalInterest = refBuy?.totalInterest ?? 0;
+        const buyAcqCost       = refBuy?.acquisitionCost ?? 0;
+        const buyRunning       = (refBuy?.yearlyData ?? []).reduce((s,r) => s + r.runningCost, 0);
+        const buyTotal         = (housingParams.downPayment ?? 0) + buyTotalInterest + buyAcqCost + buyRunning;
+        const rentTotal        = hc.rentScenario?.totalRentPaid ?? 0;
 
         return (
           <div style={{ background: card, borderRadius: 18, padding: 18 }}>
@@ -724,8 +792,8 @@ export default function SimulationTab(props) {
             {/* コスト比較グリッド */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
-                { icon: '🏠', label: '購入', totalCost: buyTotal,  endAsset: buyEnd,  color: blue   },
-                { icon: '🔑', label: '賃貸', totalCost: rentTotal, endAsset: rentEnd, color: '#a855f7' },
+                { icon: '🏠', label: '購入', totalCost: buyTotal,  endAsset: buyEnd,  color: blue,      scenarios: hc.buyScenarios?.length },
+                { icon: '🔑', label: '賃貸', totalCost: rentTotal, endAsset: rentEnd, color: '#a855f7', scenarios: null },
               ].map(({ icon, label, totalCost, endAsset, color }) => (
                 <div key={label} style={{ padding: '12px', background: darkMode ? '#1c1c1e' : '#fff', borderRadius: 12, border: `1px solid ${darkMode?'#2a2a2a':'#e5e7eb'}` }}>
                   <p style={{ fontSize: 12, fontWeight: 700, color, marginBottom: 8 }}>{icon} {label}</p>
