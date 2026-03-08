@@ -241,65 +241,64 @@ export default function SimulationTab(props) {
           </div>
           <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secStatus ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
-        {secStatus && <div className="animate-fadeIn" style={{
-          background: isSafe
-            ? (darkMode ? 'rgba(0,230,118,0.04)' : 'rgba(0,200,83,0.03)')
-            : (darkMode ? 'rgba(255,61,87,0.06)' : 'rgba(229,57,53,0.03)'),
-          padding: '14px 16px',
-        }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1 }}>
-            {isSafe ? (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <CheckCircle2 size={16} color={green} />
-                  <p style={{ fontSize: 12, fontWeight: 700, color: green }}>プランは持続可能です</p>
-                </div>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 24, fontWeight: 800, color: green, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', textShadow: `0 0 16px ${green}50` }}>
-                  {lifeExpectancy}歳まで資産が持続
-                </p>
-                <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
-                  {lifeExpectancy}歳時点の純資産: {fmtMan(finalWorth)}
-                </p>
-                <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{
-                    padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700,
-                    background: targetAchieved ? (darkMode ? '#065f46' : '#d1fae5') : (darkMode ? '#78350f' : '#fef3c7'),
-                    color: targetAchieved ? green : amber,
-                  }}>
-                    {targetAchieved ? `🎯 目標 ${fmtMan(retirementTarget)} 達成` : `📍 目標 ${fmtMan(retirementTarget)} まで ${fmtMan(retirementTarget - (retirementSnap?.netWorth ?? 0))} 不足`}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <AlertTriangle size={16} color={red} />
-                  <p style={{ fontSize: 12, fontWeight: 700, color: red }}>資産枯渇リスクあり</p>
-                </div>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 24, fontWeight: 800, color: red, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', textShadow: `0 0 16px ${red}50` }}>
-                  {depletionAge}歳で枯渇見込み
-                </p>
-                <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
-                  収入増加・支出削減・リタイア年齢の見直しを検討してください
-                </p>
-              </>
-            )}
+        {secStatus && (
+          <div className="animate-fadeIn" style={{
+            background: isSafe
+              ? (darkMode ? 'rgba(0,230,118,0.04)' : 'rgba(0,200,83,0.03)')
+              : (darkMode ? 'rgba(255,61,87,0.06)' : 'rgba(229,57,53,0.03)'),
+            padding: '14px 16px',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ flex: 1 }}>
+                {isSafe ? (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <CheckCircle2 size={16} color={green} />
+                      <p style={{ fontSize: 12, fontWeight: 700, color: green }}>プランは持続可能です</p>
+                    </div>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 24, fontWeight: 800, color: green, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', textShadow: `0 0 16px ${green}50` }}>
+                      {lifeExpectancy}歳まで資産が持続
+                    </p>
+                    <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
+                      {lifeExpectancy}歳時点の純資産: {fmtMan(finalWorth)}
+                    </p>
+                    <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{
+                        padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700,
+                        background: targetAchieved ? (darkMode ? '#065f46' : '#d1fae5') : (darkMode ? '#78350f' : '#fef3c7'),
+                        color: targetAchieved ? green : amber,
+                      }}>
+                        {targetAchieved ? `🎯 目標 ${fmtMan(retirementTarget)} 達成` : `📍 目標 ${fmtMan(retirementTarget)} まで ${fmtMan(retirementTarget - (retirementSnap?.netWorth ?? 0))} 不足`}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <AlertTriangle size={16} color={red} />
+                      <p style={{ fontSize: 12, fontWeight: 700, color: red }}>資産枯渇リスクあり</p>
+                    </div>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 24, fontWeight: 800, color: red, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', textShadow: `0 0 16px ${red}50` }}>
+                      {depletionAge}歳で枯渇見込み
+                    </p>
+                    <p style={{ fontSize: 12, color: sub, marginTop: 4 }}>
+                      収入増加・支出削減・リタイア年齢の見直しを検討してください
+                    </p>
+                  </>
+                )}
+              </div>
+              <button onClick={generateShareCard} style={{
+                padding: '8px 12px', background: darkMode ? '#2a2a2a' : '#fff',
+                border: 'none', borderRadius: 10, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+                transition: 'opacity 0.15s', opacity: 1,
+              }} onMouseOver={e => e.currentTarget.style.opacity='0.7'} onMouseOut={e => e.currentTarget.style.opacity='1'}>
+                <Share2 size={13} color={sub} />
+                <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>シェア</span>
+              </button>
+            </div>
           </div>
-          <button onClick={generateShareCard} style={{
-            padding: '8px 12px', background: darkMode ? '#2a2a2a' : '#fff',
-            border: 'none', borderRadius: 10, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
-            transition: 'opacity 0.15s', opacity: 1,
-          }} onMouseOver={e=>e.currentTarget.style.opacity='0.7'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
-            <Share2 size={13} color={sub} />
-            <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>シェア</span>
-          </button>
-        </div>
-      </div>
-
-        </div>
-        }
+        )}
       </div>
 
       {/* ── リタイア時/最終 サマリーピル ─────────────────────────────── */}
@@ -441,7 +440,6 @@ export default function SimulationTab(props) {
         </div>
         )}
       </div>
-      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           3. 家計実績インサイト
@@ -573,7 +571,6 @@ export default function SimulationTab(props) {
           )}
         </div>
       )}
-      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           4. ライフプラン調整パネル（インライン編集）
@@ -741,7 +738,6 @@ export default function SimulationTab(props) {
         </div>
         )}
       </div>
-      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           4. ライフイベント（デフォルトテンプレート＋インライン調整）
@@ -755,28 +751,31 @@ export default function SimulationTab(props) {
           <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>ライフイベント</span>
           <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifeEvent ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
-        {secLifeEvent && <div className="animate-fadeIn" style={{ paddingBottom: 8 }}><LifeEventPlanner
-        lifeEvents={lifeEvents}
-        setLifeEvents={setLifeEvents}
-        setShowHousingModal={setShowHousingModal}
-        housingParams={housingParams}
-        currentAge={currentAge}
-        darkMode={darkMode}
-        theme={theme}
-        card={card}
-        txt={txt}
-        sub={sub}
-        bdr={bdr}
-        blue={blue}
-        red={red}
-        green={green}
-        amber={amber}
-        fmtMan={fmtMan}
-        setShowLifeEventModal={setShowLifeEventModal}
-        setEditingLifeEvent={setEditingLifeEvent}
-        deleteLifeEvent={deleteLifeEvent}
-      /></div>
-      }
+        {secLifeEvent && (
+          <div className="animate-fadeIn" style={{ paddingBottom: 8 }}>
+            <LifeEventPlanner
+              lifeEvents={lifeEvents}
+              setLifeEvents={setLifeEvents}
+              setShowHousingModal={setShowHousingModal}
+              housingParams={housingParams}
+              currentAge={currentAge}
+              darkMode={darkMode}
+              theme={theme}
+              card={card}
+              txt={txt}
+              sub={sub}
+              bdr={bdr}
+              blue={blue}
+              red={red}
+              green={green}
+              amber={amber}
+              fmtMan={fmtMan}
+              setShowLifeEventModal={setShowLifeEventModal}
+              setEditingLifeEvent={setEditingLifeEvent}
+              deleteLifeEvent={deleteLifeEvent}
+            />
+          </div>
+        )}
       </div>
 
             {/* ══════════════════════════════════════════════════════════════════
@@ -784,7 +783,8 @@ export default function SimulationTab(props) {
       ══════════════════════════════════════════════════════════════════ */}
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <SectionTitle collapsible expanded={secPhaseSnap} onToggle={() => setSecPhaseSnap(v => !v)}>フェーズ別スナップショット</SectionTitle>
-        {secPhaseSnap && <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {secPhaseSnap && (
+          <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
             { label: '現在',                                          age: currentAge },
             { label: `${Math.round((currentAge+retirementAge)/2)}歳`, age: Math.round((currentAge+retirementAge)/2) },
@@ -844,8 +844,8 @@ export default function SimulationTab(props) {
               </div>
             );
           })}
-        </div>
-        }
+          </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -1020,7 +1020,6 @@ export default function SimulationTab(props) {
           </div>
         </div>
       )}
-    </div>
     </div>
   );
 }
