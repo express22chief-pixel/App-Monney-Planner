@@ -95,7 +95,7 @@ export default function LifeEventPlanner({
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: txt, margin: 0 }}>{ev.name}</p>
             {ev.enabled && (
-              <p style={{ fontSize: 10, color: sub, margin: 0, marginTop: 1 }}>
+              <p style={{ fontSize: 11, color: sub, margin: 0, marginTop: 1, opacity: 0.9 }}>
                 {isHousing
                   ? (isBuy ? `${evAge}歳で購入` : `賃貸継続`)
                   : `${evAge}歳 · ${ev.amount > 0 ? fmtMan(ev.amount) : '無料'}`
@@ -227,23 +227,22 @@ export default function LifeEventPlanner({
   };
 
   return (
-    <div style={{ background: card, borderRadius: 16, padding: 18 }}>
-      {/* ── ヘッダー ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div>
-          <p style={{ fontSize: 15, fontWeight: 800, color: txt, margin: 0 }}>ライフイベント</p>
-          <p style={{ fontSize: 10, color: sub, margin: 0, marginTop: 2 }}>
-            ONにしたイベントが資産シミュレーションに反映されます
-          </p>
-        </div>
+    <div style={{ padding: '0 16px 16px' }}>
+      {/* ── 説明テキスト + カスタムボタン ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 8 }}>
+        <p style={{ fontSize: 11, color: sub, margin: 0, flex: 1, minWidth: 0 }}>
+          ONにしたイベントが資産シミュレーションに反映されます
+        </p>
         <button onClick={() => { setEditingLifeEvent(null); setShowLifeEventModal(true); }}
           style={{
-            display: 'flex', alignItems: 'center', gap: 4, padding: '7px 12px',
-            background: _blue, border: 'none', borderRadius: 8, cursor: 'pointer',
-            transition: 'opacity 0.15s',
+            display: 'flex', alignItems: 'center', gap: 4,
+            padding: '7px 12px', flexShrink: 0,
+            background: _blue, border: 'none', borderRadius: 6,
+            cursor: 'pointer', transition: 'opacity 0.15s',
+            whiteSpace: 'nowrap',
           }} onMouseOver={e=>e.currentTarget.style.opacity='0.8'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
-          <Plus size={11} color="#fff" />
-          <span style={{ fontSize: 11, color: '#fff', fontWeight: 700 }}>カスタム</span>
+          <Plus size={12} color="#fff" />
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, color: '#fff', fontWeight: 700 }}>+ カスタム</span>
         </button>
       </div>
 
@@ -275,7 +274,7 @@ export default function LifeEventPlanner({
           if (groupEvents.length === 0) return null;
           return (
             <div key={group.key}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 8 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: txt, opacity: 0.7, marginBottom: 8, letterSpacing: '0.04em' }}>
                 {group.label}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

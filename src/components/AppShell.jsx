@@ -36,11 +36,11 @@ import TemplateModal              from './modals/TemplateModal';
 import AllTransactionsModal       from './modals/AllTransactionsModal';
 
 const TABS = [
-  { id: 'home',       icon: <DollarSign size={20} />,  label: '家計簿' },
-  { id: 'assets',     icon: <BarChart2 size={20} />,    label: '資産'   },
-  { id: 'calendar',   icon: <Calendar size={20} />,    label: '履歴'   },
-  { id: 'simulation', icon: <TrendingUp size={20} />,  label: '計画'   },
-  { id: 'settings',   icon: <Settings size={20} />,    label: '設定'   },
+  { id: 'home',       icon: <DollarSign size={19} />,  label: '家計簿' },
+  { id: 'assets',     icon: <BarChart2 size={19} />,    label: '資産'   },
+  { id: 'calendar',   icon: <Calendar size={19} />,    label: '履歴'   },
+  { id: 'simulation', icon: <TrendingUp size={19} />,  label: '計画'   },
+  { id: 'settings',   icon: <Settings size={19} />,    label: '設定'   },
 ];
 
 export default function AppShell({ data }) {
@@ -192,7 +192,7 @@ export default function AppShell({ data }) {
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        <div className="max-w-md mx-auto flex" style={{ height: 56 }}>
+        <div className="max-w-md mx-auto flex" style={{ height: 58 }}>
           {TABS.map(tab => {
             const isActive = activeTab === tab.id;
             return (
@@ -202,33 +202,36 @@ export default function AppShell({ data }) {
                 style={{
                   flex: 1, display: 'flex', flexDirection: 'column',
                   alignItems: 'center', justifyContent: 'center',
-                  gap: 3, position: 'relative', background: 'none', border: 'none',
-                  cursor: 'pointer', transition: 'color 0.15s',
-                  color: isActive ? '#00e5ff' : theme.sub2Hex,
-                  paddingTop: 3,
+                  gap: 4, position: 'relative', background: 'none', border: 'none',
+                  cursor: 'pointer',
+                  color: isActive
+                    ? '#00e5ff'
+                    : (darkMode ? '#787878' : '#999999'),
+                  transition: 'color 0.18s ease',
+                  paddingBottom: 2,
                 }}
               >
                 {/* active indicator — top line */}
-                {isActive && (
-                  <span style={{
-                    position: 'absolute', top: 0, left: '25%', right: '25%', height: 2,
-                    background: '#00e5ff',
-                    boxShadow: '0 0 6px rgba(0,229,255,0.8)',
-                    borderRadius: '0 0 2px 2px',
-                  }} />
-                )}
+                <span style={{
+                  position: 'absolute', top: 0,
+                  left: '28%', right: '28%', height: 2,
+                  background: isActive ? '#00e5ff' : 'transparent',
+                  boxShadow: isActive ? '0 0 8px rgba(0,229,255,0.9)' : 'none',
+                  borderRadius: '0 0 2px 2px',
+                  transition: 'background 0.18s',
+                }} />
                 <span style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  transform: isActive ? 'scale(1.15)' : 'scale(1)',
-                  filter: isActive ? 'drop-shadow(0 0 4px rgba(0,229,255,0.5))' : 'none',
+                  transition: 'transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transform: isActive ? 'scale(1.12)' : 'scale(1)',
                 }}>
                   {tab.icon}
                 </span>
                 <span style={{
-                  fontSize: 9, fontFamily: "'JetBrains Mono', monospace",
-                  fontWeight: isActive ? 700 : 500,
-                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  fontSize: 11,
+                  fontFamily: "'Noto Sans JP', sans-serif",
+                  fontWeight: isActive ? 700 : 400,
+                  lineHeight: 1,
                 }}>
                   {tab.label}
                 </span>
