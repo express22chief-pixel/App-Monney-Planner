@@ -604,6 +604,8 @@ export default function SettingsTab(props) {
           theme={theme}
         />
       )}
-
+          </div>
+        </div>
+      </div>
   );
 }
