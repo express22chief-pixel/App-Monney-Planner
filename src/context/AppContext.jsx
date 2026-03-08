@@ -20,18 +20,37 @@ import React, { createContext, useContext, useMemo } from 'react';
 // --- テーマ計算（純粋関数） --------------------------------------------------
 export function buildTheme(darkMode) {
   return {
-    bg:            darkMode ? 'bg-black'           : 'bg-neutral-50',
-    card:          darkMode ? 'bg-neutral-900'     : 'bg-white',
-    cardGlass:     darkMode ? 'glass-dark'         : 'glass',
-    text:          darkMode ? 'text-neutral-100'   : 'text-neutral-900',
-    textSecondary: darkMode ? 'text-neutral-400'   : 'text-neutral-500',
-    border:        darkMode ? 'border-neutral-800' : 'border-neutral-200',
-    green:         darkMode ? '#0CD664'  : '#10b981',
-    red:           darkMode ? '#FF453A'  : '#ef4444',
-    accent:        darkMode ? '#0A84FF'  : '#3b82f6',
-    purple:        darkMode ? '#BF5AF2'  : '#a855f7',
-    orange:        '#FF9F0A',
-    chart:         darkMode ? '#1C1C1E'  : '#ffffff',
+    // layout
+    bg:            darkMode ? 'bg-[#080808]'   : 'bg-[#f4f4f2]',
+    card:          darkMode ? 'bg-[#111111]'   : 'bg-white',
+    cardGlass:     darkMode ? 'glass-dark'      : 'glass',
+
+    // typography
+    text:          darkMode ? 'text-[#f0f0f0]' : 'text-[#0a0a0a]',
+    textSecondary: darkMode ? 'text-[#aaaaaa]' : 'text-[#555555]',
+
+    // borders
+    border:        darkMode ? 'border-[#1f1f1f]' : 'border-[#e8e8e6]',
+
+    // semantic colors — electric palette
+    green:         darkMode ? '#00e676'  : '#00c853',   // electric green
+    red:           darkMode ? '#ff3d57'  : '#e53935',   // sharp red
+    accent:        '#00e5ff',                            // cyan — same in both modes
+    purple:        darkMode ? '#d500f9'  : '#aa00ff',   // electric purple
+    orange:        darkMode ? '#ff9100'  : '#ff6d00',   // electric orange
+
+    // chart / card backgrounds
+    chart:         darkMode ? '#111111'  : '#ffffff',
+
+    // raw hex values for inline styles
+    bgHex:         darkMode ? '#080808'  : '#f4f4f2',
+    cardHex:       darkMode ? '#111111'  : '#ffffff',
+    elevatedHex:   darkMode ? '#181818'  : '#f9f9f7',
+    borderHex:     darkMode ? '#1f1f1f'  : '#e8e8e6',
+    border2Hex:    darkMode ? '#2a2a2a'  : '#d8d8d6',
+    textHex:       darkMode ? '#f0f0f0'  : '#0a0a0a',
+    subHex:        darkMode ? '#888888'  : '#666666',
+    sub2Hex:       darkMode ? '#6a6a6a'  : '#999999',
   };
 }
 
