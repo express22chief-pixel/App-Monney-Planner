@@ -770,7 +770,8 @@ export default function SimulationTab(props) {
         setShowLifeEventModal={setShowLifeEventModal}
         setEditingLifeEvent={setEditingLifeEvent}
         deleteLifeEvent={deleteLifeEvent}
-      /></div>}
+      /></div>
+      }
       </div>
 
             {/* ══════════════════════════════════════════════════════════════════
@@ -838,7 +839,8 @@ export default function SimulationTab(props) {
               </div>
             );
           })}
-        </div>}
+        </div>
+        }
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
