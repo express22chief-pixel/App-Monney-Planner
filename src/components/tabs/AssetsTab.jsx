@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getAgeGroup } from '../../utils/calc';
 import { Edit2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 export default function AssetsTab(props) {
+  const [editingWallet, setEditingWallet] = useState(null); // { wid, txTotal, inputVal }
   const {
     theme, darkMode, assetData, monthlyHistory,
     simulationResults, calculateBenchmark, userInfo,
@@ -12,6 +13,7 @@ export default function AssetsTab(props) {
     transactions, recurringTransactions, creditCards,
     setShowClosingCheckModal, getSettlementDate, budgetAnalysis,
     currentBalance, currentMonth, openCloseMonthModal, setActiveTab, selectedMonth,
+    calculateCategoryExpenses,
     dismissedClosingAlerts, setDismissedClosingAlerts,
     wallets, walletBalances, walletAdjustments, setWalletAdjustments,
   } = props;
@@ -23,13 +25,13 @@ export default function AssetsTab(props) {
             {/* 総資- */}
             <button
               onClick={() => setShowAssetEditModal(true)}
-              className={`w-full ${theme.cardGlass} rounded-xl p-4 transition-all duration-200 hover-scale text-left`}
+              className={`w-full ${theme.cardGlass} rounded-lg p-4 transition-all duration-200 hover-scale text-left`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p className={`text-xs ${theme.textSecondary} font-medium uppercase tracking-wide`}>Total Assets</p>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#00e5ff' }}>総資産</p>
                 <Edit2 size={13} className={theme.textSecondary} />
               </div>
-              <p className={`text-3xl font-bold ${theme.text} mb-3 tabular-nums tracking-tight`}>
+              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 30, fontWeight: 800, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', marginBottom: 10 }} className={theme.text}>
                 ¥{((isNaN(assetData.savings)?0:assetData.savings)+(isNaN(assetData.investments)?0:assetData.investments)+(isNaN(assetData.nisa)?0:(assetData.nisa||0))+(isNaN(assetData.dryPowder)?0:(assetData.dryPowder||0))).toLocaleString()}
               </p>
               {(() => {
@@ -53,7 +55,7 @@ export default function AssetsTab(props) {
                 ].map(({ label, value, color }) => (
                   <div key={label}>
                     <p className={`text-[10px] ${theme.textSecondary} mb-0.5`}>{label}</p>
-                    <p className="text-sm font-bold tabular-nums" style={{ color }}>¥{(value/10000).toFixed(0)}万</p>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color }}>¥{(value/10000).toFixed(0)}万</p>
                   </div>
                 ))}
               </div>
@@ -61,11 +63,11 @@ export default function AssetsTab(props) {
 
             {/* 電子マネー残高 */}
             {wallets && wallets.length > 0 && (
-              <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+              <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                 <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
                   <div>
-                    <p className={`text-xs ${theme.textSecondary} font-medium uppercase tracking-wide`}>Electronic Money</p>
-                    <p className={`text-lg font-black tabular-nums ${theme.text}`}>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>電子マネー残高</p>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 17, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }} className={theme.text}>
                       ¥{wallets.reduce((s, w) => s + (walletBalances?.[String(w.id)] || 0), 0).toLocaleString()}
                     </p>
                   </div>
@@ -76,13 +78,13 @@ export default function AssetsTab(props) {
                     const bal = walletBalances?.[wid] || 0;
                     const [editing, setEditing] = [false, () => {}]; // ローカルstateは使えないため下で対処
                     return (
-                      <div key={w.id} className={`flex items-center gap-3 p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
+                      <div key={w.id} className={`flex items-center gap-3 p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
                           {w.icon}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-semibold ${theme.text}`}>{w.name}</p>
-                          <p className="text-xs font-bold tabular-nums" style={{ color: bal < 0 ? theme.red : bal === 0 ? (darkMode ? '#555' : '#bbb') : theme.accent }}>
+                          <p style={{ fontSize: 13, fontWeight: 600 }} className={theme.text}>{w.name}</p>
+                          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: bal < 0 ? theme.red : bal === 0 ? (darkMode ? '#444' : '#bbb') : theme.accent }}>
                             ¥{bal.toLocaleString()}
                             {bal < 0 && <span className="ml-1 text-red-400">残高不足</span>}
                           </p>
@@ -91,15 +93,7 @@ export default function AssetsTab(props) {
                           onClick={() => {
                             const current = walletAdjustments?.[wid] || 0;
                             const txTotal = bal - current;
-                            const input = window.prompt(
-                              `${w.name} の現在残高を入力してください\n(取引履歴による変動分: ¥${txTotal.toLocaleString()})`,
-                              String(bal)
-                            );
-                            if (input === null) return;
-                            const newBal = Number(input.replace(/[^0-9-]/g, ''));
-                            if (isNaN(newBal)) { alert('数字を入力してください'); return; }
-                            // 新しい調整額 = 目標残高 - 取引分
-                            setWalletAdjustments(prev => ({ ...prev, [wid]: newBal - txTotal }));
+                            setEditingWallet({ wid, txTotal, inputVal: String(bal) });
                           }}
                           className={`shrink-0 text-xs px-2.5 py-1.5 rounded-lg font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'}`}
                         >修正</button>
@@ -107,6 +101,42 @@ export default function AssetsTab(props) {
                     );
                   })}
                   <p className={`text-[10px] text-center pt-1 ${theme.textSecondary}`}>「修正」で現在の実際の残高に合わせられます</p>
+
+                  {/* インライン残高修正UI */}
+                  {editingWallet && (
+                    <div className={`mt-3 p-4 rounded-lg border-2 ${darkMode ? 'bg-neutral-800 border-blue-500/40' : 'bg-blue-50 border-blue-200'}`}>
+                      <p className={`text-xs font-bold mb-2 ${theme.text}`}>
+                        {wallets.find(w => String(w.id) === editingWallet.wid)?.icon} {wallets.find(w => String(w.id) === editingWallet.wid)?.name} の残高を修正
+                      </p>
+                      <p className={`text-[10px] mb-2 ${theme.textSecondary}`}>
+                        取引履歴分: ¥{editingWallet.txTotal.toLocaleString()} ／ 現在の記録残高に合わせる
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          value={editingWallet.inputVal}
+                          onChange={e => setEditingWallet(prev => ({ ...prev, inputVal: e.target.value }))}
+                          className={`flex-1 px-3 py-2 rounded-lg text-sm font-bold tabular-nums border focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-neutral-700 text-white border-neutral-600' : 'bg-white text-neutral-900 border-neutral-200'}`}
+                          placeholder="残高を入力"
+                        />
+                        <button
+                          onClick={() => {
+                            const newBal = Number(String(editingWallet.inputVal).replace(/[^0-9-]/g, ''));
+                            if (!isNaN(newBal)) {
+                              setWalletAdjustments(prev => ({ ...prev, [editingWallet.wid]: newBal - editingWallet.txTotal }));
+                            }
+                            setEditingWallet(null);
+                          }}
+                          className="px-4 py-2 rounded-lg text-xs font-bold text-white bg-blue-500"
+                        >確定</button>
+                        <button
+                          onClick={() => setEditingWallet(null)}
+                          className={`px-3 py-2 rounded-lg text-xs font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}
+                        >✕</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -114,7 +144,7 @@ export default function AssetsTab(props) {
             {/* 投資実行 */}
             <button
               onClick={() => setShowInvestModal(true)}
-              className={`w-full ${theme.cardGlass} rounded-xl p-3.5 transition-all duration-200 hover-scale text-left`}
+              className={`w-full ${theme.cardGlass} rounded-lg p-3.5 transition-all duration-200 hover-scale text-left`}
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -128,7 +158,7 @@ export default function AssetsTab(props) {
             {/* 同世代-較 */}
             <button
               onClick={() => setShowBenchmark(true)}
-              className={`w-full ${theme.cardGlass} rounded-xl p-3.5 transition-all duration-200 hover-scale text-left`}
+              className={`w-full ${theme.cardGlass} rounded-lg p-3.5 transition-all duration-200 hover-scale text-left`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -184,7 +214,7 @@ export default function AssetsTab(props) {
                 const settlementDate = getSettlementDate(todayStr, card.id);
                 const settleDateStr = settlementDate.getFullYear() + '-' + String(settlementDate.getMonth()+1).padStart(2,'0') + '-' + String(settlementDate.getDate()).padStart(2,'0');
                 return (
-                  <div key={card.id} className="rounded-xl p-4 border-l-4" style={{ backgroundColor: darkMode ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)', borderColor: '#6366f1' }}>
+                  <div key={card.id} className="rounded-lg p-4 border-l-4" style={{ backgroundColor: darkMode ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)', borderColor: '#6366f1' }}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <p className="text-sm font-bold mb-1" style={{ color: '#6366f1' }}>💳 {card.name} の締め日を過ぎました</p>
@@ -195,11 +225,11 @@ export default function AssetsTab(props) {
                     </div>
                     <div className="flex gap-2 mt-3">
                       <button onClick={() => setShowClosingCheckModal({ card, total, settleDateStr, alertKey })}
-                        className="flex-1 py-2 rounded-xl text-xs font-bold text-white" style={{ backgroundColor: '#6366f1' }}>
+                        className="flex-1 py-2 rounded-lg text-xs font-bold text-white" style={{ backgroundColor: '#6366f1' }}>
                         金額を確認・修正する
                       </button>
                       <button onClick={() => setDismissedClosingAlerts(prev => ({ ...prev, [alertKey]: true }))}
-                        className={`flex-1 py-2 rounded-xl text-xs font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-100 text-neutral-500'}`}>
+                        className={`flex-1 py-2 rounded-lg text-xs font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-100 text-neutral-500'}`}>
                         問題なし
                       </button>
                     </div>
@@ -208,103 +238,6 @@ export default function AssetsTab(props) {
               });
             })()}
 
-            {/* 今月の収- */}
-            <div className={`${theme.cardGlass} rounded-xl p-4`}>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>今月の収支</h2>
-                <button
-                  onClick={() => setActiveTab('settings')}
-                  className={`text-xs px-2.5 py-1 rounded-lg font-medium ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}
-                >
-                  予算設定 →
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className={`${darkMode ? 'bg-neutral-900 border border-neutral-700' : 'bg-neutral-50'} rounded-lg p-3`}>
-                  <p className={`text-xs ${theme.textSecondary} mb-1`}>収入 (PL)</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: theme.green }}>¥{(budgetAnalysis.income.actual/10000).toFixed(1)}万</p>
-                  <p className={`text-xs ${theme.textSecondary} tabular-nums`}>予算 ¥{(budgetAnalysis.income.budgeted/10000).toFixed(0)}万</p>
-                </div>
-                <div className={`${darkMode ? 'bg-neutral-900 border border-neutral-700' : 'bg-neutral-50'} rounded-lg p-3`}>
-                  <p className={`text-xs ${theme.textSecondary} mb-1`}>支出 (PL)</p>
-                  <p className="text-lg font-bold tabular-nums" style={{ color: budgetAnalysis.expense.difference<=0?theme.green:theme.red }}>
-                    ¥{(budgetAnalysis.expense.actual/10000).toFixed(1)}万
-                  </p>
-                  <p className={`text-xs ${theme.textSecondary} tabular-nums`}>予算 ¥{(budgetAnalysis.expense.budgeted/10000).toFixed(0)}万</p>
-                </div>
-              </div>
-              <div className={`${darkMode ? 'bg-neutral-900 border border-neutral-700' : 'bg-neutral-50'} rounded-lg p-3 space-y-1.5`}>
-                <div className="flex justify-between items-center">
-                  <span className={`text-xs ${theme.textSecondary}`}>PL残高（発生ベース）</span>
-                  <span className="text-sm font-bold tabular-nums" style={{ color: currentBalance.plBalance>=0?theme.green:theme.red }}>
-                    {currentBalance.plBalance>=0?'+':''}¥{currentBalance.plBalance.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className={`text-xs ${theme.textSecondary}`}>CF残高（現金ベース）</span>
-                  <span className="text-sm font-bold tabular-nums" style={{ color: currentBalance.cfBalance>=0?theme.green:theme.red }}>
-                    {currentBalance.cfBalance>=0?'+':''}¥{currentBalance.cfBalance.toLocaleString()}
-                  </span>
-                </div>
-                {currentBalance.investmentTransfer > 0 && (
-                  <div className="flex justify-between items-center pt-1" style={{ borderTop: `1px solid ${darkMode?'#2C2C2E':'#e5e7eb'}` }}>
-                    <span className={`text-xs ${theme.textSecondary}`}>📈 投資積立（除外済）</span>
-                    <span className="text-xs font-bold tabular-nums" style={{ color: '#a855f7' }}>¥{currentBalance.investmentTransfer.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-              {!monthlyHistory[currentMonth] && currentBalance.cfBalance !== 0 && (
-                <button
-                  onClick={() => openCloseMonthModal()}
-                  className="w-full mt-3 py-2.5 rounded-xl font-semibold text-white transition-all hover-scale"
-                  style={{ backgroundColor: theme.accent }}
-                >
-                  {formatYM(selectedMonth)}の収支を確定する
-                </button>
-              )}
-            </div>
-
-            {/* -出内訳（投資除外） */}
-            {(() => {
-              const investIds = new Set(recurringTransactions.filter(r => r.type==='investment'||r.type==='fund').map(r => r.id));
-              const catMap = transactions
-                .filter(t => t.date.startsWith(currentMonth) && t.amount < 0 && !t.isSettlement && !(t.recurringId && investIds.has(t.recurringId)) && !t.isInvestment)
-                .reduce((acc, t) => { acc[t.category] = (acc[t.category]||0) + Math.abs(t.amount); return acc; }, {});
-              const items = Object.entries(catMap).map(([category, amount]) => ({ category, amount })).sort((a,b) => b.amount - a.amount);
-              const total = items.reduce((s, i) => s + i.amount, 0);
-              if (items.length === 0) return null;
-              return (
-                <div className={`${theme.cardGlass} rounded-xl p-4`}>
-                  <h2 className={`text-sm font-semibold ${theme.text} mb-3 uppercase tracking-wide`}>今月の支出内訳</h2>
-                  <div className="space-y-2.5">
-                    {items.map((item, idx) => {
-                      const pct = item.amount / total * 100;
-                      const bd = budgetAnalysis.categoryComparison[item.category];
-                      return (
-                        <div key={item.category} className="animate-fadeIn" style={{ animationDelay: `${idx*0.04}s` }}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className={`text-xs font-medium ${theme.text}`}>{item.category}</span>
-                            <div className="flex items-center gap-2">
-                              {bd && bd.budgeted > 0 && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{
-                                  backgroundColor: bd.difference<=0?'rgba(12,214,100,0.15)':'rgba(255,69,58,0.15)',
-                                  color: bd.difference<=0?theme.green:theme.red
-                                }}>{bd.percentage.toFixed(0)}%</span>
-                              )}
-                              <span className={`text-xs font-semibold ${theme.text} tabular-nums`}>¥{item.amount.toLocaleString()}</span>
-                            </div>
-                          </div>
-                          <div className={`w-full ${darkMode?'bg-neutral-800':'bg-neutral-200'} rounded-full h-1.5 overflow-hidden`}>
-                            <div className="h-1.5 rounded-full transition-all duration-500"
-                              style={{ width: `${pct}%`, backgroundColor: bd&&bd.difference>0?theme.red:theme.accent }} />
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
 
           </div>
 

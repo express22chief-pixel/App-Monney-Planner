@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export default function HomeTab(props) {
+  const [showPayments, setShowPayments] = useState(false);   // 今月の支払い予定
+  const [showSplit2,   setShowSplit2]   = useState(false);   // 立替待ち（ローカル制御）
   const {
     theme, darkMode, unclosedMonths, openCloseMonthModal,
     summaryMonthOffset, setSummaryMonthOffset,
@@ -30,7 +32,7 @@ export default function HomeTab(props) {
 
             {/* 未締め月バナー */}
             {unclosedMonths.length > 0 && (
-              <div className={`rounded-xl p-4 border-l-4`} style={{ backgroundColor: darkMode ? 'rgba(255,159,10,0.12)' : 'rgba(255,159,10,0.08)', borderColor: theme.orange }}>
+              <div style={{ borderRadius: 6, padding: '12px 14px', borderLeft: `3px solid ${theme.orange}`, backgroundColor: darkMode ? 'rgba(255,145,0,0.08)' : 'rgba(255,109,0,0.05)' }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <p className="text-sm font-bold mb-1" style={{ color: theme.orange }}>⚠ 未締めの月があります</p>
@@ -40,8 +42,14 @@ export default function HomeTab(props) {
                         <button
                           key={ym}
                           onClick={() => openCloseMonthModal(ym)}
-                          className="px-3 py-1.5 rounded-lg text-xs font-bold text-white hover-scale transition-all"
-                          style={{ backgroundColor: theme.orange }}
+                          style={{
+                            padding: '6px 12px', borderRadius: 4,
+                            border: `1px solid ${theme.orange}`,
+                            background: `${theme.orange}20`,
+                            color: theme.orange, fontSize: 11, fontWeight: 700,
+                            fontFamily: "'JetBrains Mono', monospace",
+                            letterSpacing: '0.04em', cursor: 'pointer',
+                          }}
                         >
                           {formatYM(ym)}の収支を確定する
                         </button>
@@ -82,7 +90,7 @@ export default function HomeTab(props) {
 
               return (
                 <div
-                  className={`${theme.cardGlass} rounded-2xl overflow-hidden select-none`}
+                  className={`${theme.cardGlass} rounded-lg overflow-hidden select-none`}
                   onTouchStart={e => { e.currentTarget._startX = e.touches[0].clientX; }}
                   onTouchEnd={e => {
                     const dx = e.changedTouches[0].clientX - (e.currentTarget._startX || 0);
@@ -94,11 +102,11 @@ export default function HomeTab(props) {
                   <div className="px-5 pt-5 pb-4" style={{
                     background: darkMode
                       ? isPositive
-                        ? 'linear-gradient(145deg, rgba(10,132,255,0.10) 0%, transparent 70%)'
-                        : 'linear-gradient(145deg, rgba(255,69,58,0.10) 0%, transparent 70%)'
+                        ? 'linear-gradient(135deg, rgba(0,229,255,0.08) 0%, transparent 60%)'
+                        : 'linear-gradient(135deg, rgba(255,61,87,0.10) 0%, transparent 60%)'
                       : isPositive
-                        ? 'linear-gradient(145deg, rgba(59,130,246,0.06) 0%, transparent 70%)'
-                        : 'linear-gradient(145deg, rgba(239,68,68,0.06) 0%, transparent 70%)'
+                        ? 'linear-gradient(135deg, rgba(0,229,255,0.04) 0%, transparent 60%)'
+                        : 'linear-gradient(135deg, rgba(229,57,53,0.06) 0%, transparent 60%)'
                   }}>
                     {/* ヘッ-ー行 */}
                     <div className="flex items-center justify-between mb-3">
@@ -135,9 +143,13 @@ export default function HomeTab(props) {
                     {/* 収-差額（大きく） */}
                     <div className="mb-1">
                       <p className={`text-[10px] font-medium ${theme.textSecondary} mb-1`}>収支</p>
-                      <p className="text-3xl font-black tabular-nums" style={{
+                      <p style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: 32, fontWeight: 800,
+                        fontVariantNumeric: 'tabular-nums',
                         color: isPositive ? theme.green : theme.red,
-                        letterSpacing: '-0.03em'
+                        letterSpacing: '-0.04em',
+                        textShadow: isPositive ? `0 0 20px ${theme.green}50` : `0 0 20px ${theme.red}40`,
                       }}>
                         {isPositive ? '+' : '−'}¥{Math.abs(diff).toLocaleString()}
                       </p>
@@ -157,7 +169,7 @@ export default function HomeTab(props) {
                           <div className="flex justify-between items-center mb-3">
                             <div>
                               <p className="text-[10px] font-medium mb-0.5" style={{ color: theme.green }}>↑ 収入</p>
-                              <p className="text-sm font-bold tabular-nums" style={{ color: theme.green }}>¥{inc.toLocaleString()}</p>
+                              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: theme.green }}>¥{inc.toLocaleString()}</p>
                             </div>
                             <div className="flex flex-col items-center">
                               <div className="px-3 py-1 rounded-full text-[11px] font-black tabular-nums text-white"
@@ -170,7 +182,7 @@ export default function HomeTab(props) {
                             </div>
                             <div className="text-right">
                               <p className="text-[10px] font-medium mb-0.5" style={{ color: theme.red }}>↓ 支出</p>
-                              <p className="text-sm font-bold tabular-nums" style={{ color: theme.red }}>¥{exp.toLocaleString()}</p>
+                              <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: theme.red }}>¥{exp.toLocaleString()}</p>
                             </div>
                           </div>
 
@@ -210,7 +222,7 @@ export default function HomeTab(props) {
 
                     {/* ページドット */}
                     <div className="flex justify-center gap-1 mt-3">
-                      {[-5,-4,-3,-2,-1,0].map(o => (
+                      {[-2,-1,0].map(o => (
                         <button
                           key={o}
                           onClick={() => setSummaryMonthOffset(o)}
@@ -231,8 +243,135 @@ export default function HomeTab(props) {
             })()}
 
 
+            {/* -近の取引 */}
+            {(() => {
+              // 支払い取引（引き落とし予定を除く）を日付降順でグループ化
+              const visibleTxns = transactions.filter(t => !t.isSettlement);
+              const showAll = recentTxnLimit >= 9999;
+              const displayTxns = showAll ? visibleTxns : visibleTxns.slice(0, 3);
+
+              // 月ごとにグループ化
+              const groups = [];
+              displayTxns.forEach(t => {
+                const ym = t.date.slice(0, 7);
+                const label = ym === currentMonth
+                  ? `今月（${formatYM(ym)}）`
+                  : formatYM(ym);
+                const last = groups[groups.length - 1];
+                if (!last || last.ym !== ym) groups.push({ ym, label, items: [t] });
+                else last.items.push(t);
+              });
+
+              const TxnRow = ({ t, idx }) => (
+                <div
+                  key={t.id}
+                  onClick={() => setEditingTransaction(t)}
+                  className={`flex items-center gap-3 px-1 py-3 cursor-pointer transition-all duration-150 animate-fadeIn ${darkMode ? 'hover:bg-neutral-700/30' : 'hover:bg-neutral-50'}`}
+                  style={{ animationDelay: `${idx * 0.03}s` }}
+                >
+                  {/* アイコン */}
+                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg ${
+                    t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
+                    t.paymentMethod==='credit' || t.paymentMethod==='paypay' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
+                    (darkMode?'bg-neutral-800':'bg-neutral-100')
+                  }`}>
+                    {t.isRecurring ? (t.isInvestment ? '📈' : '🔄') : t.isCharge ? '⚡' : t.type === 'income' ? '💰' : (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' ? '💳' : t.paymentMethod === 'wallet' ? '👛' : '💵')}
+                  </div>
+                  {/* テキスト */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
+                      {!t.settled && t.type === 'expense' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0" style={{ backgroundColor: 'rgba(255,159,10,0.15)', color: theme.orange }}>未確定</span>
+                      )}
+                      {t.isSplit && (() => {
+                        const members = t.splitMembers || [];
+                        const allSettled = members.length > 0 && members.every(m => m.settled);
+                        const settledCount = members.filter(m => m.settled).length;
+                        return (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${allSettled ? 'bg-green-500/15 text-green-500' : 'bg-blue-500/15 text-blue-400'}`}>
+                            {allSettled ? '👥精算済' : `👥${settledCount}/${members.length}人`}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    <p className={`text-xs ${theme.textSecondary} mt-0.5 truncate`}>
+                      {t.memo || ''}
+                      {t.memo && <span className="mx-1 opacity-40">·</span>}
+                      <span className="opacity-70">{t.date.slice(5).replace('-','/')}</span>
+                      {t.isTransfer && <span className="ml-1.5 text-[10px] font-medium" style={{ color: '#FF9F0A' }}>💱チャージ</span>}
+                      {!t.isTransfer && (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' || t.paymentMethod === 'wallet') && (
+                        <span className={`ml-1.5 text-[10px] font-medium ${t.paymentMethod === 'wallet' ? (darkMode ? 'text-purple-400' : 'text-purple-500') : (darkMode ? 'text-blue-400' : 'text-blue-500')}`}>
+                          {t.paymentMethod === 'paypay' ? 'PayPay' : t.paymentMethod === 'wallet' ? '📲電子マネー' : 'クレジット'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  {/* 金額 */}
+                  <div className="text-right shrink-0">
+                    <p className="text-sm font-bold tabular-nums" style={{ color: t.amount >= 0 ? theme.green : (t.isInvestment ? '#a855f7' : theme.red) }}>
+                      {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+              );
+
+              return (
+                <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
+                  {/* ヘッ-ー */}
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>RECENT TXN</h2>
+                    <button
+                      onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
+                      className={`text-xs font-semibold`}
+                      style={{ color: theme.accent }}
+                    >
+                      もっと見る ›
+                    </button>
+                  </div>
+
+                  {transactions.length === 0 ? (
+                    <p className={`text-sm text-center py-10 ${theme.textSecondary}`}>まだ取引がありません</p>
+                  ) : (
+                    <>
+                      {/* 月グループ */}
+                      {groups.map((group, gi) => (
+                        <div key={group.ym}>
+                          {/* 月ラベル */}
+                          <div className={`px-4 py-1.5 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-100/80'}`}>
+                            <span className={`text-xs font-semibold ${theme.textSecondary}`}>{group.label}</span>
+                          </div>
+                          {/* 取引行 */}
+                          <div className="px-3">
+                            {group.items.map((t, idx) => (
+                              <div key={t.id}>
+                                <TxnRow t={t} idx={gi * 10 + idx} />
+                                {idx < group.items.length - 1 && (
+                                  <div className={`h-px mx-1 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* もっと見るボタン */}
+                      {visibleTxns.length > 3 && (
+                        <button
+                          onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
+                          className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
+                        >
+                          もっと見る（全{visibleTxns.length}件）›
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
             {/* 定期-払い */}
-            <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+            <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
               {/* ヘッ-ー（常時表示）+ 折りたたみ時の合計表示 */}
               <div className="px-4 pt-3 pb-2">
                 <div className="flex items-center justify-between mb-1.5">
@@ -240,7 +379,7 @@ export default function HomeTab(props) {
                     onClick={() => setShowRecurringList(!showRecurringList)}
                     className="flex items-center gap-2 flex-1 text-left"
                   >
-                    <span className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>定期支払い</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>定期支払い</span>
                     {recurringTransactions.length > 0 && (
                       <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>
                         {recurringTransactions.length}件
@@ -392,17 +531,17 @@ export default function HomeTab(props) {
               const totalAll = allItems.reduce((s, i) => s + i.amount, 0);
 
               return (
-                <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+                <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                   {/* ヘッ-ー */}
                   <div className="px-4 pt-3 pb-2">
                     <div className="flex items-center justify-between mb-1.5">
                       <button
-                        onClick={() => setShowCFList(!showCFList)}
+                        onClick={() => setShowPayments(!showPayments)}
                         className="flex items-center gap-2 flex-1 text-left"
                       >
-                        <span className={`text-sm font-semibold ${theme.text} uppercase tracking-wide`}>今月の支払い予定</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の支払い予定</span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>{allItems.length}件</span>
-                        <span className={`text-xs ${theme.textSecondary} ml-auto mr-2`} style={{ display: 'inline-block', transform: showCFList ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                        <span className={`text-xs ${theme.textSecondary} ml-auto mr-2`} style={{ display: 'inline-block', transform: showPayments ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
                       </button>
                     </div>
                     <div className="flex items-center gap-3">
@@ -419,7 +558,7 @@ export default function HomeTab(props) {
                   </div>
 
                   {/* 展開リスト */}
-                  {showCFList && (
+                  {showPayments && (
                     <div className="border-t animate-fadeIn" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
                       <div className="divide-y" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}>
                         {allItems.map((item, i) => {
@@ -504,15 +643,15 @@ export default function HomeTab(props) {
             })()}
             {/* 立替待ち */}
             {splitPayments.filter(s => !s.settled).length > 0 && (
-              <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+              <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                 {/* ヘッ-ー：常時表示 */}
                 <button
-                  onClick={() => setShowSplitList(!showSplitList)}
+                  onClick={() => setShowSplit2(v => !v)}
                   className={`w-full flex items-center justify-between px-4 py-3 transition-all`}
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-base">👥</span>
-                    <span className={`text-sm font-semibold ${theme.text}`}>立替待ち</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff' }}>立替待ち</span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-500 text-white">
                       {splitPayments.filter(s => !s.settled).length}人
                     </span>
@@ -520,10 +659,10 @@ export default function HomeTab(props) {
                       合計 ¥{splitPayments.filter(s => !s.settled).reduce((sum, s) => sum + s.amount, 0).toLocaleString()}
                     </span>
                   </div>
-                  <span className={`text-xs ${theme.textSecondary}`} style={{ display:'inline-block', transform: showSplitList ? 'rotate(180deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>▼</span>
+                  <span className={`text-xs ${theme.textSecondary}`} style={{ display:'inline-block', transform: showSplit2 ? 'rotate(180deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>▼</span>
                 </button>
 
-                {showSplitList && (
+                {showSplit2 && (
                   <div className={`border-t ${theme.border} animate-fadeIn`}>
                     {splitPayments.filter(s => !s.settled).map(sp => (
                       <div key={sp.id} className={`px-4 py-3 border-b ${theme.border} last:border-b-0`}>
@@ -586,7 +725,7 @@ export default function HomeTab(props) {
                                 return { ...prev, splitMembers: updatedMembers, splitSettled: updatedMembers.every(m => m.settled) };
                               });
                             }}
-                            className="shrink-0 px-4 py-2 rounded-xl text-sm font-bold text-white hover-scale transition-all"
+                            className="shrink-0 px-4 py-2 rounded-lg text-sm font-bold text-white hover-scale transition-all"
                             style={{ backgroundColor: theme.green }}
                           >
                             精算 ✓
@@ -598,132 +737,99 @@ export default function HomeTab(props) {
                 )}
               </div>
             )}
-            {/* -近の取引 */}
+            {/* 今月の収支詳細 */}
             {(() => {
-              // 支払い取引（引き落とし予定を除く）を日付降順でグループ化
-              const visibleTxns = transactions.filter(t => !t.isSettlement);
-              const showAll = recentTxnLimit >= 9999;
-              const displayTxns = showAll ? visibleTxns : visibleTxns.slice(0, 3);
-
-              // 月ごとにグループ化
-              const groups = [];
-              displayTxns.forEach(t => {
-                const ym = t.date.slice(0, 7);
-                const label = ym === currentMonth
-                  ? `今月（${formatYM(ym)}）`
-                  : formatYM(ym);
-                const last = groups[groups.length - 1];
-                if (!last || last.ym !== ym) groups.push({ ym, label, items: [t] });
-                else last.items.push(t);
-              });
-
-              const TxnRow = ({ t, idx }) => (
-                <div
-                  key={t.id}
-                  onClick={() => setEditingTransaction(t)}
-                  className={`flex items-center gap-3 px-1 py-3 cursor-pointer transition-all duration-150 animate-fadeIn ${darkMode ? 'hover:bg-neutral-700/30' : 'hover:bg-neutral-50'}`}
-                  style={{ animationDelay: `${idx * 0.03}s` }}
-                >
-                  {/* アイコン */}
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-lg ${
-                    t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
-                    t.paymentMethod==='credit' || t.paymentMethod==='paypay' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
-                    (darkMode?'bg-neutral-800':'bg-neutral-100')
-                  }`}>
-                    {t.isRecurring ? (t.isInvestment ? '📈' : '🔄') : t.isCharge ? '⚡' : t.type === 'income' ? '💰' : (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' ? '💳' : t.paymentMethod === 'wallet' ? '👛' : '💵')}
-                  </div>
-                  {/* テキスト */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
-                      {!t.settled && t.type === 'expense' && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0" style={{ backgroundColor: 'rgba(255,159,10,0.15)', color: theme.orange }}>未確定</span>
-                      )}
-                      {t.isSplit && (() => {
-                        const members = t.splitMembers || [];
-                        const allSettled = members.length > 0 && members.every(m => m.settled);
-                        const settledCount = members.filter(m => m.settled).length;
-                        return (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold shrink-0 ${allSettled ? 'bg-green-500/15 text-green-500' : 'bg-blue-500/15 text-blue-400'}`}>
-                            {allSettled ? '👥精算済' : `👥${settledCount}/${members.length}人`}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    <p className={`text-xs ${theme.textSecondary} mt-0.5 truncate`}>
-                      {t.memo || ''}
-                      {t.memo && <span className="mx-1 opacity-40">·</span>}
-                      <span className="opacity-70">{t.date.slice(5).replace('-','/')}</span>
-                      {t.isTransfer && <span className="ml-1.5 text-[10px] font-medium" style={{ color: '#FF9F0A' }}>💱チャージ</span>}
-                      {!t.isTransfer && (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' || t.paymentMethod === 'wallet') && (
-                        <span className={`ml-1.5 text-[10px] font-medium ${t.paymentMethod === 'wallet' ? (darkMode ? 'text-purple-400' : 'text-purple-500') : (darkMode ? 'text-blue-400' : 'text-blue-500')}`}>
-                          {t.paymentMethod === 'paypay' ? 'PayPay' : t.paymentMethod === 'wallet' ? '📲電子マネー' : 'クレジット'}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {/* 金額 */}
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-bold tabular-nums" style={{ color: t.amount >= 0 ? theme.green : (t.isInvestment ? '#a855f7' : theme.red) }}>
-                      {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              );
-
+              const today = new Date();
+              const toYM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+              const targetMonth = toYM(new Date(today.getFullYear(), today.getMonth() + summaryMonthOffset, 1));
+              const bal = calculateMonthlyBalance(targetMonth);
+              const ba = budgetAnalysis;
+              const isCurrentMonthView = targetMonth === toYM(today);
+              if (!isCurrentMonthView) return null; // 今月だけ表示
+              if (ba.income.actual === 0 && ba.expense.actual === 0) return null;
+              const items = calculateCategoryExpenses();
+              const catTotal = items.reduce((s,i) => s + i.amount, 0);
               return (
-                <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
-                  {/* ヘッ-ー */}
-                  <div className="flex items-center justify-between px-4 py-3">
-                    <h2 className={`text-sm font-semibold ${theme.text}`}>最近の取引</h2>
-                    <button
-                      onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
-                      className={`text-xs font-semibold`}
-                      style={{ color: theme.accent }}
-                    >
-                      もっと見る ›
+                <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
+                  <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の収支詳細</h2>
+                    <button onClick={() => setShowBudgetModal(true)}
+                      className={`text-xs px-2 py-1 rounded-lg font-medium ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
+                      予算設定 →
                     </button>
                   </div>
-
-                  {transactions.length === 0 ? (
-                    <p className={`text-sm text-center py-10 ${theme.textSecondary}`}>まだ取引がありません</p>
-                  ) : (
-                    <>
-                      {/* 月グループ */}
-                      {groups.map((group, gi) => (
-                        <div key={group.ym}>
-                          {/* 月ラベル */}
-                          <div className={`px-4 py-1.5 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-100/80'}`}>
-                            <span className={`text-xs font-semibold ${theme.textSecondary}`}>{group.label}</span>
-                          </div>
-                          {/* 取引行 */}
-                          <div className="px-3">
-                            {group.items.map((t, idx) => (
-                              <div key={t.id}>
-                                <TxnRow t={t} idx={gi * 10 + idx} />
-                                {idx < group.items.length - 1 && (
-                                  <div className={`h-px mx-1 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`} />
-                                )}
-                              </div>
-                            ))}
-                          </div>
+                  <div className={`border-t ${theme.border}`}>
+                    {/* PL/CF行 */}
+                    <div className="grid grid-cols-2 divide-x" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
+                      {[
+                        { label: '収入 (PL)', val: ba.income.actual, color: theme.green },
+                        { label: '支出 (PL)', val: ba.expense.actual, color: ba.expense.difference<=0 ? theme.green : theme.red },
+                      ].map(({ label, val, color }) => (
+                        <div key={label} className={`p-3 ${darkMode ? 'divide-neutral-800' : 'divide-neutral-100'}`}>
+                          <p className={`text-[10px] ${theme.textSecondary} mb-0.5`}>{label}</p>
+                          <p className="text-base font-bold tabular-nums" style={{ color }}>
+                            ¥{(val/10000).toFixed(1)}万
+                          </p>
                         </div>
                       ))}
-
-                      {/* もっと見るボタン */}
-                      {visibleTxns.length > 3 && (
-                        <button
-                          onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
-                          className={`w-full py-3 text-xs font-semibold border-t transition-all ${darkMode ? 'border-neutral-800 text-neutral-400 hover:bg-neutral-800/40' : 'border-neutral-100 text-neutral-500 hover:bg-neutral-50'}`}
-                        >
-                          もっと見る（全{visibleTxns.length}件）›
+                    </div>
+                    {/* PL残高 */}
+                    <div className={`px-3 py-2 flex justify-between items-center border-t ${theme.border}`}>
+                      <span className={`text-xs ${theme.textSecondary}`}>月次収支（PL）</span>
+                      <span className="text-sm font-bold tabular-nums" style={{ color: currentBalance.plBalance>=0?theme.green:theme.red }}>
+                        {currentBalance.plBalance>=0?'+':''}¥{currentBalance.plBalance.toLocaleString()}
+                      </span>
+                    </div>
+                    {/* カテゴリ内訳（上位5件） */}
+                    {items.length > 0 && (
+                      <div className={`px-3 pt-2 pb-3 border-t ${theme.border}`}>
+                        <p className={`text-[10px] font-bold ${theme.textSecondary} mb-2 uppercase tracking-wide`}>支出内訳</p>
+                        <div className="space-y-2">
+                          {items.slice(0,5).map((item, idx) => {
+                            const pct = catTotal > 0 ? item.amount / catTotal * 100 : 0;
+                            const bd = ba.categoryComparison?.[item.category];
+                            return (
+                              <div key={item.category}>
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className={`text-xs font-medium ${theme.text}`}>{item.category}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    {bd && bd.budgeted > 0 && (
+                                      <span className="text-[10px] px-1 py-0.5 rounded font-semibold"
+                                        style={{ background: bd.difference<=0?'rgba(12,214,100,0.15)':'rgba(255,69,58,0.15)',
+                                          color: bd.difference<=0?theme.green:theme.red }}>
+                                        {bd.percentage.toFixed(0)}%
+                                      </span>
+                                    )}
+                                    <span className={`text-xs font-semibold tabular-nums ${theme.text}`}>¥{item.amount.toLocaleString()}</span>
+                                  </div>
+                                </div>
+                                <div className={`w-full h-1.5 rounded-full overflow-hidden ${darkMode?'bg-neutral-800':'bg-neutral-200'}`}>
+                                  <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: bd&&bd.difference>0?theme.red:theme.accent }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {items.length > 5 && (
+                            <p className={`text-[10px] text-center ${theme.textSecondary}`}>他 {items.length-5} カテゴリ</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* 月締めボタン */}
+                    {!monthlyHistory[targetMonth] && currentBalance.cfBalance !== 0 && (
+                      <div className="px-3 pb-3">
+                        <button onClick={() => openCloseMonthModal()}
+                          className="w-full py-2.5 rounded-lg font-semibold text-white transition-all hover-scale text-sm"
+                          style={{ backgroundColor: theme.accent }}>
+                          今月の収支を確定する
                         </button>
-                      )}
-                    </>
-                  )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })()}
+
           </div>
 
   );

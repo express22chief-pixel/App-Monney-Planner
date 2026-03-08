@@ -29,7 +29,7 @@ export default function CalendarTab(props) {
 
   return (
           <div className="space-y-3 animate-fadeIn">
-            <div className={`${theme.cardGlass} rounded-xl p-4`}>
+            <div className={`${theme.cardGlass} rounded-lg p-4`}>
               <div className="flex items-center justify-between mb-3">
                 <button
                   onClick={() => {
@@ -59,7 +59,7 @@ export default function CalendarTab(props) {
 
               {/* 検索・フィルター */}
               <div className="flex flex-col gap-2 mb-3">
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                   <span className={`text-xs ${theme.textSecondary}`}>🔍</span>
                   <input
                     type="text"
@@ -75,7 +75,7 @@ export default function CalendarTab(props) {
                 <select
                   value={historyCategory}
                   onChange={e => setHistoryCategory(e.target.value)}
-                  className={`w-full px-3 py-2 rounded-xl text-xs font-semibold focus:outline-none ${darkMode ? 'bg-neutral-800 border border-neutral-700 text-neutral-300' : 'bg-neutral-50 border border-neutral-200 text-neutral-700'}`}
+                  className={`w-full px-3 py-2 rounded-lg text-xs font-semibold focus:outline-none ${darkMode ? 'bg-neutral-800 border border-neutral-700 text-neutral-300' : 'bg-neutral-50 border border-neutral-200 text-neutral-700'}`}
                   style={{ colorScheme: darkMode ? 'dark' : 'light' }}
                 >
                   <option value="all">全カテゴリ</option>
@@ -186,7 +186,7 @@ export default function CalendarTab(props) {
                 return matchMonth && matchCat && matchSearch;
               });
               return (
-                <div className={`${theme.cardGlass} rounded-xl p-4`}>
+                <div className={`${theme.cardGlass} rounded-lg p-4`}>
                   <div className="flex items-center justify-between mb-3">
                     <h2 className={`text-sm font-semibold ${theme.text}`}>
                       検索結果
@@ -204,9 +204,9 @@ export default function CalendarTab(props) {
                       {filtered.map(t => (
                         <div key={t.id}
                           onClick={() => setEditingTransaction(t)}
-                          className={`flex items-center gap-3 px-2 py-2.5 rounded-xl cursor-pointer transition-all ${darkMode ? 'hover:bg-neutral-700/40' : 'hover:bg-neutral-50'}`}
+                          className={`flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-pointer transition-all ${darkMode ? 'hover:bg-neutral-700/40' : 'hover:bg-neutral-50'}`}
                         >
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm ${
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm ${
                             t.type === 'income' ? (darkMode ? 'bg-green-500/15' : 'bg-green-50') :
                             t.isSettlement ? (darkMode ? 'bg-orange-500/15' : 'bg-orange-50') :
                             t.paymentMethod === 'credit' ? (darkMode ? 'bg-blue-500/15' : 'bg-blue-50') :
@@ -236,14 +236,14 @@ export default function CalendarTab(props) {
             {!monthlyHistory[selectedMonth] && calculateMonthlyBalance(selectedMonth).cfBalance !== 0 && selectedMonth < currentMonth && (
               <button
                 onClick={() => openCloseMonthModal(selectedMonth)}
-                className="w-full py-3 rounded-xl font-semibold text-white transition-all hover-scale flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-lg font-semibold text-white transition-all hover-scale flex items-center justify-center gap-2"
                 style={{ backgroundColor: theme.orange }}
               >
                 ⚠ {formatYM(selectedMonth)}の収支を確定する
               </button>
             )}
 
-            <div className={`${theme.cardGlass} rounded-xl p-4`}>
+            <div className={`${theme.cardGlass} rounded-lg p-4`}>
               <h2 className={`text-sm font-semibold ${theme.text} mb-3 uppercase tracking-wide`}>過去6ヶ月の推移（PL）</h2>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={getLast6MonthsTrend()}>

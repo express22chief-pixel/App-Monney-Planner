@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../constants';
 import { Edit2 } from 'lucide-react';
 import { RISK_PROFILES } from '../../hooks/useMoneyData';
+import InlineDialog from '../modals/InlineDialog';
 
 // -- プレミアムスライダー ----------------------------------------------------
 function PremiumSlider({ value, min, max, step, onChange, accent, darkMode }) {
@@ -28,11 +29,11 @@ function PremiumSlider({ value, min, max, step, onChange, accent, darkMode }) {
 
 function AccSection({ id, title, icon, children, expanded, onToggle, darkMode, theme }) {
   return (
-    <div className={`${theme.cardGlass} rounded-xl overflow-hidden`}>
+    <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
       <button onClick={() => onToggle(id)} className="w-full flex items-center justify-between px-4 py-3.5 transition-colors">
         <div className="flex items-center gap-2.5">
           <span className="text-base">{icon}</span>
-          <span className={`text-sm font-semibold ${theme.text}`}>{title}</span>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, letterSpacing: '0.04em' }} className={theme.text}>{title}</span>
         </div>
         <span
           className={`text-xs transition-transform duration-200 ${theme.textSecondary}`}
@@ -72,6 +73,11 @@ export default function SettingsTab(props) {
     transactions, setTransactions, setMonthlyHistory,
     lifePlan,
   } = props;
+
+  // ── インラインダイアログ state ────────────────────────────────────────
+  const [dialog, setDialog] = useState(null); // { type, title, message, defaultValue, onConfirm, danger }
+  const closeDialog = () => setDialog(null);
+
   const deletedExp = customCategories?.deletedDefaults?.expense || [];
   const deletedInc = customCategories?.deletedDefaults?.income || [];
   const renamedExp = customCategories?.renamedDefaults?.expense || {};
@@ -101,12 +107,12 @@ export default function SettingsTab(props) {
                 <div>
                   <label className={`block text-xs font-medium ${theme.textSecondary} mb-1.5`}>名前</label>
                   <input type="text" value={userInfo?.name || ''} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                    className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                    className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                 </div>
                 <div>
                   <label className={`block text-xs font-medium ${theme.textSecondary} mb-1.5`}>年齢</label>
                   <input type="number" value={userInfo?.age || ''} onChange={(e) => setUserInfo({ ...userInfo, age: e.target.value })}
-                    className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                    className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                 </div>
               </div>
               {!userInfo?.age && (
@@ -123,7 +129,7 @@ export default function SettingsTab(props) {
                   <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>月間収入予定</label>
                   <input type="text" inputMode="numeric" value={monthlyBudget.income}
                     onChange={(e) => setMonthlyBudget({ ...monthlyBudget, income: Number(e.target.value.replace(/[^0-9]/g, '')) })}
-                    className={`w-full px-3 py-2.5 rounded-xl text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                    className={`w-full px-3 py-2.5 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                   <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{monthlyBudget.income.toLocaleString()}</p>
                 </div>
                 <div className="border-t pt-3" style={{ borderColor: darkMode ? '#2C2C2E' : '#e5e7eb' }}>
@@ -282,14 +288,14 @@ export default function SettingsTab(props) {
             <AccSection id="withdrawal" icon="📉" title="老後・取り崩し設定" expanded={settingsExpanded['withdrawal']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
               <div className="pt-3 space-y-3">
-                <div className={`rounded-xl p-4 ${darkMode ? 'bg-neutral-800' : 'bg-blue-50'}`}>
+                <div className={`rounded-lg p-4 ${darkMode ? 'bg-neutral-800' : 'bg-blue-50'}`}>
                   <p className={`text-xs font-bold mb-1 ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>💡 シミュレーションタブで設定できます</p>
                   <p className={`text-xs ${darkMode ? 'text-neutral-400' : 'text-blue-600'}`}>
                     老後の収支・取り崩し・年金・リタイア年齢は<br/>
                     シミュレーション → ライフプランの前提「編集」から設定してください。
                   </p>
                 </div>
-                <div className={`rounded-xl p-3 text-xs space-y-1.5 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                <div className={`rounded-lg p-3 text-xs space-y-1.5 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                   {[
                     ['リタイア年齢', `${lifePlan.retirementAge}歳`],
                     ['想定寿命',     `${lifePlan.lifeExpectancy}歳`],
@@ -312,7 +318,7 @@ export default function SettingsTab(props) {
                 <div className="flex gap-2 mb-3">
                   {['expense', 'income'].map(type => (
                     <button key={type} onClick={() => setNewCategoryType(type)}
-                      className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                      className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
                       style={{ backgroundColor: newCategoryType === type ? theme.accent : (darkMode ? '#1C1C1E' : '#f5f5f5'), color: newCategoryType === type ? '#fff' : (darkMode ? '#d4d4d4' : '#737373') }}>
                       {type === 'expense' ? '支出カテゴリ' : '収入カテゴリ'}
                     </button>
@@ -320,21 +326,21 @@ export default function SettingsTab(props) {
                 </div>
                 <div className="flex gap-2 mb-4">
                   <input type="text" placeholder="新しいカテゴリ名" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)}
-                    className={`flex-1 px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                    className={`flex-1 px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                   <button onClick={() => {
                       if (!newCategoryName.trim()) return;
                       if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, expense: [...prev.expense, newCategoryName.trim()] }));
                       else setCustomCategories(prev => ({ ...prev, income: [...prev.income, newCategoryName.trim()] }));
                       setNewCategoryName('');
                     }}
-                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white" style={{ backgroundColor: theme.accent }}>追加</button>
+                    className="px-4 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.accent }}>追加</button>
                 </div>
                 <div className="space-y-1">
                   {(newCategoryType === 'expense' ? expenseCategories : incomeCategories).map((cat, idx, arr) => {
                     const isDefault = (newCategoryType === 'expense' ? DEFAULT_EXPENSE_CATEGORIES : DEFAULT_INCOME_CATEGORIES).some(d => (newCategoryType === 'expense' ? renamedExp : renamedInc)[d] === cat || d === cat);
                     const origName = (newCategoryType === 'expense' ? DEFAULT_EXPENSE_CATEGORIES : DEFAULT_INCOME_CATEGORIES).find(d => (newCategoryType === 'expense' ? renamedExp : renamedInc)[d] === cat || d === cat) || cat;
                     return (
-                      <div key={cat} className={`flex items-center gap-2 px-3 py-2 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
+                      <div key={cat} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-100'}`}>
                         <div className="flex flex-col gap-0.5 mr-1">
                           <button disabled={idx === 0} onClick={() => {
                             if (idx === 0) return;
@@ -408,7 +414,7 @@ export default function SettingsTab(props) {
                 ) : (
                   <div className="space-y-2">
                     {creditCards.map(card => (
-                      <div key={card.id} className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                      <div key={card.id} className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                         <div>
                           <p className={`text-sm font-semibold ${theme.text}`}>{card.name}</p>
                           <p className={`text-xs ${theme.textSecondary}`}>締め日: {card.closingDay}日 / 支払い: 翌{card.paymentMonth === 2 ? '々' : ''}月{card.paymentDay}日</p>
@@ -430,9 +436,9 @@ export default function SettingsTab(props) {
                 {/* ウォレット-覧 */}
                 <div className="space-y-2">
                   {(wallets || []).map(w => (
-                    <div key={w.id} className={`flex items-center justify-between p-3 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                    <div key={w.id} className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                       <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
+                        <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: (w.color || '#888') + '22' }}>
                           {w.icon}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -449,16 +455,31 @@ export default function SettingsTab(props) {
                             const bal = walletBalances?.[wid] || 0;
                             const adj = walletAdjustments?.[wid] || 0;
                             const txTotal = bal - adj;
-                            const input = window.prompt(`${w.name} の現在残高を入力`, String(bal));
-                            if (input === null) return;
-                            const newBal = Number(input.replace(/[^0-9-]/g, ''));
-                            if (isNaN(newBal)) { alert('数字を入力してください'); return; }
-                            setWalletAdjustments(prev => ({ ...prev, [wid]: newBal - txTotal }));
+                            setDialog({
+                              type: 'input',
+                              title: `${w.name} の残高を修正`,
+                              message: '現在の実際の残高を入力してください',
+                              defaultValue: String(bal),
+                              onConfirm: (input) => {
+                                const newBal = Number(String(input).replace(/[^0-9-]/g, ''));
+                                if (!isNaN(newBal)) {
+                                  setWalletAdjustments(prev => ({ ...prev, [wid]: newBal - txTotal }));
+                                }
+                                closeDialog();
+                              },
+                            });
                           }}
                           className={`text-xs px-2 py-1 rounded-lg ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-600'}`}
                         >修正</button>
                         <button
-                          onClick={() => { if (confirm(`「${w.name}」を削除しますか？`)) setWallets(prev => prev.filter(x => x.id !== w.id)); }}
+                          onClick={() => setDialog({
+                            type: 'confirm',
+                            title: '電子マネーを削除',
+                            message: `「${w.name}」を削除しますか？`,
+                            confirmLabel: '削除',
+                            danger: true,
+                            onConfirm: () => { setWallets(prev => prev.filter(x => x.id !== w.id)); closeDialog(); },
+                          })}
                           className="p-1.5 rounded-lg text-red-500">🗑️</button>
                       </div>
                     </div>
@@ -502,11 +523,11 @@ export default function SettingsTab(props) {
                         <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>カスタムで追加</p>
                         <div className="flex gap-2">
                           <input type="text" id="wallet-icon-input" placeholder="絵文字" maxLength={2}
-                            className={`w-14 px-2 py-2 rounded-xl text-center text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                            className={`w-14 px-2 py-2 rounded-lg text-center text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                           <input type="text" id="wallet-name-input" placeholder="名前（例: au PAY）"
-                            className={`flex-1 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                            className={`flex-1 px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                           <input type="color" id="wallet-color-input" defaultValue="#6366f1"
-                            className="w-10 h-10 rounded-xl cursor-pointer border-0 bg-transparent" />
+                            className="w-10 h-10 rounded-lg cursor-pointer border-0 bg-transparent" />
                         </div>
                         <button
                           onClick={() => {
@@ -519,7 +540,7 @@ export default function SettingsTab(props) {
                             document.getElementById('wallet-icon-input').value = '';
                             document.getElementById('wallet-name-input').value = '';
                           }}
-                          className="w-full mt-2 py-2 rounded-xl text-xs font-semibold text-white"
+                          className="w-full mt-2 py-2 rounded-lg text-xs font-semibold text-white"
                           style={{ backgroundColor: theme.accent }}
                         >＋ 追加する</button>
                       </div>
@@ -540,19 +561,26 @@ export default function SettingsTab(props) {
                     const a = document.createElement('a'); a.href = url; a.download = `money-planner-${new Date().toISOString().slice(0,10)}.json`; a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className={`w-full py-2.5 rounded-xl text-sm font-semibold border-2 transition-all hover-scale ${darkMode ? 'border-neutral-700 text-neutral-300' : 'border-neutral-200 text-neutral-600'}`}
+                  className={`w-full py-2.5 rounded-lg text-sm font-semibold border-2 transition-all hover-scale ${darkMode ? 'border-neutral-700 text-neutral-300' : 'border-neutral-200 text-neutral-600'}`}
                 >
                   📤 データをエクスポート
                 </button>
 
 
                 <button
-                  onClick={() => {
-                    if (!confirm('全データをリセットしますか？この操作は取り消せません。')) return;
-                    setTransactions([]); setRecurringTransactions([]); setMonthlyHistory({});
-                    setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
-                  }}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold border-2 border-red-500/30 text-red-500 transition-all hover-scale"
+                  onClick={() => setDialog({
+                    type: 'confirm',
+                    title: 'データを全削除',
+                    message: '全てのデータをリセットしますか？この操作は取り消せません。',
+                    confirmLabel: '削除する',
+                    danger: true,
+                    onConfirm: () => {
+                      closeDialog();
+                      setTransactions([]); setRecurringTransactions([]); setMonthlyHistory({});
+                      setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
+                    },
+                  })}
+                  className="w-full py-2.5 rounded-lg text-sm font-semibold border-2 border-red-500/30 text-red-500 transition-all hover-scale"
                 >
                   🗑️ 全データをリセット
                 </button>
@@ -560,6 +588,22 @@ export default function SettingsTab(props) {
             </AccSection>
 
           </div>
+
+      {/* ── インラインダイアログ ───────────────────────────────────────── */}
+      {dialog && (
+        <InlineDialog
+          type={dialog.type}
+          title={dialog.title}
+          message={dialog.message}
+          defaultValue={dialog.defaultValue}
+          confirmLabel={dialog.confirmLabel}
+          danger={dialog.danger}
+          onConfirm={dialog.onConfirm}
+          onCancel={closeDialog}
+          darkMode={darkMode}
+          theme={theme}
+        />
+      )}
 
   );
 }
