@@ -316,7 +316,7 @@ export function calculateSimulation(simulationSettings, assetData, lifeEvents, o
       currentDate.setMonth(month - 1);
       const yearMonth = currentDate.toISOString().slice(0, 7);
 
-      lifeEvents.filter(e => e.date === yearMonth).forEach(event => {
+      lifeEvents.filter(e => e.date === yearMonth && e.enabled !== false && e.type !== 'housing_choice').forEach(event => {
         if (dryPowder >= event.amount) { dryPowder -= event.amount; }
         else if (savings >= event.amount) { savings -= event.amount; }
         else {
@@ -412,7 +412,7 @@ export function runMonteCarloSimulation(simulationSettings, assetData, lifeEvent
         currentDate.setFullYear(currentDate.getFullYear() + year - 1);
         currentDate.setMonth(month - 1);
         const yearMonth = currentDate.toISOString().slice(0, 7);
-        lifeEvents.filter(e => e.date === yearMonth).forEach(event => {
+        lifeEvents.filter(e => e.date === yearMonth && e.enabled !== false && e.type !== 'housing_choice').forEach(event => {
           if (dryPowder >= event.amount) dryPowder -= event.amount;
           else if (savings >= event.amount) savings -= event.amount;
           else { const fromSavings = savings; savings = 0; if (regularInvestment >= event.amount - fromSavings) regularInvestment -= event.amount - fromSavings; else regularInvestment = 0; }
@@ -999,6 +999,11 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
     // ── ライフイベント：住宅以外（年次処理）────────────────────────────
     lifeEvents.forEach(event => {
       if (event.type === 'housing') return; // 住宅は上で処理済み
+      if (event.type === 'housing_choice') {
+        // housing_choice: rent継続なら費用なし、buyなら住宅設定側で処理
+        return;
+      }
+      if (event.enabled === false) return; // 無効化されたイベントをスキップ
       const evYear = parseInt(event.date?.slice(0, 4));
       const evAge  = currentAge + (evYear - nowYear);
       if (evAge !== age) return;
