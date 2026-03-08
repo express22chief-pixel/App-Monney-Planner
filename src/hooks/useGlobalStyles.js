@@ -23,6 +23,7 @@ export function useGlobalStyles() {
       style.textContent = `
         input, select, textarea {
           font-size: 16px !important;
+          font-family: 'JetBrains Mono', 'Noto Sans JP', monospace !important;
         }
         @media screen and (-webkit-min-device-pixel-ratio: 0) {
           select, textarea, input {
@@ -44,11 +45,14 @@ export function useGlobalStyles() {
           animation: slideUp 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .hover-scale {
-          transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+          transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.12s ease, background 0.12s ease;
+        }
+        .hover-scale:hover {
+          transform: scale(1.015);
         }
         .hover-scale:active {
-          transform: scale(0.95);
-          opacity: 0.85;
+          transform: scale(0.975);
+          opacity: 0.8;
         }
         button {
           -webkit-tap-highlight-color: transparent;

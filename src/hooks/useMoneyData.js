@@ -126,7 +126,111 @@ export function useMoneyData() {
   );
 
   const [monthlyHistory, setMonthlyHistory]     = useState(() => load('monthlyHistory', {}));
-  const [lifeEvents, setLifeEvents]             = useState(() => load('lifeEvents', []));
+  // ── デフォルトライフイベント（年齢オフセットベース）──────────────────
+  const DEFAULT_LIFE_EVENTS = (baseAge) => {
+    const nowYear = new Date().getFullYear();
+    const makeDate = (age) => `${nowYear + Math.max(0, age - baseAge)}-01`;
+    return [
+      {
+        id: 'tpl_marriage',    icon: '💍', name: '結婚',
+        enabled: true,  ageOffset: 3,  age: baseAge + 3,
+        amount: 3000000, date: makeDate(baseAge + 3),
+        type: 'expense', template: true,
+        hint: '挙式・新婚旅行・新居費用の目安',
+        amountRange: [500000, 10000000], amountStep: 500000,
+      },
+      {
+        id: 'tpl_child1',     icon: '👶', name: '第一子誕生',
+        enabled: true,  ageOffset: 5,  age: baseAge + 5,
+        amount: 1000000, date: makeDate(baseAge + 5),
+        type: 'expense', template: true,
+        hint: '出産費用・育児用品・育休期間の収入減',
+        amountRange: [300000, 3000000], amountStep: 100000,
+      },
+      {
+        id: 'tpl_child2',     icon: '👶', name: '第二子誕生',
+        enabled: false, ageOffset: 8,  age: baseAge + 8,
+        amount: 800000, date: makeDate(baseAge + 8),
+        type: 'expense', template: true,
+        hint: '第一子より費用を抑えられるケースが多い',
+        amountRange: [300000, 3000000], amountStep: 100000,
+      },
+      {
+        id: 'tpl_car1',       icon: '🚗', name: '車購入（1台目）',
+        enabled: true,  ageOffset: 2,  age: baseAge + 2,
+        amount: 2500000, date: makeDate(baseAge + 2),
+        type: 'expense', template: true,
+        hint: '購入費・諸費用。ローン利用時は資産控除で計算',
+        amountRange: [800000, 8000000], amountStep: 100000,
+      },
+      {
+        id: 'tpl_housing',    icon: '🏠', name: '住居',
+        enabled: true,  ageOffset: 8,  age: baseAge + 8,
+        amount: 0, date: makeDate(baseAge + 8),
+        type: 'housing_choice', template: true,
+        housingChoice: 'buy',
+        options: [
+          { key: 'buy',  label: '🏠 分譲購入', hint: 'ローン・資産形成・住宅ローン控除' },
+          { key: 'rent', label: '🔑 賃貸継続', hint: '初期費用なし・流動性を保つ' },
+        ],
+        hint: '購入の場合は「住宅設定」で詳細を入力できます',
+        amountRange: [10000000, 100000000], amountStep: 1000000,
+      },
+      {
+        id: 'tpl_edu1',       icon: '🎓', name: '子ども教育費',
+        enabled: false, ageOffset: 15, age: baseAge + 15,
+        amount: 5000000, date: makeDate(baseAge + 15),
+        type: 'expense', template: true,
+        hint: '幼稚園〜大学まで平均1,500〜2,200万円（文科省調査）',
+        amountRange: [1000000, 25000000], amountStep: 500000,
+      },
+      {
+        id: 'tpl_car2',       icon: '🚗', name: '車買い替え',
+        enabled: false, ageOffset: 12, age: baseAge + 12,
+        amount: 2000000, date: makeDate(baseAge + 12),
+        type: 'expense', template: true,
+        hint: '10年ごとに買い替えの目安',
+        amountRange: [800000, 8000000], amountStep: 100000,
+      },
+      {
+        id: 'tpl_reno',       icon: '🔨', name: 'リフォーム',
+        enabled: false, ageOffset: 20, age: baseAge + 20,
+        amount: 3000000, date: makeDate(baseAge + 20),
+        type: 'expense', template: true,
+        hint: '購入から20年後が目安。外壁・水回り等',
+        amountRange: [500000, 15000000], amountStep: 500000,
+      },
+      {
+        id: 'tpl_travel',     icon: '✈️', name: '旅行・体験費',
+        enabled: true,  ageOffset: 6,  age: baseAge + 6,
+        amount: 500000, date: makeDate(baseAge + 6),
+        type: 'expense', template: true,
+        hint: '年1回の海外旅行など。ライフスタイルで大きく変わる',
+        amountRange: [100000, 5000000], amountStep: 100000,
+      },
+      {
+        id: 'tpl_care',       icon: '🏥', name: '親の介護・援助',
+        enabled: false, ageOffset: 25, age: baseAge + 25,
+        amount: 3000000, date: makeDate(baseAge + 25),
+        type: 'expense', template: true,
+        hint: '介護費用の平均は総額500〜800万円（生命保険文化センター）',
+        amountRange: [500000, 10000000], amountStep: 500000,
+      },
+    ];
+  };
+
+  const [lifeEvents, setLifeEvents] = useState(() => {
+    const saved = load('lifeEvents', null);
+    const baseAge = load('userInfo', null)?.age ? Number(load('userInfo', null).age) : 30;
+    // 初回 or テンプレートが1件もない場合（旧データ）：デフォルトを設定
+    if (saved === null || (Array.isArray(saved) && !saved.some(e => e.template))) {
+      const defaults = DEFAULT_LIFE_EVENTS(baseAge);
+      // 既存のカスタムイベントはそのまま残す
+      const customs  = Array.isArray(saved) ? saved.filter(e => !e.template) : [];
+      return [...defaults, ...customs];
+    }
+    return saved;
+  });
   const [housingParams, setHousingParams]       = useState(() => load('housingParams', null));
   const [showHousingModal, setShowHousingModal] = useState(false);
 
@@ -415,10 +519,9 @@ export function useMoneyData() {
   // ----------------------------------------------------------------------------
 
   const resetAllData = () => {
-    if (window.confirm('本当に全てのデータを削除しますか？この操作は取り消せません。')) {
-      clearAll();
-      window.location.reload();
-    }
+    // 確認ダイアログはSettingsTab側のInlineDialogで行う
+    clearAll();
+    window.location.reload();
   };
 
   const applyRiskProfile = useCallback((profile) => {
@@ -507,8 +610,7 @@ export function useMoneyData() {
       const currentBal = walletBalances[wid] ?? 0;
       const payAmount = Math.abs(Number(newTransaction.amount));
       if (currentBal < payAmount) {
-        const w = wallets.find(w => String(w.id) === wid);
-        if (!window.confirm(`${w?.name || '電子マネー'}の残高（¥${currentBal.toLocaleString()}）が不足しています。\n支払額: ¥${payAmount.toLocaleString()}\n\nこのまま記録しますか？`)) return;
+        // 残高不足でも記録を許可（AddTransactionModal側でユーザーに警告表示済み）
       }
     }
     if (isCharge && !newTransaction.chargeTarget) return;
