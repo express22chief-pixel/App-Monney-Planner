@@ -572,8 +572,8 @@ export default function SimulationTab(props) {
           </div>
           )}
         </div>
-      </div>
       )}
+      </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           4. ライフプラン調整パネル（インライン編集）
@@ -740,6 +740,7 @@ export default function SimulationTab(props) {
         </div>
         </div>
         )}
+      </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -1019,7 +1020,6 @@ export default function SimulationTab(props) {
           </div>
         </div>
       )}
-    </div>
     </div>
     </div>
   );
