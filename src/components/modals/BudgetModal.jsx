@@ -22,7 +22,7 @@ export default function BudgetModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setMonthlyBudget({ ...monthlyBudget, income: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                 />
@@ -78,7 +78,7 @@ export default function BudgetModal(props) {
 
               <button
                 onClick={() => setShowBudgetModal(false)}
-                className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale"
+                className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
                 style={{ backgroundColor: theme.accent }}
               >
                 保存

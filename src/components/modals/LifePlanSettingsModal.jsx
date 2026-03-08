@@ -24,7 +24,7 @@ function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, m
         step={step}
         min={min}
         style={{
-          flex: 1, padding: '10px 12px', borderRadius: 10,
+          flex: 1, padding: '10px 12px', borderRadius: 8,
           border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,
           fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
           background: darkMode ? '#2a2a2a' : '#f9fafb',
@@ -39,7 +39,7 @@ function NumInput({ value, onChange, prefix = '¥', suffix = '', step = 10000, m
 
 function Seg({ value, onChange, options, darkMode }) {
   return (
-    <div style={{ display: 'flex', gap: 4, background: darkMode ? '#2a2a2a' : '#f2f2f7', borderRadius: 10, padding: 3 }}>
+    <div style={{ display: 'flex', gap: 4, background: darkMode ? '#2a2a2a' : '#f2f2f7', borderRadius: 8, padding: 3 }}>
       {options.map(o => (
         <button key={o.value} onClick={() => onChange(o.value)} style={{
           flex: 1, padding: '7px 4px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -58,9 +58,13 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
   const [local, setLocal] = useState({ ...lifePlan });
   const set = (k, v) => setLocal(p => ({ ...p, [k]: v }));
 
-  const bg   = darkMode ? '#1c1c1e' : '#fff';
+  const bg   = theme?.chart  || (darkMode ? '#1c1c1e' : '#fff');
   const txt  = darkMode ? '#f5f5f5' : '#111';
-  const sub  = '#9ca3af';
+  const sub  = darkMode ? '#9ca3af' : '#6b7280';
+  const bdr  = darkMode ? '#2a2a2a' : '#f0f0f0';
+  const green = theme?.green  || '#10b981';
+  const amber = theme?.orange || '#f59e0b';
+  const red   = theme?.red    || '#ef4444';
 
   const save = () => {
     setLifePlan(local);
@@ -79,7 +83,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
       backdropFilter: 'blur(4px)',
     }}>
       <div style={{
-        width: '100%', maxWidth: 480, background: bg, borderRadius: '24px 24px 0 0',
+        width: '100%', maxWidth: 480, background: bg, borderRadius: '20px 20px 0 0',
         maxHeight: '92vh', display: 'flex', flexDirection: 'column',
       }}>
         {/* ヘッダー */}
@@ -112,14 +116,14 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
                 <Row label="月間生活費" hint="住居費・食費・光熱費などすべて込み（ローン除く）">
                   <NumInput darkMode={darkMode} value={local.monthlyExpense} onChange={v => set('monthlyExpense', v)} />
                   {surplus >= 0
-                    ? <p style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>月間余剰 ≈ ¥{surplus.toLocaleString()}（積立・貯金に回ります）</p>
-                    : <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>⚠️ 収入が生活費を下回っています</p>
+                    ? <p style={{ fontSize: 11, color: green, fontWeight: 600 }}>月間余剰 ≈ ¥{surplus.toLocaleString()}（積立・貯金に回ります）</p>
+                    : <p style={{ fontSize: 11, color: red, fontWeight: 600 }}>⚠️ 収入が生活費を下回っています</p>
                   }
                 </Row>
               </div>
             </div>
 
-            <div style={{ height: 1, background: darkMode ? '#2a2a2a' : '#f0f0f0' }} />
+            <div style={{ height: 1, background: bdr }} />
 
             {/* ── リタイア設定 ──────────────────────────────────────── */}
             <div>
@@ -136,7 +140,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
               </div>
             </div>
 
-            <div style={{ height: 1, background: darkMode ? '#2a2a2a' : '#f0f0f0' }} />
+            <div style={{ height: 1, background: bdr }} />
 
             {/* ── リタイア目標 ────────────────────────────────────────── */}
             <div>
@@ -145,13 +149,13 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
                 <Row label="リタイア時の目標純資産" hint="この金額を達成できるかをグラフに反映します">
                   <NumInput darkMode={darkMode} value={local.retirementTargetAmount ?? 30000000} onChange={v => set('retirementTargetAmount', v)} step={1000000} />
                 </Row>
-                <p style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>
+                <p style={{ fontSize: 11, color: green, fontWeight: 600 }}>
                   ≈ {(() => { const v = local.retirementTargetAmount ?? 30000000; return v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${(v/10000).toFixed(0)}万`; })()}（老後30年間の生活費 ¥{((local.retirementMonthlyExpense ?? 200000) * 12 * 30 / 10000).toFixed(0)}万の参考値）
                 </p>
               </div>
             </div>
 
-            <div style={{ height: 1, background: darkMode ? '#2a2a2a' : '#f0f0f0' }} />
+            <div style={{ height: 1, background: bdr }} />
 
             {/* ── 老後収支 ──────────────────────────────────────────── */}
             <div>
@@ -166,8 +170,8 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
                   {(() => {
                     const cf = local.retirementMonthlyIncome - local.retirementMonthlyExpense;
                     return cf >= 0
-                      ? <p style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>月間黒字 ¥{cf.toLocaleString()}（資産は取り崩しません）</p>
-                      : <p style={{ fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>月間不足 ¥{(-cf).toLocaleString()}を資産から補填します</p>;
+                      ? <p style={{ fontSize: 11, color: green, fontWeight: 600 }}>月間黒字 ¥{cf.toLocaleString()}（資産は取り崩しません）</p>
+                      : <p style={{ fontSize: 11, color: amber, fontWeight: 600 }}>月間不足 ¥{(-cf).toLocaleString()}を資産から補填します</p>;
                   })()}
                 </Row>
               </div>
@@ -177,10 +181,10 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
         </div>
 
         {/* フッター */}
-        <div style={{ padding: '16px 20px', flexShrink: 0, borderTop: `1px solid ${darkMode ? '#2a2a2a' : '#f0f0f0'}` }}>
+        <div style={{ padding: '16px 20px', flexShrink: 0, borderTop: `1px solid ${bdr}` }}>
           <button onClick={save} style={{
             width: '100%', padding: '14px', background: theme.accent,
-            border: 'none', borderRadius: 14, color: '#fff',
+            border: 'none', borderRadius: 12, color: '#fff',
             fontSize: 15, fontWeight: 800, cursor: 'pointer',
           }}>
             保存してシミュレーション更新

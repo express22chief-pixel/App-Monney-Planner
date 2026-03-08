@@ -36,9 +36,9 @@ const DEFAULT_PARAMS = {
 function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, darkMode }) {
   return (
     <div>
-      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 4 }}>{label}</label>}
+      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: sub, marginBottom: 4 }}>{label}</label>}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-        {prefix && <span style={{ fontSize: 13, color: '#9ca3af' }}>{prefix}</span>}
+        {prefix && <span style={{ fontSize: 13, color: sub }}>{prefix}</span>}
         <input
           type="text" inputMode="numeric"
           value={value.toLocaleString()}
@@ -51,9 +51,9 @@ function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, da
             color: darkMode ? '#f5f5f5' : '#111',
           }}
         />
-        {suffix && <span style={{ fontSize: 13, color: '#9ca3af' }}>{suffix}</span>}
+        {suffix && <span style={{ fontSize: 13, color: sub }}>{suffix}</span>}
       </div>
-      {hint && <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 3 }}>{hint}</p>}
+      {hint && <p style={{ fontSize: 11, color: sub, marginTop: 3 }}>{hint}</p>}
     </div>
   );
 }
@@ -61,7 +61,7 @@ function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, da
 function Seg({ label, options, value, onChange, darkMode }) {
   return (
     <div>
-      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 6 }}>{label}</label>}
+      {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: sub, marginBottom: 6 }}>{label}</label>}
       <div style={{ display: 'flex', gap: 4, background: darkMode ? '#2a2a2a' : '#f3f4f6', borderRadius: 10, padding: 3 }}>
         {options.map(o => (
           <button key={o.value} onClick={() => onChange(o.value)}
@@ -79,8 +79,8 @@ function Seg({ label, options, value, onChange, darkMode }) {
 
 function InfoRow({ label, value, accent }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingBottom: 6, marginBottom: 6, borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-      <span style={{ color: '#6b7280' }}>{label}</span>
+    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingBottom: 6, marginBottom: 6, borderBottom: `1px solid ${darkMode ? '#2a2a2a' : 'rgba(0,0,0,0.06)'}` }}>
+      <span style={{ color: sub }}>{label}</span>
       <span style={{ fontWeight: 700, color: accent || '#111827', fontVariantNumeric: 'tabular-nums' }}>{value}</span>
     </div>
   );
@@ -103,9 +103,13 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
   const monthlyBuy   = monthlyLoan + params.managementFee + Math.round(params.propertyTax/12);
   const monthlyDiff  = monthlyBuy - params.monthlyRent;
 
-  const bg   = darkMode ? '#1c1c1e' : '#fff';
-  const sub  = '#9ca3af';
-  const blue = '#3b82f6';
+  const bg     = theme?.chart  || (darkMode ? '#1c1c1e' : '#fff');
+  const sub    = darkMode ? '#9ca3af' : '#6b7280';
+  const blue   = theme?.accent  || '#3b82f6';
+  const green  = theme?.green   || green;
+  const red    = theme?.red     || red;
+  const purple = theme?.purple  || purple;
+  const amber  = theme?.orange  || '#f59e0b';
 
   // 購入年齢の選択肢（現在年齢+1 〜 60歳）
   const ageOptions = [];
@@ -115,7 +119,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
 
     // ── STEP 0: 購入時期 ─────────────────────────────────────────────
     <div key="when" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div style={{ padding: '16px', background: darkMode ? '#0d1a2b' : '#eff6ff', borderRadius: 14 }}>
+      <div style={{ padding: '16px', background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff', borderRadius: 12 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: blue, marginBottom: 4 }}>📅 いつ購入する予定ですか？</p>
         <p style={{ fontSize: 11, color: sub, lineHeight: 1.6 }}>
           購入年齢を設定しておけば、それまでは賃貸として計算されます。<br/>
@@ -124,7 +128,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       </div>
 
       <div>
-        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: '#6b7280', marginBottom: 8 }}>購入予定年齢</label>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: sub, marginBottom: 8 }}>購入予定年齢</label>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
           {ageOptions.slice(0, 12).map(age => (
             <button key={age} onClick={() => set('purchaseAge', age)} style={{
@@ -187,7 +191,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
 
     // ── STEP 2: ローン ───────────────────────────────────────────────
     <div key="loan" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <div style={{ padding: '12px 16px', background: darkMode ? '#0d1a2b' : '#eff6ff', borderRadius: 12 }}>
+      <div style={{ padding: '12px 16px', background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff', borderRadius: 12 }}>
         <p style={{ fontSize: 11, color: blue }}>借入額</p>
         <p style={{ fontSize: 24, fontWeight: 800, color: blue, fontVariantNumeric: 'tabular-nums' }}>¥{loanAmount.toLocaleString()}</p>
       </div>
@@ -231,27 +235,27 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
         hint="一般的には家賃1ヶ月分（2年ごとに発生）" />
       <Seg darkMode={darkMode} label="家賃上昇率（年）" value={String(params.rentInflationRate)} onChange={v => set('rentInflationRate', Number(v))}
         options={[{value:'0',label:'変わらない'},{value:'1',label:'1%/年'},{value:'2',label:'2%/年'}]} />
-      <div style={{ padding: '12px 14px', background: darkMode ? '#2b1a08' : '#fffbeb', borderRadius: 12 }}>
-        <p style={{ fontSize: 12, fontWeight: 700, color: '#d97706', marginBottom: 4 }}>💡 月々コスト比較</p>
+      <div style={{ padding: '12px 14px', background: darkMode ? 'rgba(255,159,10,0.12)' : '#fffbeb', borderRadius: 12 }}>
+        <p style={{ fontSize: 12, fontWeight: 700, color: amber, marginBottom: 4 }}>💡 月々コスト比較</p>
         <div style={{ display: 'flex', gap: 12 }}>
           <div>
             <p style={{ fontSize: 10, color: sub }}>購入（月）</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: '#3b82f6', fontVariantNumeric: 'tabular-nums' }}>¥{monthlyBuy.toLocaleString()}</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: blue, fontVariantNumeric: 'tabular-nums' }}>¥{monthlyBuy.toLocaleString()}</p>
           </div>
           <div style={{ fontSize: 18, color: sub, alignSelf: 'center' }}>vs</div>
           <div>
             <p style={{ fontSize: 10, color: sub }}>賃貸（月）</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: '#a855f7', fontVariantNumeric: 'tabular-nums' }}>¥{params.monthlyRent.toLocaleString()}</p>
+            <p style={{ fontSize: 16, fontWeight: 800, color: purple, fontVariantNumeric: 'tabular-nums' }}>¥{params.monthlyRent.toLocaleString()}</p>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
             <p style={{ fontSize: 10, color: sub }}>差額</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: monthlyDiff > 0 ? '#ef4444' : '#10b981', fontVariantNumeric: 'tabular-nums' }}>
+            <p style={{ fontSize: 16, fontWeight: 800, color: monthlyDiff > 0 ? red : green, fontVariantNumeric: 'tabular-nums' }}>
               {monthlyDiff > 0 ? '+' : ''}{monthlyDiff < 0 ? '-' : ''}¥{Math.abs(monthlyDiff).toLocaleString()}
             </p>
           </div>
         </div>
         {monthlyDiff > 0 && (
-          <p style={{ fontSize: 11, color: '#92400e', marginTop: 6 }}>
+          <p style={{ fontSize: 11, color: darkMode ? amber : '#92400e', marginTop: 6 }}>
             賃貸のほうが月¥{Math.abs(monthlyDiff).toLocaleString()}安い分を投資に回す想定でシミュレーションします
           </p>
         )}
@@ -260,22 +264,22 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
 
     // ── STEP 5: 確認 ─────────────────────────────────────────────────
     <div key="summary" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ padding: '14px 16px', background: darkMode ? '#0d2b1a' : '#ecfdf5', borderRadius: 14 }}>
-        <p style={{ fontSize: 13, fontWeight: 800, color: '#065f46', marginBottom: 10 }}>設定内容の確認</p>
+      <div style={{ padding: '14px 16px', background: darkMode ? 'rgba(10,214,100,0.1)' : '#ecfdf5', borderRadius: 12 }}>
+        <p style={{ fontSize: 13, fontWeight: 800, color: green, marginBottom: 10 }}>設定内容の確認</p>
         <InfoRow label="📅 購入予定年齢"   value={`${params.purchaseAge}歳（あと${params.purchaseAge-currentAge}年）`} accent={blue} />
         <InfoRow label="物件価格"          value={`¥${params.propertyPrice.toLocaleString()}`} />
         <InfoRow label="頭金"              value={`¥${params.downPayment.toLocaleString()}`} />
-        <InfoRow label="借入額"            value={`¥${loanAmount.toLocaleString()}`} accent="#ef4444" />
+        <InfoRow label="借入額"            value={`¥${loanAmount.toLocaleString()}`} accent={red} />
         <InfoRow label="月々返済"          value={`¥${monthlyLoan.toLocaleString()}`} />
         <InfoRow label="金利"              value={`${params.rateType==='fixed'?'固定':'変動'} ${params.interestRate}%`} />
         <InfoRow label="返済期間"          value={`${params.loanMonths/12}年`} />
         <InfoRow label="月々総支出（購入）" value={`¥${monthlyBuy.toLocaleString()}`} />
         <InfoRow label="月々家賃（賃貸）"  value={`¥${params.monthlyRent.toLocaleString()}`} />
-        <InfoRow label="月々差額"          value={`${monthlyDiff>0?'+':''}¥${monthlyDiff.toLocaleString()}`} accent={monthlyDiff>0?'#ef4444':'#10b981'} />
+        <InfoRow label="月々差額"          value={`${monthlyDiff>0?'+':''}¥${monthlyDiff.toLocaleString()}`} accent={monthlyDiff>0?red:green} />
         <InfoRow label="比較期間"          value={`${params.compareYears}年`} />
       </div>
       <div>
-        <label style={{ fontSize: 12, fontWeight: 600, color: '#6b7280', display: 'block', marginBottom: 6 }}>比較期間</label>
+        <label style={{ fontSize: 12, fontWeight: 600, color: sub, display: 'block', marginBottom: 6 }}>比較期間</label>
         <Seg darkMode={darkMode} value={String(params.compareYears)} onChange={v => set('compareYears', Number(v))}
           options={[{value:'10',label:'10年'},{value:'20',label:'20年'},{value:'30',label:'30年'},{value:'40',label:'40年'}]} />
       </div>
@@ -286,7 +290,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
-      <div style={{ width: '100%', maxWidth: 480, background: bg, borderRadius: '24px 24px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', maxWidth: 480, background: bg, borderRadius: '20px 20px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}>
 
         {/* ヘッダー */}
         <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
@@ -322,18 +326,18 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
         <div style={{ padding: '14px 20px', flexShrink: 0, display: 'flex', gap: 8, borderTop: `1px solid ${darkMode ? '#2a2a2a' : '#f3f4f6'}` }}>
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '13px 18px', borderRadius: 14, border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`, background: 'none', fontSize: 14, fontWeight: 600, color: sub, cursor: 'pointer' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '13px 18px', borderRadius: 12, border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`, background: 'none', fontSize: 14, fontWeight: 600, color: sub, cursor: 'pointer' }}>
               <ChevronLeft size={16} /> 戻る
             </button>
           )}
           {step < STEPS.length - 1 ? (
             <button onClick={() => setStep(s => s + 1)}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 14, border: 'none', background: blue, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 12, border: 'none', background: blue, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s' }} onMouseOver={e=>e.currentTarget.style.opacity='0.85'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
               次へ <ChevronRight size={16} />
             </button>
           ) : (
             <button onClick={() => { setHousingParams(params); setShowHousingModal(false); }}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 14, border: 'none', background: '#10b981', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '13px', borderRadius: 12, border: 'none', background: green, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
               <TrendingUp size={16} /> シミュレーション開始
             </button>
           )}

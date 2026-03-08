@@ -58,7 +58,7 @@ export default function CardModal(props) {
               placeholder="例: 楽天カード"
               defaultValue={editingCard ? editingCard.name : ''}
               id="card-name"
-              className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
+              className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
             />
           </div>
 
@@ -69,7 +69,7 @@ export default function CardModal(props) {
               <select
                 id="card-closing"
                 defaultValue={editingCard ? editingCard.closingDay : 15}
-                className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
+                className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
               >
                 {[5, 10, 15, 20, 25].map(d => <option key={d} value={d}>{d}日</option>)}
                 <option value={31}>末日</option>
@@ -80,7 +80,7 @@ export default function CardModal(props) {
               <select
                 id="card-payment-month"
                 defaultValue={editingCard ? editingCard.paymentMonth : 1}
-                className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
+                className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
               >
                 <option value={1}>翌月</option>
                 <option value={2}>翌々月</option>
@@ -99,7 +99,7 @@ export default function CardModal(props) {
                 defaultValue={editingCard ? editingCard.paymentDay : ''}
                 placeholder="例: 27"
                 maxLength={2}
-                className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
+                className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
               />
               <span className={`text-sm ${theme.textSecondary} whitespace-nowrap`}>日</span>
             </div>
@@ -111,7 +111,7 @@ export default function CardModal(props) {
             <select
               id="card-non-business"
               defaultValue={editingCard ? (editingCard.nonBusinessDay || 'next') : 'next'}
-              className={`w-full px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
+              className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
             >
               <option value="next">翌営業日に振り替え（多数派）</option>
               <option value="prev">前営業日に振り替え</option>
@@ -168,7 +168,7 @@ export default function CardModal(props) {
 
           <button
             onClick={handleSave}
-            className="w-full py-3 rounded-xl font-bold text-white"
+            className="w-full py-3 rounded-lg font-bold text-white"
             style={{ backgroundColor: theme.accent }}
           >
             {editingCard ? '更新する' : '追加する'}

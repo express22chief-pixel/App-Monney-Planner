@@ -70,13 +70,13 @@ export default function DateTransactionsModal(props) {
                       const isExpanded = !!expandedCreditGroups[groupKey];
                       const canExpand = g.items.length > 1;
                       return (
-                        <div key={g.key} className={`rounded-xl overflow-hidden ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                        <div key={g.key} className={`rounded-lg overflow-hidden ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                           <div
                             className={`flex items-center justify-between p-3 ${canExpand ? 'cursor-pointer' : ''}`}
                             onClick={() => canExpand && setExpandedCreditGroups(prev => ({ ...prev, [groupKey]: !prev[groupKey] }))}
                           >
                             <div className="flex items-center gap-2.5">
-                              <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm ${darkMode ? 'bg-orange-500/15' : 'bg-orange-50'}`}>
+                              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm ${darkMode ? 'bg-orange-500/15' : 'bg-orange-50'}`}>
                                 💳
                               </div>
                               <div>
@@ -146,12 +146,12 @@ export default function DateTransactionsModal(props) {
                       <button
                         key={t.id}
                         onClick={() => { setEditingTransaction(t); setShowDateTransactionsModal(false); }}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 hover-scale ${
+                        className={`w-full flex items-center justify-between p-3 rounded-lg transition-all duration-200 hover-scale ${
                           darkMode ? 'bg-neutral-800 hover:bg-neutral-700' : 'bg-neutral-50 hover:bg-neutral-100'
                         }`}
                       >
                         <div className="flex items-center gap-2.5 flex-1 text-left">
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-sm ${
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-sm ${
                             t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
                             t.paymentMethod==='credit' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
                             (darkMode?'bg-neutral-800':'bg-neutral-100')
@@ -198,7 +198,7 @@ export default function DateTransactionsModal(props) {
                     ].map(({ type, label, color }) => (
                       <button key={type}
                         onClick={() => setNewTransaction({ ...newTransaction, type, date: selectedDate, paymentMethod: type === 'expense' ? 'credit' : undefined })}
-                        className="flex-1 py-2 rounded-xl font-bold text-sm transition-all"
+                        className="flex-1 py-2 rounded-lg font-bold text-sm transition-all"
                         style={{
                           backgroundColor: newTransaction.type === type ? color : (darkMode ? '#262626' : '#f5f5f5'),
                           color: newTransaction.type === type ? '#fff' : (darkMode ? '#d4d4d4' : '#737373'),
@@ -244,10 +244,10 @@ export default function DateTransactionsModal(props) {
                     <input type="text" inputMode="numeric" placeholder="金額"
                       value={newTransaction.amount}
                       onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value.replace(/[^0-9]/g, '') })}
-                      className={`flex-1 px-3 py-2 rounded-xl text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-200'} focus:outline-none`} />
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                     <select value={newTransaction.category}
                       onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
-                      className={`flex-1 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}>
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}>
                       <option value="">カテゴリ</option>
                       {(newTransaction.type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
@@ -258,7 +258,7 @@ export default function DateTransactionsModal(props) {
                   <input type="text" placeholder="メモ（任意）"
                     value={newTransaction.memo}
                     onChange={(e) => setNewTransaction({ ...newTransaction, memo: e.target.value })}
-                    className={`w-full px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-200 placeholder-neutral-400'} focus:outline-none`} />
+                    className={`w-full px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-200 placeholder-neutral-400'} focus:outline-none`} />
 
                   <button
                     onClick={() => {
@@ -302,7 +302,7 @@ export default function DateTransactionsModal(props) {
                       }
                       setNewTransaction({ amount: '', category: '', type: 'expense', paymentMethod: 'credit', date: new Date().toISOString().slice(0, 10), memo: '', isSplit: false, splitMembers: [] });
                     }}
-                    className="w-full py-2.5 rounded-xl font-semibold text-white transition-all hover-scale"
+                    className="w-full py-2.5 rounded-lg font-semibold text-white transition-all hover-scale"
                     style={{ backgroundColor: theme.accent }}>
                     追加する
                   </button>

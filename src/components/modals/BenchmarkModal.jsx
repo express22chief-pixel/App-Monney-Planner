@@ -14,7 +14,7 @@ export default function BenchmarkModal(props) {
               <button onClick={() => setShowBenchmark(false)} className={`text-2xl ${theme.textSecondary}`}>✕</button>
             </div>
 
-            <div className={`${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'} rounded-xl p-4 mb-4`}>
+            <div className={`${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'} rounded-lg p-4 mb-4`}>
               <p className={`text-xs ${theme.textSecondary} mb-2 uppercase tracking-wide`}>あなたの順位</p>
               <div className="flex items-baseline gap-2">
                 <p className={`text-5xl font-bold tabular-nums`} style={{ 
@@ -110,7 +110,7 @@ export default function BenchmarkModal(props) {
 
             <button
               onClick={() => setShowBenchmark(false)}
-              className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale"
+              className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
               style={{ backgroundColor: theme.accent }}
             >
               閉じる

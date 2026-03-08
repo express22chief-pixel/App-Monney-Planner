@@ -29,7 +29,7 @@ export default function RecurringModal(props) {
                   placeholder="例：家賃"
                   value={editingRecurring?.name || ''}
                   onChange={(e) => setEditingRecurring({ ...editingRecurring, name: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                 />
@@ -46,7 +46,7 @@ export default function RecurringModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setEditingRecurring({ ...editingRecurring, amount: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                 />
@@ -60,7 +60,7 @@ export default function RecurringModal(props) {
                 <select
                   value={editingRecurring?.category || ''}
                   onChange={(e) => setEditingRecurring({ ...editingRecurring, category: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                 >
@@ -119,7 +119,7 @@ export default function RecurringModal(props) {
                     placeholder="1"
                     value={editingRecurring?.day || ''}
                     onChange={(e) => setEditingRecurring({ ...editingRecurring, day: Number(e.target.value) })}
-                    className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                    className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                       darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                     } focus:outline-none focus:border-blue-500`}
                   />
@@ -205,7 +205,7 @@ export default function RecurringModal(props) {
                   type="date"
                   value={editingRecurring?.startDate || new Date().toISOString().slice(0, 10)}
                   onChange={(e) => setEditingRecurring({ ...editingRecurring, startDate: e.target.value })}
-                  className={`w-full px-3 py-2 rounded-xl text-base appearance-none transition-all duration-200 ${
+                  className={`w-full px-3 py-2 rounded-lg text-base appearance-none transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                   style={{ colorScheme: darkMode ? 'dark' : 'light' }}
@@ -230,7 +230,7 @@ export default function RecurringModal(props) {
                     type="date"
                     value={editingRecurring.endDate}
                     onChange={(e) => setEditingRecurring({ ...editingRecurring, endDate: e.target.value })}
-                    className={`w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                    className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                       darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                     } focus:outline-none focus:border-blue-500`}
                     style={{ colorScheme: darkMode ? 'dark' : 'light' }}
@@ -362,7 +362,7 @@ export default function RecurringModal(props) {
                   }
                   addOrUpdateRecurring(editingRecurring);
                 }}
-                className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale"
+                className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
                 style={{ backgroundColor: theme.accent }}
               >
                 {editingRecurring?.id ? '更新' : '追加'}

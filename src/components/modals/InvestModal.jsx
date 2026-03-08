@@ -17,7 +17,7 @@ export default function InvestModal(props) {
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setInvestForm({ ...investForm, fromSource: 'savings' })}
-                    className={`py-3 rounded-xl font-semibold text-sm transition-all ${
+                    className={`py-3 rounded-lg font-semibold text-sm transition-all ${
                       investForm.fromSource === 'savings' ? 'scale-105' : ''
                     }`}
                     style={{
@@ -30,7 +30,7 @@ export default function InvestModal(props) {
                   </button>
                   <button
                     onClick={() => setInvestForm({ ...investForm, fromSource: 'dryPowder' })}
-                    className={`py-3 rounded-xl font-semibold text-sm transition-all ${
+                    className={`py-3 rounded-lg font-semibold text-sm transition-all ${
                       investForm.fromSource === 'dryPowder' ? 'scale-105' : ''
                     }`}
                     style={{
@@ -56,7 +56,7 @@ export default function InvestModal(props) {
                       <button
                         key={key}
                         onClick={() => setInvestForm({ ...investForm, targetAccount: key })}
-                        className={`py-2 rounded-xl font-semibold text-xs transition-all ${
+                        className={`py-2 rounded-lg font-semibold text-xs transition-all ${
                           investForm.targetAccount === key ? 'scale-105' : ''
                         }`}
                         style={{
@@ -82,7 +82,7 @@ export default function InvestModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setInvestForm({ ...investForm, amount: value });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums text-lg font-bold transition-all ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums text-lg font-bold transition-all ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
                   } focus:outline-none focus:border-blue-500`}
                 />
@@ -114,7 +114,7 @@ export default function InvestModal(props) {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setShowInvestModal(false)}
-                className={`flex-1 px-4 py-3 rounded-xl font-bold ${
+                className={`flex-1 px-4 py-3 rounded-lg font-bold ${
                   darkMode ? 'bg-neutral-800 text-white' : 'border-2 border-neutral-300 text-neutral-700'
                 }`}
               >
@@ -122,7 +122,7 @@ export default function InvestModal(props) {
               </button>
               <button
                 onClick={executeInvestment}
-                className="flex-1 px-4 py-3 rounded-xl font-bold text-white"
+                className="flex-1 px-4 py-3 rounded-lg font-bold text-white"
                 style={{ backgroundColor: theme.purple }}
               >
                 振替実行

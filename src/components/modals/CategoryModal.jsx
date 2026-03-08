@@ -21,7 +21,7 @@ export default function CategoryModal(props) {
             </div>
 
             <div className="px-6 pb-3">
-              <div className="flex gap-2 p-1 rounded-xl" style={{ backgroundColor: darkMode ? '#1a1a1a' : '#f5f5f5' }}>
+              <div className="flex gap-2 p-1 rounded-lg" style={{ backgroundColor: darkMode ? '#1a1a1a' : '#f5f5f5' }}>
                 {(['expense', 'income']).map(type => (
                   <button
                     key={type}
@@ -48,7 +48,7 @@ export default function CategoryModal(props) {
                     const displayName = (newCategoryType === 'expense' ? renamedExp : renamedInc)[origName] || origName;
                     const isEditing = editingCategoryName === origName + '_default';
                     return (
-                      <div key={origName} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl ${darkMode ? 'bg-neutral-800/50' : 'bg-neutral-50'}`}>
+                      <div key={origName} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg ${darkMode ? 'bg-neutral-800/50' : 'bg-neutral-50'}`}>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ${darkMode ? 'bg-neutral-700 text-neutral-500' : 'bg-neutral-200 text-neutral-400'}`}>標準</span>
                         {isEditing ? (
                           <input
@@ -91,7 +91,7 @@ export default function CategoryModal(props) {
                   <div className={`h-px my-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-200'}`} />
                 )}
                 {(customCategories[newCategoryType] || []).map(cat => (
-                  <div key={cat} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl ${darkMode ? 'bg-neutral-800/50' : 'bg-neutral-50'}`}>
+                  <div key={cat} className={`flex items-center gap-2 px-3 py-2.5 rounded-lg ${darkMode ? 'bg-neutral-800/50' : 'bg-neutral-50'}`}>
                     <span
                       className="text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0"
                       style={{ backgroundColor: theme.accent + '25', color: theme.accent }}
@@ -115,11 +115,11 @@ export default function CategoryModal(props) {
                   value={newCategoryName}
                   onChange={e => setNewCategoryName(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && addCustomCategory()}
-                  className={`flex-1 px-3 py-2.5 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700' : 'bg-neutral-50 border border-neutral-200 text-neutral-900'} focus:outline-none focus:border-blue-500`}
+                  className={`flex-1 px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700' : 'bg-neutral-50 border border-neutral-200 text-neutral-900'} focus:outline-none focus:border-blue-500`}
                 />
                 <button
                   onClick={addCustomCategory}
-                  className="px-4 py-2.5 rounded-xl font-bold text-white text-sm hover-scale"
+                  className="px-4 py-2.5 rounded-lg font-bold text-white text-sm hover-scale"
                   style={{ backgroundColor: theme.accent }}
                 >追加</button>
               </div>

@@ -15,6 +15,7 @@ export default function EditTransactionModal(props) {
     wallets = [],
     transactionTemplates, setTransactionTemplates,
   } = props;
+  const [templateNameInput, setTemplateNameInput] = React.useState(null); // null=非表示, string=入力中
 
   // 立替メンバーの編集用ローカルstate
   const [editingSplit, setEditingSplit] = useState(editingTransaction?.isSplit || false);
@@ -78,7 +79,7 @@ export default function EditTransactionModal(props) {
     updateTransaction(updated);
   };
 
-  const inputCls = `w-full max-w-full px-4 py-3 rounded-xl text-sm ${
+  const inputCls = `w-full max-w-full px-4 py-3 rounded-lg text-sm ${
     darkMode
       ? 'bg-neutral-800 text-white border border-neutral-700'
       : 'bg-white border border-neutral-200'
@@ -108,7 +109,7 @@ export default function EditTransactionModal(props) {
           {/* --- 引き落とし予約：読み取り専用 --- */}
           {tx.isSettlement ? (
             <div className="space-y-3">
-              <div className={`rounded-2xl p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+              <div className={`rounded-lg p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                 <p className={`text-xs font-bold ${theme.textSecondary} mb-3 uppercase tracking-wide`}>引き落とし情報</p>
                 <div className="space-y-2.5">
                   {[
@@ -137,7 +138,7 @@ export default function EditTransactionModal(props) {
               </p>
               <button
                 onClick={() => setEditingTransaction(null)}
-                className={`w-full py-3 rounded-2xl font-bold ${darkMode ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-neutral-700'}`}
+                className={`w-full py-3 rounded-lg font-bold ${darkMode ? 'bg-neutral-800 text-white' : 'bg-neutral-100 text-neutral-700'}`}
               >閉じる</button>
             </div>
           ) : (
@@ -147,7 +148,7 @@ export default function EditTransactionModal(props) {
                 {[{ type: 'expense', label: '支出', color: theme.red }, { type: 'income', label: '収入', color: theme.green }].map(({ type, label, color }) => (
                   <button key={type}
                     onClick={() => setEditingTransaction({ ...tx, type, amount: type === 'expense' ? -Math.abs(tx.amount) : Math.abs(tx.amount) })}
-                    className="flex-1 py-2.5 rounded-xl font-bold text-sm transition-all"
+                    className="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all"
                     style={{
                       backgroundColor: tx.type === type ? color : (darkMode ? '#1C1C1E' : '#f5f5f5'),
                       color: tx.type === type ? '#fff' : (darkMode ? '#d4d4d4' : '#737373'),
@@ -158,7 +159,7 @@ export default function EditTransactionModal(props) {
               </div>
 
               {/* 金額 */}
-              <div className={`rounded-2xl p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+              <div className={`rounded-lg p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>金額</p>
                 <div className="flex items-baseline gap-1">
                   <span className="text-2xl font-black" style={{ color: tx.type === 'income' ? theme.green : theme.red }}>¥</span>
@@ -212,7 +213,7 @@ export default function EditTransactionModal(props) {
                           cardId:   key === 'credit' ? (tx.cardId || (creditCards[0]?.id)) : null,
                           walletId: key === 'wallet' ? (tx.walletId || (wallets?.[0]?.id ? String(wallets[0].id) : null)) : null,
                         })}
-                        className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                        className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
                         style={{
                           backgroundColor: tx.paymentMethod === key ? theme.accent : (darkMode ? '#1C1C1E' : '#f5f5f5'),
                           color: tx.paymentMethod === key ? '#fff' : (darkMode ? '#d4d4d4' : '#737373'),
@@ -225,7 +226,7 @@ export default function EditTransactionModal(props) {
                     <select
                       value={tx.cardId || ''}
                       onChange={e => setEditingTransaction({ ...tx, cardId: e.target.value })}
-                      className={`w-full mt-2 px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700' : 'bg-white border border-neutral-200'} focus:outline-none`}
+                      className={`w-full mt-2 px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700' : 'bg-white border border-neutral-200'} focus:outline-none`}
                       style={{ colorScheme: darkMode ? 'dark' : 'light' }}
                     >
                       {creditCards.map(card => <option key={card.id} value={card.id}>{card.name}</option>)}
@@ -274,7 +275,7 @@ export default function EditTransactionModal(props) {
 
               {/* --- 立替設定 --- */}
               {tx.type === 'expense' && (
-                <div className={`rounded-xl overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
+                <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
                   {/* トグルヘッ-ー */}
                   <button
                     onClick={() => setEditingSplit(v => !v)}
@@ -389,35 +390,45 @@ export default function EditTransactionModal(props) {
 
               {/* テンプレに登録 */}
               <button
-                onClick={() => {
-                  const name = window.prompt('テンプレ名を入力（空欄でカテゴリ名）', tx.memo || tx.category);
-                  if (name === null) return;
-                  setTransactionTemplates(prev => [...prev, {
-                    id: Date.now(),
-                    name: name.trim() || tx.category,
-                    category: tx.category,
-                    amount: Math.abs(tx.amount) || '',
-                    type: tx.type,
-                    paymentMethod: tx.paymentMethod,
-                    cardId: tx.cardId,
-                    walletId: tx.walletId,
-                    memo: tx.memo || '',
-                  }]);
-                  alert('テンプレに登録しました！');
-                }}
-                className={`w-full py-2 rounded-xl text-xs font-semibold border-2 transition-all ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}
+                onClick={() => setTemplateNameInput(tx.memo || tx.category || '')}
+                className={`w-full py-2 rounded-lg text-xs font-semibold border-2 transition-all ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}
               >⚡ テンプレとして登録</button>
+              {templateNameInput !== null && (
+                <div className={`mt-2 p-3 rounded-lg ${darkMode ? 'bg-neutral-800 border border-neutral-600' : 'bg-neutral-50 border border-neutral-200'}`}>
+                  <p className={`text-xs font-bold mb-1.5 ${theme.text}`}>テンプレ名</p>
+                  <div className="flex gap-2">
+                    <input type="text" value={templateNameInput}
+                      onChange={e => setTemplateNameInput(e.target.value)}
+                      className={`flex-1 px-3 py-1.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-neutral-700 text-white border-neutral-600' : 'bg-white border-neutral-200'}`}
+                      placeholder={tx.category}
+                      autoFocus
+                    />
+                    <button onClick={() => {
+                      setTransactionTemplates(prev => [...prev, {
+                        id: Date.now(),
+                        name: (templateNameInput || '').trim() || tx.category,
+                        category: tx.category, amount: Math.abs(tx.amount) || '',
+                        type: tx.type, paymentMethod: tx.paymentMethod,
+                        cardId: tx.cardId, walletId: tx.walletId, memo: tx.memo || '',
+                      }]);
+                      setTemplateNameInput(null);
+                    }} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-blue-500">登録</button>
+                    <button onClick={() => setTemplateNameInput(null)}
+                      className={`px-2 py-1.5 rounded-lg text-xs ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>✕</button>
+                  </div>
+                </div>
+              )}
 
               {/* アクションボタン */}
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => { deleteTransaction(tx.id); setEditingTransaction(null); }}
-                  className="w-12 h-12 flex items-center justify-center rounded-2xl font-bold text-white shrink-0"
+                  className="w-12 h-12 flex items-center justify-center rounded-lg font-bold text-white shrink-0"
                   style={{ backgroundColor: theme.red }}
                 >🗑️</button>
                 <button
                   onClick={handleSave}
-                  className="flex-1 py-3 rounded-2xl font-bold text-white text-sm"
+                  className="flex-1 py-3 rounded-lg font-bold text-white text-sm"
                   style={{ backgroundColor: theme.accent }}
                 >変更を保存</button>
               </div>

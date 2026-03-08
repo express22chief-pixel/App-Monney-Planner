@@ -17,7 +17,7 @@ export default function LifeEventModal(props) {
 
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className={`${theme.cardGlass} rounded-2xl p-6 max-w-md w-full max-h-[85vh] overflow-y-auto animate-slideUp`}>
+          <div className={`${theme.cardGlass} rounded-lg p-6 max-w-md w-full max-h-[85vh] overflow-y-auto animate-slideUp`}>
             <div className="flex items-center justify-between mb-4">
               <h2 className={`text-xl font-bold ${theme.text}`}>
                 {editingLifeEvent ? 'イベントを編集' : 'ライフイベントを追加'}
@@ -139,7 +139,7 @@ export default function LifeEventModal(props) {
                     }
                     addOrUpdateLifeEvent(editingLifeEvent);
                   }}
-                  className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale"
+                  className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
                   style={{ backgroundColor: theme.accent }}
                 >
                   {editingLifeEvent.id ? '更新' : '追加'}

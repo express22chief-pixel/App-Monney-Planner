@@ -37,15 +37,15 @@ export default function CloseMonthModal(props) {
     [cfBalance, yearsRemaining, returnRate]
   );
 
-  const card = darkMode ? '#1c1c1e' : '#fff';
-  const bg   = darkMode ? '#111'    : '#f2f2f7';
-  const txt  = darkMode ? '#f5f5f5' : '#111';
-  const sub  = '#9ca3af';
-  const bdr  = darkMode ? '#2a2a2a' : '#e5e7eb';
-  const green = '#10b981';
-  const orange = '#f59e0b';
-  const blue   = '#3b82f6';
-  const purple = '#a855f7';
+  const card   = theme?.chart  || (darkMode ? '#1c1c1e' : '#fff');
+  const bg     = darkMode ? '#111'    : '#f2f2f7';
+  const txt    = darkMode ? '#f5f5f5' : '#111';
+  const sub    = darkMode ? '#9ca3af' : '#6b7280';
+  const bdr    = darkMode ? '#2a2a2a' : '#e5e7eb';
+  const green  = theme?.green   || '#10b981';
+  const orange = theme?.orange  || '#f59e0b';
+  const blue   = theme?.accent  || '#3b82f6';
+  const purple = theme?.purple  || '#a855f7';
 
   return (
     <div style={{
@@ -55,7 +55,7 @@ export default function CloseMonthModal(props) {
     }}>
       <div style={{
         width: '100%', maxWidth: 480, background: card,
-        borderRadius: '24px 24px 0 0', maxHeight: '92vh',
+        borderRadius: '20px 20px 0 0', maxHeight: '92vh',
         display: 'flex', flexDirection: 'column',
       }}>
         {/* ヘッダー */}
@@ -76,7 +76,7 @@ export default function CloseMonthModal(props) {
             ].map(({ label, val }) => (
               <div key={label} style={{ background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12, padding: '10px 12px' }}>
                 <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontSize: 18, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: val >= 0 ? green : '#ef4444' }}>
+                <p style={{ fontSize: 18, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: val >= 0 ? green : red }}>
                   {val >= 0 ? '+' : ''}¥{val.toLocaleString()}
                 </p>
               </div>
@@ -169,8 +169,8 @@ export default function CloseMonthModal(props) {
           {cfBalance > 0 && (
             <div style={{
               padding: '14px 16px',
-              background: darkMode ? '#0d1a2b' : '#eff6ff',
-              borderRadius: 14, border: `1px solid ${darkMode ? '#1e3a5f' : '#bfdbfe'}`,
+              background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff',
+              borderRadius: 12, border: `1px solid ${darkMode ? 'rgba(10,132,255,0.3)' : '#bfdbfe'}``,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                 <TrendingUp size={14} color={blue} />
@@ -215,11 +215,11 @@ export default function CloseMonthModal(props) {
         <div style={{ padding: '14px 20px', flexShrink: 0, borderTop: `1px solid ${bdr}`, display: 'flex', gap: 10 }}>
           <button onClick={() => setShowCloseMonthModal(false)} style={{
             flex: 1, padding: '13px', background: darkMode ? '#252525' : '#f2f2f7',
-            border: 'none', borderRadius: 14, color: sub, fontSize: 14, fontWeight: 700, cursor: 'pointer',
-          }}>キャンセル</button>
+            border: 'none', borderRadius: 12, color: sub, fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s',
+          }} onMouseOver={e=>e.currentTarget.style.opacity='0.8'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>キャンセル</button>
           <button onClick={() => closeMonth(targetMonth)} style={{
             flex: 2, padding: '13px', background: theme.accent,
-            border: 'none', borderRadius: 14, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
+            border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
           }}>確定する</button>
         </div>
       </div>

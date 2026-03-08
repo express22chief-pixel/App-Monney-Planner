@@ -21,7 +21,7 @@ export default function OnboardingModal(props) {
                   placeholder="例：太郎"
                   value={userInfo?.name || ''}
                   onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -34,7 +34,7 @@ export default function OnboardingModal(props) {
                   placeholder="25"
                   value={userInfo?.age || ''}
                   onChange={(e) => setUserInfo({ ...userInfo, age: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -51,7 +51,7 @@ export default function OnboardingModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setAssetData({ ...assetData, savings: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -69,7 +69,7 @@ export default function OnboardingModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setAssetData({ ...assetData, investments: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -87,7 +87,7 @@ export default function OnboardingModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setAssetData({ ...assetData, nisa: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -111,7 +111,7 @@ export default function OnboardingModal(props) {
                     const value = e.target.value.replace(/[^0-9]/g, '');
                     setAssetData({ ...assetData, dryPowder: Number(value) });
                   }}
-                  className={`w-full px-4 py-3 rounded-xl tabular-nums transition-all duration-200 ${
+                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
                     darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
                   } focus:outline-none`}
                 />
@@ -130,7 +130,7 @@ export default function OnboardingModal(props) {
                 setSetupStep(1);
                 setSetupSettlements([]);
               }}
-              className="w-full mt-6 py-4 rounded-xl font-semibold text-white transition-all duration-200 hover-scale"
+              className="w-full mt-6 py-4 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
               style={{ backgroundColor: theme.accent }}
             >
               始める

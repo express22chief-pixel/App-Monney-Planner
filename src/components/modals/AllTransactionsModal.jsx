@@ -98,7 +98,7 @@ export default function AllTransactionsModal({
           placeholder="🔍 カテゴリ・メモで検索"
           value={search}
           onChange={e => setSearch(e.target.value)}
-          className={`w-full px-3 py-2 rounded-xl text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700 placeholder-neutral-500' : 'bg-neutral-100 border-transparent placeholder-neutral-400'} focus:outline-none`}
+          className={`w-full px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-700 placeholder-neutral-500' : 'bg-neutral-100 border-transparent placeholder-neutral-400'} focus:outline-none`}
         />
       </div>
 
@@ -140,7 +140,7 @@ export default function AllTransactionsModal({
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${darkMode ? 'hover:bg-neutral-800/50' : 'hover:bg-neutral-50'}`}
                   >
                     {/* アイコン */}
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0 ${
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${
                       t.type === 'income' ? (darkMode ? 'bg-green-500/15' : 'bg-green-50') :
                       t.paymentMethod === 'credit' ? (darkMode ? 'bg-blue-500/15' : 'bg-blue-50') :
                       t.paymentMethod === 'wallet' ? (darkMode ? 'bg-purple-500/15' : 'bg-purple-50') :

@@ -38,7 +38,7 @@ export default function AddTransactionModal(props) {
     ...(wallets && wallets.length > 0 ? [{ key: 'wallet', label: '👛 電子マネー' }] : []),
   ];
 
-  const inputBase = `w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none ${
+  const inputBase = `w-full px-3 py-2.5 rounded-lg text-sm focus:outline-none ${
     darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'
   }`;
 
@@ -57,7 +57,7 @@ export default function AddTransactionModal(props) {
         <div className="px-4 pb-8 pt-4 space-y-3">
 
           {/* -- タイプ選択ブロック（支出/収入/チャージ + 支払方法を1枚のカードにまとめ） -- */}
-          <div className={`rounded-2xl p-3 space-y-2.5 ${darkMode ? 'bg-neutral-800/60 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
+          <div className={`rounded-lg p-3 space-y-2.5 ${darkMode ? 'bg-neutral-800/60 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
 
             {/* -出 / 収入 / チャージ */}
             <div className="flex gap-1.5">
@@ -73,7 +73,7 @@ export default function AddTransactionModal(props) {
                       if (id === 'charge') { setChargeMode(true); }
                       else { setChargeMode(false); setNewTransaction({ ...newTransaction, type: id, paymentMethod: id === 'expense' ? (newTransaction.paymentMethod || 'credit') : undefined }); }
                     }}
-                    className="flex-1 py-2 rounded-xl font-bold text-sm transition-all duration-200"
+                    className="flex-1 py-2 rounded-lg font-bold text-sm transition-all duration-200"
                     style={{ backgroundColor: active ? color : (darkMode ? '#2a2a2a' : '#e5e7eb'), color: active ? '#fff' : (darkMode ? '#888' : '#aaa'), transform: active ? 'scale(1.02)' : 'scale(1)' }}
                   >{label}</button>
                 );
@@ -143,7 +143,7 @@ export default function AddTransactionModal(props) {
                 <div className="flex gap-2">
                   {[{ key: 'cash', label: '💵 現金・銀行口座' }, { key: 'credit', label: '💳 クレジット' }].map(({ key, label }) => (
                     <button key={key} onClick={() => setChargeFrom(key)}
-                      className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
+                      className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
                       style={{ backgroundColor: chargeFrom === key ? theme.accent : (darkMode ? '#1C1C1E' : '#f5f5f5'), color: chargeFrom === key ? '#fff' : (darkMode ? '#d4d4d4' : '#737373') }}
                     >{label}</button>
                   ))}
@@ -154,7 +154,7 @@ export default function AddTransactionModal(props) {
                   </select>
                 )}
               </div>
-              <div className={`rounded-xl px-4 py-3 ${darkMode ? 'bg-neutral-800/80 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
+              <div className={`rounded-lg px-4 py-3 ${darkMode ? 'bg-neutral-800/80 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>金額</p>
                 <div className="flex items-center gap-2">
                   <span className={`text-xl font-bold ${theme.textSecondary}`}>¥</span>
@@ -164,7 +164,7 @@ export default function AddTransactionModal(props) {
               <input type="date" value={chargeDate} onChange={e => setChargeDate(e.target.value)} className={inputBase} style={{ colorScheme: darkMode ? 'dark' : 'light' }} />
               <input type="text" placeholder="メモ（任意）" value={chargeMemo} onChange={e => setChargeMemo(e.target.value)} className={inputBase} />
               <button onClick={handleAddCharge} disabled={!chargeAmount || !chargeWalletId}
-                className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200"
+                className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200"
                 style={{ backgroundColor: (!chargeAmount || !chargeWalletId) ? (darkMode ? '#2a2a2a' : '#e5e7eb') : '#FF9F0A', color: (!chargeAmount || !chargeWalletId) ? (darkMode ? '#525252' : '#9ca3af') : '#fff' }}
               >⚡ チャージを記録する</button>
             </div>
@@ -175,7 +175,7 @@ export default function AddTransactionModal(props) {
             <div className="space-y-2">
 
               {/* 金額 */}
-              <div className={`rounded-xl px-4 py-3 ${darkMode ? 'bg-neutral-800/80 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
+              <div className={`rounded-lg px-4 py-3 ${darkMode ? 'bg-neutral-800/80 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>金額</p>
                 <div className="flex items-center gap-2">
                   <span className={`text-xl font-bold ${theme.textSecondary}`}>¥</span>
@@ -208,7 +208,7 @@ export default function AddTransactionModal(props) {
 
               {/* 立替トグル（-出のみ） */}
               {newTransaction.type === 'expense' && (
-                <div className={`rounded-xl overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
+                <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
                   <button
                     onClick={() => setNewTransaction({ ...newTransaction, isSplit: !newTransaction.isSplit, splitMembers: !newTransaction.isSplit ? [{ name: '', amount: '' }] : [] })}
                     className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all ${newTransaction.isSplit ? (darkMode ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-700') : (darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-50 text-neutral-500')}`}
@@ -262,7 +262,7 @@ export default function AddTransactionModal(props) {
 
               {/* テンプレとして保存 */}
               {newTransaction.type === 'expense' && (
-                <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                <div className={`flex items-center justify-between px-3 py-2.5 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                   <div>
                     <p className={`text-xs font-medium ${theme.text}`}>⚡ テンプレとして保存</p>
                     <p className={`text-[10px] ${theme.textSecondary}`}>次回からワンタップで入力できます</p>
@@ -290,7 +290,7 @@ export default function AddTransactionModal(props) {
                 }
                 addTransaction();
                 if (newTransaction.amount && newTransaction.category) setShowAddTransaction(false);
-              }} className="w-full py-3 rounded-xl font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: theme.accent }}>追加する</button>
+              }} className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: theme.accent }}>追加する</button>
             </div>
           )}
         </div>

@@ -103,7 +103,7 @@ export default function TutorialModal(props) {
               {/* スライドコンテンツ */}
               <div className="px-6 pt-6 pb-4">
                 {/* 絵文字アイコン */}
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mb-4"
+                <div className="w-16 h-16 rounded-lg flex items-center justify-center text-4xl mb-4"
                   style={{ backgroundColor: slide.color + '20' }}>
                   {slide.emoji}
                 </div>
@@ -131,10 +131,10 @@ export default function TutorialModal(props) {
                   </div>
                 )}
                 {slide.visual === 'concept' && (
-                  <div className={`rounded-2xl p-4 mb-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  <div className={`rounded-lg p-4 mb-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>一般的な家計簿 vs このアプリ</p>
                     <div className="flex gap-2">
-                      <div className={`flex-1 rounded-xl p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border ${darkMode ? 'border-neutral-600' : 'border-neutral-200'}`}>
+                      <div className={`flex-1 rounded-lg p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border ${darkMode ? 'border-neutral-600' : 'border-neutral-200'}`}>
                         <p className="text-xs font-bold text-red-400 mb-2">😓 一般的な家計簿</p>
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs"><span className={darkMode ? 'text-neutral-300' : 'text-neutral-600'}>1/15 カフェ</span><span className="text-red-400">-¥600</span></div>
@@ -142,7 +142,7 @@ export default function TutorialModal(props) {
                           <div className={`text-[10px] mt-2 pt-2 border-t ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-400'}`}>💭 引き落としいつ？残高大丈夫？</div>
                         </div>
                       </div>
-                      <div className={`flex-1 rounded-xl p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border-2`} style={{ borderColor: '#6366f1' }}>
+                      <div className={`flex-1 rounded-lg p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border-2`} style={{ borderColor: '#6366f1' }}>
                         <p className="text-xs font-bold mb-2" style={{ color: '#6366f1' }}>😊 このアプリ</p>
                         <div className="space-y-1">
                           <div className="flex justify-between text-xs"><span className={darkMode ? 'text-neutral-300' : 'text-neutral-600'}>1/15 カフェ</span><span className="text-red-400">-¥600</span></div>
@@ -155,7 +155,7 @@ export default function TutorialModal(props) {
                   </div>
                 )}
                 {slide.visual === 'cashflow' && (
-                  <div className={`rounded-2xl p-4 mb-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  <div className={`rounded-lg p-4 mb-2 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>クレカで¥10,000買い物した場合</p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -177,10 +177,10 @@ export default function TutorialModal(props) {
 
                 {/* コンセプト図 */}
                 {slide.visual === 'concept' && (
-                  <div className={`rounded-2xl p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  <div className={`rounded-lg p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>一般的な家計簿 vs このアプリ</p>
                     <div className="flex gap-3">
-                      <div className={`flex-1 rounded-xl p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border ${darkMode ? 'border-neutral-600' : 'border-neutral-200'}`}>
+                      <div className={`flex-1 rounded-lg p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border ${darkMode ? 'border-neutral-600' : 'border-neutral-200'}`}>
                         <p className="text-xs font-bold text-red-400 mb-2">😓 一般的な家計簿</p>
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-xs"><span className={darkMode ? 'text-neutral-300' : 'text-neutral-600'}>1/15 カフェ</span><span className="text-red-400">-¥600</span></div>
@@ -188,7 +188,7 @@ export default function TutorialModal(props) {
                           <div className={`text-xs mt-2 pt-2 border-t ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}>💭 引き落とし日は？<br/>残高大丈夫？</div>
                         </div>
                       </div>
-                      <div className={`flex-1 rounded-xl p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border-2`} style={{ borderColor: '#6366f1' }}>
+                      <div className={`flex-1 rounded-lg p-3 ${darkMode ? 'bg-neutral-700' : 'bg-white'} border-2`} style={{ borderColor: '#6366f1' }}>
                         <p className="text-xs font-bold mb-2" style={{ color: '#6366f1' }}>😊 このアプリ</p>
                         <div className="space-y-1.5">
                           <div className="flex justify-between text-xs"><span className={darkMode ? 'text-neutral-300' : 'text-neutral-600'}>1/15 カフェ</span><span className="text-red-400">-¥600</span></div>
@@ -202,7 +202,7 @@ export default function TutorialModal(props) {
 
                 {/* キャッシュフロー図 */}
                 {slide.visual === 'cashflow' && (
-                  <div className={`rounded-2xl p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+                  <div className={`rounded-lg p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>クレカ払い ¥10,000 の場合</p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function TutorialModal(props) {
                 {tutorialPage > 0 && (
                   <button
                     onClick={() => setTutorialPage(p => p - 1)}
-                    className={`flex-1 py-3 rounded-xl font-semibold text-sm ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}
+                    className={`flex-1 py-3 rounded-lg font-semibold text-sm ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}
                   >
                     ← 戻る
                   </button>
@@ -247,7 +247,7 @@ export default function TutorialModal(props) {
                     if (isLast) { setShowTutorial(false); }
                     else { setTutorialPage(p => p + 1); }
                   }}
-                  className="flex-1 py-3 rounded-xl font-bold text-white text-sm transition-all hover-scale"
+                  className="flex-1 py-3 rounded-lg font-bold text-white text-sm transition-all hover-scale"
                   style={{ backgroundColor: slide.color }}
                 >
                   {isLast ? '✓ はじめる' : `次へ (${tutorialPage + 1}/${slides.length})`}

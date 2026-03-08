@@ -4,7 +4,7 @@
  * - テンプレート一覧表示・削除
  * - テンプレからワンタップで取引追加
  */
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function TemplateModal({
   theme, darkMode,
@@ -32,7 +32,11 @@ export default function TemplateModal({
   };
 
   const deleteTemplate = (id) => {
-    if (!window.confirm('このテンプレートを削除しますか？')) return;
+    if (confirmDeleteId !== id) {
+      setConfirmDeleteId(id);
+      return;
+    }
+    setConfirmDeleteId(null);
     setTransactionTemplates(prev => prev.filter(t => t.id !== id));
   };
 
@@ -57,7 +61,7 @@ export default function TemplateModal({
 
         <div className="px-4 pb-8 pt-4">
           {transactionTemplates.length === 0 ? (
-            <div className={`rounded-2xl p-8 text-center ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
+            <div className={`rounded-lg p-8 text-center ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
               <p className="text-3xl mb-3">📋</p>
               <p className={`text-sm font-semibold ${theme.text} mb-1`}>テンプレートがまだありません</p>
               <p className={`text-xs ${theme.textSecondary}`}>取引追加時に「テンプレとして保存」をオンにすると<br />ここに追加されます</p>
@@ -65,12 +69,12 @@ export default function TemplateModal({
           ) : (
             <div className="space-y-2">
               {transactionTemplates.map(tpl => (
-                <div key={tpl.id} className={`rounded-2xl overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
+                <div key={tpl.id} className={`rounded-lg overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
                   <button
                     onClick={() => applyTemplate(tpl)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all active:scale-98 ${darkMode ? 'bg-neutral-800 hover:bg-neutral-750' : 'bg-white hover:bg-neutral-50'}`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${darkMode ? 'bg-neutral-700' : 'bg-neutral-100'}`}>
                       {tpl.type === 'income' ? '💰' : '💸'}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -102,7 +106,14 @@ export default function TemplateModal({
                     </div>
                   )}
                   <div className={`flex justify-end px-3 py-1.5 border-t ${darkMode ? 'border-neutral-700 bg-neutral-800/50' : 'border-neutral-100 bg-neutral-50'}`}>
-                    <button onClick={() => deleteTemplate(tpl.id)} className="text-xs text-red-400 px-2 py-0.5 rounded">🗑️ 削除</button>
+                    <button
+                      onClick={() => deleteTemplate(tpl.id)}
+                      className={`text-xs px-2 py-0.5 rounded font-semibold transition-all ${
+                        confirmDeleteId === tpl.id
+                          ? 'bg-red-500 text-white'
+                          : 'text-red-400'
+                      }`}
+                    >{confirmDeleteId === tpl.id ? '確認して削除' : '🗑️ 削除'}</button>
                   </div>
                 </div>
               ))}
