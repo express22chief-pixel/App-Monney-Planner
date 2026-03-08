@@ -320,7 +320,7 @@ export default function HomeTab(props) {
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                   {/* ヘッ-ー */}
                   <div className="flex items-center justify-between px-4 py-3">
-                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>RECENT TXN</h2>
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>RECENT TXN</h2>
                     <button
                       onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
                       className={`text-xs font-semibold`}
@@ -379,7 +379,7 @@ export default function HomeTab(props) {
                     onClick={() => setShowRecurringList(!showRecurringList)}
                     className="flex items-center gap-2 flex-1 text-left"
                   >
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>定期支払い</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>定期支払い</span>
                     {recurringTransactions.length > 0 && (
                       <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>
                         {recurringTransactions.length}件
@@ -539,7 +539,7 @@ export default function HomeTab(props) {
                         onClick={() => setShowPayments(!showPayments)}
                         className="flex items-center gap-2 flex-1 text-left"
                       >
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の支払い予定</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の支払い予定</span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>{allItems.length}件</span>
                         <span className={`text-xs ${theme.textSecondary} ml-auto mr-2`} style={{ display: 'inline-block', transform: showPayments ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
                       </button>
@@ -752,7 +752,7 @@ export default function HomeTab(props) {
               return (
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                   <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の収支詳細</h2>
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の収支詳細</h2>
                     <button onClick={() => setShowBudgetModal(true)}
                       className={`text-xs px-2 py-1 rounded-lg font-medium ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                       予算設定 →

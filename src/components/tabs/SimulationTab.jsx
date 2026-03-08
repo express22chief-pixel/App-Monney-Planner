@@ -18,14 +18,14 @@ function StatPill({ label, value, color, bg }) {
       padding: '10px 14px', flex: 1, cursor: 'default',
       border: `1px solid ${color}30`,
     }}>
-      <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: color, marginBottom: 4, opacity: 0.8 }}>{label}</p>
+      <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: color, marginBottom: 4, opacity: 0.8 }}>{label}</p>
       <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 17, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.03em', textShadow: `0 0 12px ${color}50` }}>{value}</p>
     </div>
   );
 }
 
 function SectionTitle({ children, action, collapsible, expanded, onToggle, sub = '#9ca3af' }) {
-  const style = { fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#00e5ff' };
+  const style = { fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: '0em', color: '#00e5ff' };
   if (collapsible) {
     return (
       <button
@@ -37,7 +37,7 @@ function SectionTitle({ children, action, collapsible, expanded, onToggle, sub =
         <p style={style}>{children}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {action && <span onClick={e => e.stopPropagation()}>{action}</span>}
-          <span style={{ fontSize: 10, color: sub, transition: 'transform 0.2s',
+          <span style={{ fontSize: 11, color: '#00e5ff', transition: 'transform 0.2s', opacity: 0.7,
             display: 'inline-block', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </div>
       </button>
@@ -137,8 +137,10 @@ export default function SimulationTab(props) {
   const [shareModal, setShareModal] = useState(false);
   const [shareUrl,   setShareUrl]   = useState(null);
   const [expandEvents,   setExpandEvents]   = useState(false);
+  const [secStatus,      setSecStatus]      = useState(true);   // ステータスバナー
   const [secInsight,     setSecInsight]     = useState(true);   // 実績インサイト
   const [secLifePlan,    setSecLifePlan]    = useState(false);  // ライフプラン調整（デフォルト折りたたみ）
+  const [secTimeline,    setSecTimeline]    = useState(true);   // タイムライングラフ
   const [secLifeEvent,   setSecLifeEvent]   = useState(true);   // ライフイベント
   const [secPhaseSnap,   setSecPhaseSnap]   = useState(false);  // フェーズ別（デフォルト折りたたみ）
   const [secHousing,     setSecHousing]     = useState(false);  // 購入vs賃貸（デフォルト折りたたみ）
@@ -176,7 +178,7 @@ export default function SimulationTab(props) {
   const card  = theme.chart;                                  // カード背景
   const bg    = darkMode ? '#111'    : '#f2f2f7';
   const txt   = darkMode ? '#f5f5f5' : '#111';
-  const sub   = darkMode ? '#9ca3af' : '#6b7280';
+  const sub   = darkMode ? '#aaaaaa' : '#555555';
   const bdr   = darkMode ? '#2a2a2a' : '#e5e7eb';
   const green  = theme.green;                                 // テーマ緑
   const red    = theme.red;                                   // テーマ赤
@@ -223,13 +225,28 @@ export default function SimulationTab(props) {
       {/* ══════════════════════════════════════════════════════════════════
           1. ステータスバナー
       ══════════════════════════════════════════════════════════════════ */}
-      <div style={{
-        background: isSafe
-          ? (darkMode ? 'rgba(0,230,118,0.05)' : 'rgba(0,200,83,0.04)')
-          : (darkMode ? 'rgba(255,61,87,0.07)' : 'rgba(229,57,53,0.04)'),
-        borderRadius: 6, padding: '14px 16px',
-        border: `1px solid ${isSafe ? (darkMode ? 'rgba(0,230,118,0.25)' : 'rgba(0,200,83,0.3)') : (darkMode ? 'rgba(255,61,87,0.3)' : 'rgba(229,57,53,0.25)')}`,
-      }}>
+      <div style={{ background: card, borderRadius: 8, overflow: 'hidden' }}>
+        <button onClick={() => setSecStatus(v => !v)} style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          borderBottom: secStatus ? `1px solid ${bdr}` : 'none',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isSafe
+              ? <CheckCircle2 size={15} color={green} />
+              : <AlertTriangle size={15} color={red} />}
+            <span style={{ fontSize: 13, fontWeight: 700, color: isSafe ? green : red }}>
+              {isSafe ? `${lifeExpectancy}歳まで資産が持続` : `${depletionAge}歳で枯渇見込み`}
+            </span>
+          </div>
+          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secStatus ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+        </button>
+        {secStatus && <div className="animate-fadeIn" style={{
+          background: isSafe
+            ? (darkMode ? 'rgba(0,230,118,0.04)' : 'rgba(0,200,83,0.03)')
+            : (darkMode ? 'rgba(255,61,87,0.06)' : 'rgba(229,57,53,0.03)'),
+          padding: '14px 16px',
+        }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ flex: 1 }}>
             {isSafe ? (
@@ -281,6 +298,9 @@ export default function SimulationTab(props) {
         </div>
       </div>
 
+        </div>}
+      </div>
+
       {/* ── リタイア時/最終 サマリーピル ─────────────────────────────── */}
       <div style={{ display: 'flex', gap: 8 }}>
         <StatPill label={`RETIRE · ${retirementAge}歳`} value={fmtMan(retireWorth)}
@@ -292,11 +312,18 @@ export default function SimulationTab(props) {
       {/* ══════════════════════════════════════════════════════════════════
           2. タイムライングラフ
       ══════════════════════════════════════════════════════════════════ */}
-      <div style={{ background: card, borderRadius: 16, padding: '18px 14px 14px' }}>
-        <SectionTitle>
-          資産タイムライン（{currentAge}歳〜{lifeExpectancy}歳）
-        </SectionTitle>
-
+      <div style={{ background: card, borderRadius: 8 }}>
+        <button onClick={() => setSecTimeline(v => !v)} style={{
+          width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          borderBottom: secTimeline ? `1px solid ${bdr}` : 'none',
+        }}>
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>
+            資産タイムライン（{currentAge}歳〜{lifeExpectancy}歳）
+          </span>
+          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secTimeline ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+        </button>
+        {secTimeline && (<div className="animate-fadeIn" style={{ padding: '14px 14px 14px' }}>
         <ResponsiveContainer width="100%" height={260}>
           <ComposedChart data={chartData} margin={{ top: 4, right: 44, left: 0, bottom: 0 }}>
             <defs>
@@ -410,21 +437,22 @@ export default function SimulationTab(props) {
             </div>
           ))}
         </div>
+        </div>)}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
           3. 家計実績インサイト
       ══════════════════════════════════════════════════════════════════ */}
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
-        <div style={{ background: card, borderRadius: 16, padding: 18 }}>
-          <SectionTitle
+        <div style={{ background: card, borderRadius: 8 }}>
+          <div style={{ padding: '14px 16px', borderBottom: secInsight ? `1px solid ${bdr}` : 'none' }}><SectionTitle
             collapsible expanded={secInsight} onToggle={() => setSecInsight(v => !v)}
             action={<span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>}
           >
             実績ベースのインサイト
           </SectionTitle>
           {secInsight && (
-          <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px' }}>
 
             {/* 今月の過不足 → 将来影響 */}
             {monthlyGapImpact && (
@@ -561,8 +589,8 @@ export default function SimulationTab(props) {
           }
         >
           ライフプラン調整
-        </SectionTitle>
-        {secLifePlan && (<div className="animate-fadeIn">
+        </SectionTitle></div>
+        {secLifePlan && (<div className="animate-fadeIn" style={{ padding: '0 16px 16px' }}>
 
         {/* ── 現役フェーズ ────────────────────────────────────── */}
         <div style={{ marginBottom: 16 }}>
@@ -713,12 +741,15 @@ export default function SimulationTab(props) {
           4. ライフイベント（デフォルトテンプレート＋インライン調整）
       ══════════════════════════════════════════════════════════════════ */}
       <div style={{ background: card, borderRadius: 16 }}>
-        <button onClick={() => setSecLifeEvent(v => !v)} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', background: 'none', border: 'none', cursor: 'pointer', transition: 'opacity 0.15s' }}
-          onMouseOver={e=>e.currentTarget.style.opacity='0.7'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: txt }}>ライフイベント</span>
-          <span style={{ fontSize: 12, color: sub, transform: secLifeEvent ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>▼</span>
+        <button onClick={() => setSecLifeEvent(v => !v)} style={{
+          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          borderBottom: secLifeEvent ? `1px solid ${bdr}` : 'none',
+        }}>
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>ライフイベント</span>
+          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifeEvent ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
-        {secLifeEvent && <div className="animate-fadeIn"><LifeEventPlanner
+        {secLifeEvent && <div className="animate-fadeIn" style={{ paddingBottom: 8 }}><LifeEventPlanner
         lifeEvents={lifeEvents}
         setLifeEvents={setLifeEvents}
         setShowHousingModal={setShowHousingModal}

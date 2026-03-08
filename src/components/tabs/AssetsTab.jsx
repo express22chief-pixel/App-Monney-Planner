@@ -28,7 +28,7 @@ export default function AssetsTab(props) {
               className={`w-full ${theme.cardGlass} rounded-lg p-4 transition-all duration-200 hover-scale text-left`}
             >
               <div className="flex items-center justify-between mb-1">
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#00e5ff' }}>総資産</p>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', color: '#00e5ff' }}>総資産</p>
                 <Edit2 size={13} className={theme.textSecondary} />
               </div>
               <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 30, fontWeight: 800, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.04em', marginBottom: 10 }} className={theme.text}>
@@ -66,7 +66,7 @@ export default function AssetsTab(props) {
               <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                 <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
                   <div>
-                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#00e5ff' }}>電子マネー残高</p>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>電子マネー残高</p>
                     <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 17, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }} className={theme.text}>
                       ¥{wallets.reduce((s, w) => s + (walletBalances?.[String(w.id)] || 0), 0).toLocaleString()}
                     </p>
