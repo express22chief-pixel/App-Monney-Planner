@@ -437,7 +437,8 @@ export default function SimulationTab(props) {
             </div>
           ))}
         </div>
-        </div>)}
+        </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -734,7 +735,8 @@ export default function SimulationTab(props) {
             </div>
           ))}
         </div>
-        </div>)}
+        </div>
+        )}
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -975,7 +977,8 @@ export default function SimulationTab(props) {
                 </div>
               );
             })}
-            </div>)}
+            </div>
+            )}
           </div>
         );
       })()}
