@@ -298,7 +298,8 @@ export default function SimulationTab(props) {
         </div>
       </div>
 
-        </div>}
+        </div>
+        }
       </div>
 
       {/* ── リタイア時/最終 サマリーピル ─────────────────────────────── */}
