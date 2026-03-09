@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function SetupWizardModal(props) {
   const { theme, darkMode, setupStep, setSetupStep, creditCards, setCreditCards, setupSettlements, setSetupSettlements, setupSettlementDate, setSetupSettlementDate, setShowSetupWizard, setShowTutorial, setTutorialPage, transactions, setTransactions, setShowCardModal, setEditingCard } = props;
+
+  const [setupCardId, setSetupCardId] = useState(creditCards[0] ? String(creditCards[0].id) : '');
+  const [setupAmountInput, setSetupAmountInput] = useState('');
 
   return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
@@ -58,8 +61,11 @@ export default function SetupWizardModal(props) {
               <div>
                 <div className="text-4xl mb-3">📅</div>
                 <h2 className={`text-xl font-bold ${theme.text} mb-1`}>今月の引き落とし予定</h2>
-                <p className={`text-sm ${theme.textSecondary} mb-2`}>今月クレカから引き落とされる予定の金額を登録しておきましょう。</p>
-                <p className={`text-xs mb-5 px-3 py-2 rounded-lg ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-blue-50 text-blue-600'}`}>💡 先月の使用分が今月◯日に引き落とされる予定など</p>
+                <p className={`text-sm ${theme.textSecondary} mb-2`}>今月クレカから引き落とされる予定の金額を事前に登録できます。</p>
+                <div className={`text-xs mb-4 px-3 py-2.5 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-amber-50'}`} style={{ borderLeft: '3px solid #f59e0b' }}>
+                  <p className={`font-bold mb-1 ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>💡 よく分からない場合はスキップでOK</p>
+                  <p className={`${darkMode ? 'text-neutral-400' : 'text-amber-600'}`}>先月の使用分が今月引き落とされる予定がある場合に入力します。あとでホームタブからも追加できます。</p>
+                </div>
 
                 {setupSettlements.length > 0 && (
                   <div className="space-y-2 mb-4">
@@ -79,7 +85,7 @@ export default function SetupWizardModal(props) {
                   <div className={`rounded-lg p-4 mb-4 space-y-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <div>
                       <label className={`text-xs font-medium ${theme.textSecondary} block mb-1`}>カード</label>
-                      <select id="setup-card" className={`w-full px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-700 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}>
+                      <select value={setupCardId} onChange={e => setSetupCardId(e.target.value)} className={`w-full px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-700 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}>
                         {creditCards.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                       </select>
                     </div>
@@ -102,17 +108,17 @@ export default function SetupWizardModal(props) {
                     </div>
                     <div>
                       <label className={`text-xs font-medium ${theme.textSecondary} block mb-1`}>金額</label>
-                      <input type="text" inputMode="numeric" id="setup-amount" placeholder="例: 45000"
+                      <input type="text" inputMode="numeric" value={setupAmountInput} onChange={e => setSetupAmountInput(e.target.value)} placeholder="例: 45000"
                         className={`w-full px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-700 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                     </div>
                     <button onClick={() => {
-                      const cardId = document.getElementById('setup-card').value;
+                      const cardId = setupCardId || (creditCards[0] ? String(creditCards[0].id) : '');
                       const date = `${setupSettlementDate.year}-${String(setupSettlementDate.month).padStart(2,'0')}-${String(setupSettlementDate.day).padStart(2,'0')}`;
-                      const amount = document.getElementById('setup-amount').value.replace(/[^0-9]/g, '');
+                      const amount = setupAmountInput.replace(/[^0-9]/g, '');
                       if (!amount) { alert('金額を入力してください'); return; }
                       const card = creditCards.find(c => String(c.id) === String(cardId));
                       setSetupSettlements(prev => [...prev, { cardId, cardName: card ? card.name : '', date, amount }]);
-                      document.getElementById('setup-amount').value = '';
+                      setSetupAmountInput('');
                     }} className="w-full py-2 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.accent }}>
                       ＋ 追加
                     </button>
@@ -127,6 +133,10 @@ export default function SetupWizardModal(props) {
                   <button onClick={() => setSetupStep(1)}
                     className={`flex-1 py-3 rounded-lg text-sm font-semibold ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                     ← 戻る
+                  </button>
+                  <button onClick={() => setSetupStep(3)}
+                    className={`flex-1 py-3 rounded-lg text-sm font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
+                    スキップ →
                   </button>
                   <button onClick={() => setSetupStep(3)}
                     className="flex-1 py-3 rounded-lg text-sm font-semibold text-white" style={{ backgroundColor: theme.accent }}>

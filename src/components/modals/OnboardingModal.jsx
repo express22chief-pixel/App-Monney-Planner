@@ -1,142 +1,326 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BarChart2 } from 'lucide-react';
 
 export default function OnboardingModal(props) {
-  const { theme, darkMode, userInfo, setUserInfo, setShowOnboarding, setShowSetupWizard, assetData, setAssetData, setSetupStep, setSetupSettlements } = props;
+  const {
+    theme, darkMode,
+    userInfo, setUserInfo,
+    setShowOnboarding, setShowSetupWizard,
+    assetData, setAssetData,
+    setSetupStep, setSetupSettlements,
+    startDemo,
+  } = props;
 
-  return (
-        <div className={`fixed inset-0 ${darkMode ? 'bg-black' : 'bg-neutral-900'} flex items-center justify-center p-4 z-50 animate-fadeIn`}>
-          <div className={`${theme.cardGlass} rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slideUp`}>
-            <div className="text-center mb-6">
-              <div className="text-6xl mb-4">💰</div>
-              <h1 className={`text-3xl font-bold ${theme.text} mb-2 tracking-tight`}>Money Planner</h1>
-              <p className={theme.textSecondary}>基本情報を入力</p>
+  const [mode, setMode] = useState(null);
+
+  const txt  = darkMode ? '#f5f5f5' : '#111';
+  const sub  = darkMode ? '#aaaaaa' : '#666';
+  const card = darkMode ? '#161616' : '#ffffff';
+  const bg   = darkMode ? '#0d0d0d' : '#f2f2f7';
+  const bdr  = darkMode ? '#2a2a2a' : '#e5e7eb';
+  const cyan = '#00e5ff';
+
+  const canStartSim = userInfo?.age && userInfo?.age > 0
+    && assetData.savings >= 0 && assetData.investments >= 0;
+
+  if (mode === null) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: darkMode ? '#080808' : '#f2f2f7',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 16, background: '#000',
+              border: `1.5px solid ${cyan}`, margin: '0 auto 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                <polyline points="2,22 8,14 13,18 20,8 26,10" stroke={cyan} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                <rect x="2" y="2" width="24" height="24" rx="2" stroke={cyan} strokeWidth="0.4" strokeDasharray="2 3" opacity="0.3" fill="none"/>
+              </svg>
             </div>
+            <h1 style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: 22, fontWeight: 800, color: txt, letterSpacing: '-0.03em', marginBottom: 6,
+            }}>Money Planner</h1>
+            <p style={{ fontSize: 13, color: sub }}>お金の流れを、時間軸で管理する。</p>
+          </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>お名前</label>
-                <input
-                  type="text"
-                  placeholder="例：太郎"
-                  value={userInfo?.name || ''}
-                  onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
-              </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
 
+            <button onClick={() => props.startDemo()}
+              style={{
+                width: '100%', padding: '18px 20px', borderRadius: 14,
+                background: darkMode ? '#0a1a1a' : '#f0fdfe',
+                border: `1.5px solid ${cyan}`,
+                cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 14,
+              }}>
+              <span style={{ fontSize: 24 }}>🎮</span>
               <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>年齢</label>
-                <input
-                  type="number"
-                  placeholder="25"
-                  value={userInfo?.age || ''}
-                  onChange={(e) => setUserInfo({ ...userInfo, age: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
+                <p style={{ fontSize: 14, fontWeight: 700, color: cyan, marginBottom: 2 }}>まずデモで触ってみる</p>
+                <p style={{ fontSize: 11, color: sub }}>架空データで全機能を体験。登録不要・30秒で開始</p>
               </div>
+            </button>
 
-              <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>現在の貯金額</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="500000"
-                  value={assetData.savings}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
-                    setAssetData({ ...assetData, savings: Number(value) });
-                  }}
-                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
-                <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{assetData.savings.toLocaleString()}</p>
-              </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setMode('sim')}
+                style={{
+                  flex: 1, padding: '16px 14px', borderRadius: 14,
+                  background: card, border: `1px solid ${bdr}`,
+                  cursor: 'pointer', textAlign: 'left',
+                }}>
+                <p style={{ fontSize: 20, marginBottom: 6 }}>📈</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: txt, marginBottom: 2 }}>シミュレーションを見たい</p>
+                <p style={{ fontSize: 10, color: sub }}>年齢・年収・貯金額の3項目で即シミュ</p>
+              </button>
 
-              <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>投資額</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="300000"
-                  value={assetData.investments}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
-                    setAssetData({ ...assetData, investments: Number(value) });
-                  }}
-                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
-                <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{assetData.investments.toLocaleString()}</p>
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>NISA投資額</label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={assetData.nisa || 0}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
-                    setAssetData({ ...assetData, nisa: Number(value) });
-                  }}
-                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
-                <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{(assetData.nisa || 0).toLocaleString()}</p>
-              </div>
-
-              <div>
-                <label className={`block text-sm font-medium ${theme.textSecondary} mb-1 flex items-center gap-1`}>
-                  <BarChart2 size={14} style={{ color: theme.accent }} />
-                  投資待機資金
-                </label>
-                <p className={`text-[11px] ${theme.textSecondary} mb-2 leading-relaxed`}>
-                  💡 投資タイミングを待っている現金。株安・暴落時などに素早く投資に回すために別管理する資金です。
-                </p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="0"
-                  value={assetData.dryPowder || 0}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
-                    setAssetData({ ...assetData, dryPowder: Number(value) });
-                  }}
-                  className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
-                    darkMode ? 'bg-neutral-800 text-white border border-neutral-600 focus:border-blue-500' : 'bg-white border border-neutral-200 focus:border-blue-500'
-                  } focus:outline-none`}
-                />
-                <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{(assetData.dryPowder || 0).toLocaleString()}</p>
-              </div>
+              <button onClick={() => setMode('kakeibo')}
+                style={{
+                  flex: 1, padding: '16px 14px', borderRadius: 14,
+                  background: card, border: `1px solid ${bdr}`,
+                  cursor: 'pointer', textAlign: 'left',
+                }}>
+                <p style={{ fontSize: 20, marginBottom: 6 }}>💳</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: txt, marginBottom: 2 }}>家計を記録したい</p>
+                <p style={{ fontSize: 10, color: sub }}>クレカ登録から始める本格管理</p>
+              </button>
             </div>
+          </div>
 
+          <div style={{ textAlign: 'center' }}>
             <button
               onClick={() => {
-                if (!userInfo?.name || !userInfo?.age) {
-                  alert('お名前と年齢を入力してください');
-                  return;
-                }
                 setShowOnboarding(false);
-                setShowSetupWizard(true);
-                setSetupStep(1);
-                setSetupSettlements([]);
               }}
-              className="w-full mt-6 py-4 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
-              style={{ backgroundColor: theme.accent }}
+              style={{ fontSize: 11, color: sub, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              始める
+              すでに使っていた方（データを引き継ぐ）はエクスポート済みJSONをインポートしてください
             </button>
           </div>
-        </div>
 
-  );
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'sim') {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: darkMode ? '#080808' : '#f2f2f7',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+
+          <button onClick={() => setMode(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub, fontSize: 12, marginBottom: 20 }}>
+            ← 戻る
+          </button>
+
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: txt, marginBottom: 4 }}>📈 シミュレーション</h2>
+          <p style={{ fontSize: 12, color: sub, marginBottom: 24 }}>3項目を入力するだけで30年の資産推移を計算します</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>年齢</label>
+              <input
+                type="number" placeholder="32"
+                value={userInfo?.age || ''}
+                onChange={e => setUserInfo(prev => ({ ...(prev || {}), age: e.target.value }))}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 10,
+                  border: `1px solid ${bdr}`, background: card,
+                  color: txt, fontSize: 16, fontWeight: 700, outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>年収（税込）</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text" inputMode="numeric" placeholder="6000000"
+                  value={userInfo?.annualIncome || ''}
+                  onChange={e => {
+                    const v = e.target.value.replace(/[^0-9]/g, '');
+                    setUserInfo(prev => ({ ...(prev || {}), annualIncome: v }));
+                  }}
+                  style={{
+                    width: '100%', padding: '12px 14px', borderRadius: 10,
+                    border: `1px solid ${bdr}`, background: card,
+                    color: txt, fontSize: 16, fontWeight: 700, outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {userInfo?.annualIncome > 0 && (
+                  <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: sub }}>
+                    ¥{Math.round(userInfo.annualIncome / 10000)}万
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>現在の貯金額</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text" inputMode="numeric" placeholder="1000000"
+                  value={assetData.savings || ''}
+                  onChange={e => {
+                    const v = Number(e.target.value.replace(/[^0-9]/g, ''));
+                    setAssetData(prev => ({ ...prev, savings: v }));
+                  }}
+                  style={{
+                    width: '100%', padding: '12px 14px', borderRadius: 10,
+                    border: `1px solid ${bdr}`, background: card,
+                    color: txt, fontSize: 16, fontWeight: 700, outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+                {assetData.savings > 0 && (
+                  <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: sub }}>
+                    ¥{Math.round(assetData.savings / 10000)}万
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 10, color: sub, marginTop: 4 }}>投資額・NISAは後でいつでも追加できます</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              if (!userInfo?.age) return;
+              const income = Number(userInfo.annualIncome) || 6000000;
+              props.setLifePlan && props.setLifePlan(prev => ({
+                ...prev,
+                currentAge: Number(userInfo.age),
+                annualIncome: income,
+              }));
+              setShowOnboarding(false);
+              props.setActiveTab && props.setActiveTab('simulation');
+            }}
+            disabled={!userInfo?.age}
+            style={{
+              width: '100%', padding: '16px', borderRadius: 12,
+              background: userInfo?.age ? cyan : (darkMode ? '#222' : '#e5e7eb'),
+              color: userInfo?.age ? '#000' : sub,
+              border: 'none', cursor: userInfo?.age ? 'pointer' : 'default',
+              fontSize: 14, fontWeight: 800, letterSpacing: '0.02em',
+            }}
+          >
+            シミュレーションを見る →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'kakeibo') {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: darkMode ? '#080808' : '#f2f2f7',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px', overflowY: 'auto',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+
+          <button onClick={() => setMode(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub, fontSize: 12, marginBottom: 20 }}>
+            ← 戻る
+          </button>
+
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: txt, marginBottom: 4 }}>💳 家計記録</h2>
+          <p style={{ fontSize: 12, color: sub, marginBottom: 24 }}>基本情報だけ入力してすぐ始められます</p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>お名前</label>
+              <input
+                type="text" placeholder="例：翔太"
+                value={userInfo?.name || ''}
+                onChange={e => setUserInfo(prev => ({ ...(prev || {}), name: e.target.value }))}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 10,
+                  border: `1px solid ${bdr}`, background: card,
+                  color: txt, fontSize: 15, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>年齢</label>
+              <input
+                type="number" placeholder="32"
+                value={userInfo?.age || ''}
+                onChange={e => setUserInfo(prev => ({ ...(prev || {}), age: e.target.value }))}
+                style={{
+                  width: '100%', padding: '12px 14px', borderRadius: 10,
+                  border: `1px solid ${bdr}`, background: card,
+                  color: txt, fontSize: 16, fontWeight: 700, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 700, color: sub, display: 'block', marginBottom: 6 }}>
+                現在の貯金額 <span style={{ fontWeight: 400, color: sub }}>（省略可）</span>
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text" inputMode="numeric" placeholder="0"
+                  value={assetData.savings || ''}
+                  onChange={e => {
+                    const v = Number(e.target.value.replace(/[^0-9]/g, ''));
+                    setAssetData(prev => ({ ...prev, savings: v }));
+                  }}
+                  style={{
+                    width: '100%', padding: '12px 14px', borderRadius: 10,
+                    border: `1px solid ${bdr}`, background: card,
+                    color: txt, fontSize: 16, fontWeight: 700, outline: 'none', boxSizing: 'border-box',
+                  }}
+                />
+                {assetData.savings > 0 && (
+                  <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 11, color: sub }}>
+                    ¥{Math.round(assetData.savings / 10000)}万
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              if (!userInfo?.age) return;
+              setShowOnboarding(false);
+              setShowSetupWizard(true);
+              setSetupStep(1);
+              setSetupSettlements([]);
+            }}
+            disabled={!userInfo?.age}
+            style={{
+              width: '100%', padding: '16px', borderRadius: 12,
+              background: userInfo?.age ? cyan : (darkMode ? '#222' : '#e5e7eb'),
+              color: userInfo?.age ? '#000' : sub,
+              border: 'none', cursor: userInfo?.age ? 'pointer' : 'default',
+              fontSize: 14, fontWeight: 800,
+            }}
+          >
+            クレカを登録して始める →
+          </button>
+
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
