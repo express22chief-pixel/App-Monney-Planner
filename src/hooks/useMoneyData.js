@@ -683,7 +683,6 @@ export function useMoneyData() {
     });
   };
 
-
   // -- チャージ記録（電子マネー・ウォレットへのチャージ）----------------------
   // fromMethod: 'cash' | 'credit'
   // fromCardId: クレカIDまたはnull
@@ -937,7 +936,6 @@ export function useMoneyData() {
     });
     setTransactions(prev => [...allTxns, ...prev]);
   };
-
 
   // ----------------------------------------------------------------------------
   // 返却値
