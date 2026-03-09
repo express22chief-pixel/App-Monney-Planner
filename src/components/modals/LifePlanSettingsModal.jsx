@@ -86,7 +86,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
         width: '100%', maxWidth: 480, background: bg, borderRadius: '20px 20px 0 0',
         maxHeight: '92vh', display: 'flex', flexDirection: 'column',
       }}>
-        
+
         <div style={{ padding: '20px 20px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <div>
             <p style={{ fontSize: 17, fontWeight: 800, color: txt }}>ライフプラン設定</p>
@@ -97,11 +97,9 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
           </button>
         </div>
 
-        
         <div style={{ overflowY: 'auto', flex: 1, padding: '20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, color: txt }}>
 
-            
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>現役フェーズ</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -125,7 +123,6 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -142,7 +139,6 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア目標資産</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -157,7 +153,6 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>老後の収支</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -180,7 +175,6 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
           </div>
         </div>
 
-        
         <div style={{ padding: '16px 20px', flexShrink: 0, borderTop: `1px solid ${bdr}` }}>
           <button onClick={save} style={{
             width: '100%', padding: '14px', background: theme.accent,

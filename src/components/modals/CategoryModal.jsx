@@ -8,7 +8,6 @@ export default function CategoryModal(props) {
   const renamedExp = customCategories?.renamedDefaults?.expense || {};
   const renamedInc = customCategories?.renamedDefaults?.income || {};
 
-
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
           <div className={`${theme.cardGlass} rounded-3xl max-w-md w-full max-h-[85vh] flex flex-col animate-slideUp`}>
@@ -126,7 +125,6 @@ export default function CategoryModal(props) {
             </div>
           </div>
         </div>
-
 
   );
 }

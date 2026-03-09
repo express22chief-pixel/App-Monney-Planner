@@ -131,6 +131,5 @@ export default function InvestModal(props) {
           </div>
         </div>
 
-
   );
 }

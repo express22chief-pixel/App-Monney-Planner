@@ -7,7 +7,6 @@ export default function SetupWizardModal(props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
           <div className={`${theme.cardGlass} rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto animate-slideUp`}>
 
-            
             <div className="flex gap-2 mb-6">
               {[1,2,3].map(s => (
                 <div key={s} className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: darkMode ? '#2a2a2a' : '#e5e7eb' }}>
@@ -16,7 +15,6 @@ export default function SetupWizardModal(props) {
               ))}
             </div>
 
-            
             {setupStep === 1 && (
               <div>
                 <div className="text-4xl mb-3">💳</div>
@@ -56,7 +54,6 @@ export default function SetupWizardModal(props) {
               </div>
             )}
 
-            
             {setupStep === 2 && (
               <div>
                 <div className="text-4xl mb-3">📅</div>
@@ -139,7 +136,6 @@ export default function SetupWizardModal(props) {
               </div>
             )}
 
-            
             {setupStep === 3 && (
               <div>
                 <div className="text-4xl mb-3">🎉</div>

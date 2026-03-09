@@ -71,7 +71,6 @@ export default function RecurringModal(props) {
                 </select>
               </div>
 
-              
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>繰り返しのルール</label>
                 <div className="space-y-2">
@@ -107,8 +106,7 @@ export default function RecurringModal(props) {
                   </button>
                 </div>
               </div>
-              
-              
+
               {(!editingRecurring?.recurrenceType || editingRecurring?.recurrenceType === 'monthly-date') && (
                 <div>
                   <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>日付</label>
@@ -126,8 +124,7 @@ export default function RecurringModal(props) {
                   <p className={`text-xs ${theme.textSecondary} mt-1`}>毎月{editingRecurring?.day || '?'}日</p>
                 </div>
               )}
-              
-              
+
               {(editingRecurring?.recurrenceType === 'monthly-weekday' || editingRecurring?.recurrenceType === 'weekly') && (
                 <div>
                   {editingRecurring?.recurrenceType === 'monthly-weekday' && (
@@ -176,8 +173,7 @@ export default function RecurringModal(props) {
                   </div>
                 </div>
               )}
-              
-              
+
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>
                   繰り返しの間隔: {editingRecurring?.recurrenceType === 'weekly' ? `${editingRecurring?.interval || 1}週` : `${editingRecurring?.interval || 1}ヶ月`}
@@ -197,8 +193,7 @@ export default function RecurringModal(props) {
                   }
                 </p>
               </div>
-              
-              
+
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>開始日</label>
                 <input
@@ -211,8 +206,7 @@ export default function RecurringModal(props) {
                   style={{ colorScheme: darkMode ? 'dark' : 'light' }}
                 />
               </div>
-              
-              
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className={`text-sm font-medium ${theme.textSecondary}`}>終了日</label>
@@ -237,8 +231,7 @@ export default function RecurringModal(props) {
                   />
                 )}
               </div>
-              
-              
+
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>当日が休日の場合</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -262,7 +255,6 @@ export default function RecurringModal(props) {
                   ))}
                 </div>
               </div>
-
 
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>種類</label>
@@ -318,7 +310,6 @@ export default function RecurringModal(props) {
                 </div>
               </div>
 
-              
               <div>
                 <label className={`block text-sm font-medium ${theme.textSecondary} mb-2`}>支払い方法</label>
                 <div className="flex gap-2 mb-2">
@@ -370,7 +361,6 @@ export default function RecurringModal(props) {
             </div>
           </div>
         </div>
-
 
   );
 }

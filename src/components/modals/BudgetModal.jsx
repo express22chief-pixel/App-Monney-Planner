@@ -87,6 +87,5 @@ export default function BudgetModal(props) {
           </div>
         </div>
 
-
   );
 }

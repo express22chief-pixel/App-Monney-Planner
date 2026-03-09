@@ -72,7 +72,7 @@ export default function InlineDialog({
         style={{ background: card, border: `1px solid ${border}` }}
         onKeyDown={handleKeyDown}
       >
-        
+
         <div className="px-5 pt-5 pb-3">
           {title && (
             <p className="text-base font-bold mb-1" style={{ color: txt }}>{title}</p>
@@ -82,7 +82,6 @@ export default function InlineDialog({
           )}
         </div>
 
-        
         {type === 'input' && (
           <div className="px-5 pb-3">
             <input
@@ -100,7 +99,6 @@ export default function InlineDialog({
           </div>
         )}
 
-        
         <div
           className="flex border-t"
           style={{ borderColor: border }}

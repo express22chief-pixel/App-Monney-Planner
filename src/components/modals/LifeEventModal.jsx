@@ -14,7 +14,6 @@ export default function LifeEventModal(props) {
   ];
   const eventIcons = ['💍', '👶', '🏠', '🚗', '🎓', '✈️', '💰', '🎉', '📌', '🎊', '🎁', '⭐'];
 
-
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className={`${theme.cardGlass} rounded-lg p-6 max-w-md w-full max-h-[85vh] overflow-y-auto animate-slideUp`}>

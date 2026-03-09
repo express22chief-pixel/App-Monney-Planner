@@ -73,7 +73,5 @@ export default function ClosingCheckModal(props) {
           </div>
         </div>
 
-
-
   );
 }

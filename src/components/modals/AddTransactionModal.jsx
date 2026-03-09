@@ -48,7 +48,6 @@ export default function AddTransactionModal(props) {
     <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 animate-fadeIn" onClick={() => setShowAddTransaction(false)}>
       <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-slideUp`} onClick={e => e.stopPropagation()}>
 
-        
         <div className={`sticky top-0 flex items-center justify-between px-5 pt-4 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
           <h2 className={`text-lg font-bold ${theme.text}`}>取引を追加</h2>
           <button onClick={() => setShowAddTransaction(false)} className={`w-8 h-8 flex items-center justify-center rounded-full ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'} text-sm font-bold`}>✕</button>
@@ -56,10 +55,8 @@ export default function AddTransactionModal(props) {
 
         <div className="px-4 pb-8 pt-4 space-y-3">
 
-          
           <div className={`rounded-lg p-3 space-y-2.5 ${darkMode ? 'bg-neutral-800/60 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
 
-            
             <div className="flex gap-1.5">
               {[
                 { id: 'expense', label: '支出',       color: theme.red   },
@@ -80,7 +77,6 @@ export default function AddTransactionModal(props) {
               })}
             </div>
 
-            
             {isExpense && (
               <>
                 <div className={`h-px ${darkMode ? 'bg-neutral-700' : 'bg-neutral-200'}`} />
@@ -94,7 +90,6 @@ export default function AddTransactionModal(props) {
                   ))}
                 </div>
 
-                
                 {newTransaction.paymentMethod === 'credit' && creditCards.length >= 1 && (
                   <div className="flex gap-1.5 flex-wrap">
                     {creditCards.map(card => (
@@ -107,7 +102,6 @@ export default function AddTransactionModal(props) {
                   </div>
                 )}
 
-                
                 {newTransaction.paymentMethod === 'wallet' && wallets?.length > 0 && (
                   <div className="flex gap-1.5 flex-wrap">
                     {wallets.map(w => (
@@ -123,7 +117,6 @@ export default function AddTransactionModal(props) {
             )}
           </div>
 
-          
           {chargeMode && (
             <div className="space-y-2.5">
               <div>
@@ -170,11 +163,9 @@ export default function AddTransactionModal(props) {
             </div>
           )}
 
-          
           {!chargeMode && (
             <div className="space-y-2">
 
-              
               <div className={`rounded-lg px-4 py-3 ${darkMode ? 'bg-neutral-800/80 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>金額</p>
                 <div className="flex items-center gap-2">
@@ -192,10 +183,8 @@ export default function AddTransactionModal(props) {
                 {newTransaction.amount && <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>{Number(newTransaction.amount).toLocaleString()} 円</p>}
               </div>
 
-              
               <input type="date" value={newTransaction.date} onChange={e => setNewTransaction({ ...newTransaction, date: e.target.value })} className={`${inputBase} appearance-none`} style={{ colorScheme: darkMode ? 'dark' : 'light' }} />
 
-              
               <select value={newTransaction.category} onChange={e => setNewTransaction({ ...newTransaction, category: e.target.value })} className={inputBase}>
                 <option value="">カテゴリを選択</option>
                 {(newTransaction.type === 'expense' ? expenseCategories : incomeCategories).map(cat => (
@@ -203,10 +192,8 @@ export default function AddTransactionModal(props) {
                 ))}
               </select>
 
-              
               <textarea rows={2} placeholder="メモ（任意）" value={newTransaction.memo} onChange={e => setNewTransaction({ ...newTransaction, memo: e.target.value })} className={`${inputBase} resize-none`} />
 
-              
               {newTransaction.type === 'expense' && (
                 <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
                   <button
@@ -260,7 +247,6 @@ export default function AddTransactionModal(props) {
                 </div>
               )}
 
-              
               {newTransaction.type === 'expense' && (
                 <div className={`flex items-center justify-between px-3 py-2.5 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                   <div>
@@ -271,7 +257,6 @@ export default function AddTransactionModal(props) {
                 </div>
               )}
 
-              
               <button onClick={() => {
                 const cb = document.getElementById('save-as-tpl');
                 if (cb?.checked && newTransaction.category) {

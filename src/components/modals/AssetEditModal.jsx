@@ -107,6 +107,5 @@ export default function AssetEditModal(props) {
           </div>
         </div>
 
-
   );
 }

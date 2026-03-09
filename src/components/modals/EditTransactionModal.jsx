@@ -94,7 +94,7 @@ export default function EditTransactionModal(props) {
         className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[92vh] overflow-y-auto animate-slideUp`}
         onClick={e => e.stopPropagation()}
       >
-        
+
         <div className={`sticky top-0 flex items-center justify-between px-5 pt-4 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
           <h2 className={`text-lg font-bold ${theme.text}`}>
             {tx.isSettlement ? '💳 クレジット引き落とし' : '取引を編集'}
@@ -106,7 +106,7 @@ export default function EditTransactionModal(props) {
         </div>
 
         <div className="px-4 pb-8 pt-4">
-          
+
           {tx.isSettlement ? (
             <div className="space-y-3">
               <div className={`rounded-lg p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
@@ -143,7 +143,7 @@ export default function EditTransactionModal(props) {
             </div>
           ) : (
             <div className="space-y-3">
-              
+
               <div className="flex gap-2">
                 {[{ type: 'expense', label: '支出', color: theme.red }, { type: 'income', label: '収入', color: theme.green }].map(({ type, label, color }) => (
                   <button key={type}
@@ -158,7 +158,6 @@ export default function EditTransactionModal(props) {
                 ))}
               </div>
 
-              
               <div className={`rounded-lg p-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>金額</p>
                 <div className="flex items-baseline gap-1">
@@ -178,7 +177,6 @@ export default function EditTransactionModal(props) {
                 </div>
               </div>
 
-              
               <div>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>カテゴリ</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -196,7 +194,6 @@ export default function EditTransactionModal(props) {
                 </div>
               </div>
 
-              
               {tx.type === 'expense' && !tx.isRecurring && (
                 <div>
                   <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>支払方法</p>
@@ -249,7 +246,6 @@ export default function EditTransactionModal(props) {
                 </div>
               )}
 
-              
               <div>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>日付</p>
                 <input
@@ -261,7 +257,6 @@ export default function EditTransactionModal(props) {
                 />
               </div>
 
-              
               <div>
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>メモ（任意）</p>
                 <input
@@ -273,10 +268,9 @@ export default function EditTransactionModal(props) {
                 />
               </div>
 
-              
               {tx.type === 'expense' && (
                 <div className={`rounded-lg overflow-hidden border ${darkMode ? 'border-neutral-700' : 'border-neutral-200'}`}>
-                  
+
                   <button
                     onClick={() => setEditingSplit(v => !v)}
                     className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium transition-all ${
@@ -307,7 +301,6 @@ export default function EditTransactionModal(props) {
                         )}
                       </div>
 
-                      
                       <div className="space-y-1.5">
                         {splitMembers.map((member, idx) => (
                           <div key={idx} className="flex gap-1.5 items-center">
@@ -334,7 +327,7 @@ export default function EditTransactionModal(props) {
                               }}
                               className={`w-24 px-2.5 py-1.5 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-300 placeholder-neutral-400'} focus:outline-none`}
                             />
-                            
+
                             {member.name && (
                               <button
                                 onClick={() => {
@@ -358,7 +351,6 @@ export default function EditTransactionModal(props) {
                         ))}
                       </div>
 
-                      
                       <button
                         onClick={() => setSplitMembers(prev => [...prev, { name: '', amount: '' }])}
                         className={`w-full py-1.5 rounded-lg text-xs font-semibold border-dashed border-2 transition-all ${darkMode ? 'border-neutral-600 text-neutral-400 hover:border-blue-500 hover:text-blue-400' : 'border-neutral-300 text-neutral-400 hover:border-blue-400 hover:text-blue-500'}`}
@@ -366,7 +358,6 @@ export default function EditTransactionModal(props) {
                         ＋ 人を追加
                       </button>
 
-                      
                       {totalAmount > 0 && (
                         <div className={`rounded-lg px-3 py-2 text-xs space-y-0.5 ${darkMode ? 'bg-neutral-900/60' : 'bg-white/80'}`}>
                           <div className="flex justify-between">
@@ -388,7 +379,6 @@ export default function EditTransactionModal(props) {
                 </div>
               )}
 
-              
               <button
                 onClick={() => setTemplateNameInput(tx.memo || tx.category || '')}
                 className={`w-full py-2 rounded-lg text-xs font-semibold border-2 transition-all ${darkMode ? 'border-neutral-600 text-neutral-400' : 'border-neutral-200 text-neutral-500'}`}
@@ -419,7 +409,6 @@ export default function EditTransactionModal(props) {
                 </div>
               )}
 
-              
               <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => { deleteTransaction(tx.id); setEditingTransaction(null); }}
