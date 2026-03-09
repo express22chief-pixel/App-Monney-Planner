@@ -437,12 +437,17 @@ export default function SimulationTab(props) {
       
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
         <div style={{ background: card, borderRadius: 8 }}>
-          <div style={{ padding: '14px 16px', borderBottom: secInsight ? `1px solid ${bdr}` : 'none' }}><SectionTitle
-            collapsible expanded={secInsight} onToggle={() => setSecInsight(v => !v)}
-            action={<span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>}
-          >
-            実績ベースのインサイト
-          </SectionTitle></div>
+          <button onClick={() => setSecInsight(v => !v)} style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+            borderBottom: secInsight ? `1px solid ${bdr}` : 'none',
+          }}>
+            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>実績ベースのインサイト</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>
+              <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secInsight ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </div>
+          </button>
           {secInsight && (
           <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px' }}>
 
@@ -565,21 +570,20 @@ export default function SimulationTab(props) {
 
       
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
-        <SectionTitle
-          collapsible expanded={secLifePlan} onToggle={() => setSecLifePlan(v => !v)}
-          action={
-            <button onClick={(e) => { e.stopPropagation(); setShowLifePlanSettings(true); }} style={{
-              display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
-              background: darkMode ? '#2a2a2a' : '#f5f5f5',
-              border: 'none', borderRadius: 8, cursor: 'pointer',
-            }}>
-              <Settings2 size={12} color={sub} />
-              <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>詳細設定</span>
-            </button>
-          }
-        >
-          ライフプラン調整
-        </SectionTitle></div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: secLifePlan ? 12 : 0 }}>
+          <button onClick={() => setSecLifePlan(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>ライフプラン調整</span>
+            <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifePlan ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); setShowLifePlanSettings(true); }} style={{
+            display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
+            background: darkMode ? '#2a2a2a' : '#f5f5f5',
+            border: 'none', borderRadius: 8, cursor: 'pointer',
+          }}>
+            <Settings2 size={12} color={sub} />
+            <span style={{ fontSize: 11, color: sub, fontWeight: 600 }}>詳細設定</span>
+          </button>
+        </div>
         {secLifePlan && (<div className="animate-fadeIn" style={{ padding: '0 16px 16px' }}>
 
         
@@ -846,18 +850,17 @@ export default function SimulationTab(props) {
 
         return (
           <div style={{ background: card, borderRadius: 16, padding: 18 }}>
-            <SectionTitle
-              collapsible expanded={secHousing} onToggle={() => setSecHousing(v => !v)}
-              action={
-                <button onClick={(e) => { e.stopPropagation(); setShowHousingModal(true); }} style={{
-                  padding: '5px 10px', background: 'none',
-                  border: `1px solid ${blue}`, borderRadius: 8,
-                  color: blue, fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                }}>設定変更</button>
-              }
-            >
-              購入 vs 賃貸 比較（{yrs}年間）
-            </SectionTitle>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: secHousing ? 12 : 0 }}>
+              <button onClick={() => setSecHousing(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>購入 vs 賃貸 比較（{yrs}年間）</span>
+                <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secHousing ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+              </button>
+              <button onClick={(e) => { e.stopPropagation(); setShowHousingModal(true); }} style={{
+                padding: '5px 10px', background: 'none',
+                border: `1px solid ${blue}`, borderRadius: 8,
+                color: blue, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              }}>設定変更</button>
+            </div>
             {secHousing && (<div className="animate-fadeIn">
 
             
