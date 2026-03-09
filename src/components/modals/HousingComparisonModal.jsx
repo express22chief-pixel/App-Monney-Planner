@@ -106,9 +106,9 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
   const bg     = theme?.chart  || (darkMode ? '#1c1c1e' : '#fff');
   const sub    = darkMode ? '#9ca3af' : '#6b7280';
   const blue   = theme?.accent  || '#3b82f6';
-  const green  = theme?.green   || green;
-  const red    = theme?.red     || red;
-  const purple = theme?.purple  || purple;
+  const green  = theme?.green   || '#10b981';
+  const red    = theme?.red     || '#ef4444';
+  const purple = theme?.purple  || '#a855f7';
   const amber  = theme?.orange  || '#f59e0b';
 
   // 購入年齢の選択肢（現在年齢+1 〜 60歳）
