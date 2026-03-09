@@ -904,7 +904,7 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
   const byAge      = [];
   let depletionAge = null;
 
-  // ── ヘルパー: 資産から金額を引く ────────────────────────────────────
+  // -- ヘルパー: 資産から金額を引く ------------------------------------
   function deductAssets(amount) {
     if (amount <= 0) return;
     if (dryPowder >= amount)    { dryPowder    -= amount; return; }
@@ -923,7 +923,7 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
     const growthMult = isRetired ? 0 : Math.pow(1 + incomeGrowthRate / 100, workYear);
     let nisaUsedThisYear = 0;
 
-    // ── ライフイベント：住宅購入（この年齢で発生）──────────────────────
+    // -- ライフイベント：住宅購入（この年齢で発生）----------------------
     if (housingParams && housingPurchaseAge === age && age !== currentAge) {
       const dp        = housingParams.downPayment || 0;
       const acqCost   = (housingParams.propertyPrice || 0) * 0.03;
@@ -933,7 +933,7 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
       loanRemainingMonths = housingParams.loanMonths || 360;
     }
 
-    // ── 月次ループ ──────────────────────────────────────────────────────
+    // -- 月次ループ ------------------------------------------------------
     for (let m = 0; m < 12; m++) {
 
       // ローン返済（元利均等）
@@ -996,7 +996,7 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
       regularInvest += regularProfit * (1 - TAX_RATE);
     }
 
-    // ── ライフイベント：住宅以外（年次処理）────────────────────────────
+    // -- ライフイベント：住宅以外（年次処理）----------------------------
     lifeEvents.forEach(event => {
       if (event.type === 'housing') return; // 住宅は上で処理済み
       if (event.type === 'housing_choice') {
