@@ -5,11 +5,12 @@ export default function TutorialModal(props) {
 
   const slides = [
     {
-      emoji: '👋',
-      title: 'ようこそ！',
-      subtitle: 'お金の流れを、シンプルに管理',
-      desc: '収入・支出の記録からクレカ管理・資産管理・将来シミュレーションまで、ひとつのアプリで完結します。残りのスライドで使い方を説明します。',
-      color: '#10b981',
+      emoji: null,
+      title: null,
+      subtitle: null,
+      desc: null,
+      color: '#00e5ff',
+      visual: 'concept_hero',
     },
     {
       emoji: '💡',
@@ -101,20 +102,28 @@ export default function TutorialModal(props) {
 
         <div className="px-6 pt-6 pb-4">
 
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mb-4"
-            style={{ backgroundColor: slide.color + '20' }}>
-            {slide.emoji}
-          </div>
+          {slide.emoji && (
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-4xl mb-4"
+              style={{ backgroundColor: slide.color + '20' }}>
+              {slide.emoji}
+            </div>
+          )}
 
-          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: slide.color }}>
-            {slide.subtitle}
-          </p>
-          <h2 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-neutral-900'}`}>
-            {slide.title}
-          </h2>
-          <p className={`text-sm leading-relaxed mb-4 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
-            {slide.desc}
-          </p>
+          {slide.subtitle && (
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: slide.color }}>
+              {slide.subtitle}
+            </p>
+          )}
+          {slide.title && (
+            <h2 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-neutral-900'}`}>
+              {slide.title}
+            </h2>
+          )}
+          {slide.desc && (
+            <p className={`text-sm leading-relaxed mb-4 ${darkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+              {slide.desc}
+            </p>
+          )}
 
           {slide.tips && (
             <div className="space-y-1.5 mb-4">
@@ -124,6 +133,70 @@ export default function TutorialModal(props) {
                   <p className={`text-xs ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>{tip}</p>
                 </div>
               ))}
+            </div>
+          )}
+
+          {slide.visual === 'concept_hero' && (
+            <div style={{ margin: '-8px -8px 0' }}>
+              <div style={{
+                background: '#080808',
+                borderRadius: 16,
+                padding: '28px 24px 24px',
+                border: '1px solid rgba(0,229,255,0.15)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                  backgroundImage: 'linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px)',
+                  backgroundSize: '40px 40px',
+                }} />
+                <div style={{ position: 'relative' }}>
+                  <p style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 10, fontWeight: 700, color: '#00e5ff',
+                    letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 16, opacity: 0.7,
+                  }}>CASHFLOW MANAGEMENT</p>
+                  <p style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: 28, fontWeight: 900, color: '#ffffff',
+                    lineHeight: 1.2, marginBottom: 8, letterSpacing: '-0.02em',
+                  }}>お金の流れを、<br/>時間軸で管理する。</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.7, marginBottom: 20 }}>
+                    クレカの引き落とし日・締め日を把握し、<br/>「今月あといくら使えるか」を常に正確に。
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[
+                      { label: 'クレカ管理',     desc: '締め日・引き落とし日を自動追跡',   dot: '#00e5ff' },
+                      { label: '資産シミュレーション', desc: '将来の純資産を30年先まで可視化', dot: '#0cff8c' },
+                      { label: '月次キャッシュフロー', desc: '支出・収入・残高をリアルタイム集計', dot: '#a855f7' },
+                    ].map((item, i) => (
+                      <div key={i} style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 10,
+                        padding: '10px 12px', borderRadius: 8,
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid rgba(255,255,255,0.06)',
+                      }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: item.dot, marginTop: 5, flexShrink: 0 }} />
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 1 }}>{item.label}</p>
+                          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{item.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{
+                    marginTop: 18, paddingTop: 14,
+                    borderTop: '1px solid rgba(0,229,255,0.1)',
+                    display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#00e5ff' }} />
+                    <p style={{ fontSize: 10, color: 'rgba(0,229,255,0.6)', fontWeight: 600, letterSpacing: '0.05em' }}>
+                      クレカを複数枚使っている人向けに設計されています
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 

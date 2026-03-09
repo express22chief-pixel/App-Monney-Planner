@@ -43,6 +43,7 @@ export default function CloseMonthModal(props) {
   const sub    = darkMode ? '#9ca3af' : '#6b7280';
   const bdr    = darkMode ? '#2a2a2a' : '#e5e7eb';
   const green  = theme?.green   || '#10b981';
+  const red    = theme?.red     || '#ef4444';
   const orange = theme?.orange  || '#f59e0b';
   const blue   = theme?.accent  || '#3b82f6';
   const purple = theme?.purple  || '#a855f7';
