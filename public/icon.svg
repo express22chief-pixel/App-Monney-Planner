@@ -1,37 +1,100 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- 背景グラデーション -->
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0A84FF;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0CD664;stop-opacity:1" />
+    <!-- 背景グラデーション: 純黒から深いダークへ -->
+    <radialGradient id="bgGrad" cx="30%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#080808"/>
+    </radialGradient>
+    <!-- シアングロー -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softglow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <!-- グラデーション: 波形エリア -->
+    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#00e5ff" stop-opacity="0.0"/>
+    </linearGradient>
+    <!-- クレカ用グラデーション -->
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#111111"/>
     </linearGradient>
   </defs>
-  
+
   <!-- 背景 -->
-  <rect width="512" height="512" rx="115" fill="url(#grad)"/>
-  
-  <!-- チャートアイコン（株価アプリ風） -->
-  <g transform="translate(256, 256)">
-    <!-- グラフ線 -->
-    <path d="M-140,-40 L-80,-60 L-20,20 L40,-80 L100,40 L140,0" 
-          stroke="white" 
-          stroke-width="16" 
-          stroke-linecap="round" 
-          stroke-linejoin="round" 
-          fill="none"
-          opacity="0.9"/>
-    
-    <!-- グラデーションエリア -->
-    <path d="M-140,-40 L-80,-60 L-20,20 L40,-80 L100,40 L140,0 L140,120 L-140,120 Z" 
-          fill="white" 
-          opacity="0.15"/>
-    
-    <!-- ドット -->
-    <circle cx="-140" cy="-40" r="8" fill="white"/>
-    <circle cx="-80" cy="-60" r="8" fill="white"/>
-    <circle cx="-20" cy="20" r="8" fill="white"/>
-    <circle cx="40" cy="-80" r="8" fill="white"/>
-    <circle cx="100" cy="40" r="8" fill="white"/>
-    <circle cx="140" cy="0" r="8" fill="white"/>
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+
+  <!-- 微細グリッド（ターミナル感） -->
+  <g opacity="0.06">
+    <line x1="0" y1="128" x2="512" y2="128" stroke="#00e5ff" stroke-width="0.5"/>
+    <line x1="0" y1="256" x2="512" y2="256" stroke="#00e5ff" stroke-width="0.5"/>
+    <line x1="0" y1="384" x2="512" y2="384" stroke="#00e5ff" stroke-width="0.5"/>
+    <line x1="128" y1="0" x2="128" y2="512" stroke="#00e5ff" stroke-width="0.5"/>
+    <line x1="256" y1="0" x2="256" y2="512" stroke="#00e5ff" stroke-width="0.5"/>
+    <line x1="384" y1="0" x2="384" y2="512" stroke="#00e5ff" stroke-width="0.5"/>
   </g>
+
+  <!-- クレジットカード（背景、奥） -->
+  <g transform="translate(82, 148) rotate(-6, 174, 90)">
+    <rect width="348" height="212" rx="18"
+      fill="url(#cardGrad)"
+      stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.25"/>
+    <!-- カードのマグネットストライプ -->
+    <rect x="0" y="54" width="348" height="36" fill="#00e5ff" opacity="0.07"/>
+    <!-- チップ -->
+    <rect x="28" y="82" width="44" height="34" rx="6" fill="none" stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.3"/>
+    <line x1="28" y1="99" x2="72" y2="99" stroke="#00e5ff" stroke-width="1" stroke-opacity="0.2"/>
+    <line x1="50" y1="82" x2="50" y2="116" stroke="#00e5ff" stroke-width="1" stroke-opacity="0.2"/>
+  </g>
+
+  <!-- キャッシュフロー波形（メイン） -->
+  <!-- エリア塗り -->
+  <path d="M 62 310 L 62 268 L 118 230 L 174 272 L 230 198 L 286 244 L 342 186 L 398 222 L 450 258 L 450 310 Z"
+    fill="url(#waveGrad)"/>
+
+  <!-- 波形ライン（グロー付き） -->
+  <path d="M 62 268 L 118 230 L 174 272 L 230 198 L 286 244 L 342 186 L 398 222 L 450 258"
+    stroke="#00e5ff"
+    stroke-width="5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+    opacity="0.3"
+    filter="url(#softglow)"/>
+
+  <path d="M 62 268 L 118 230 L 174 272 L 230 198 L 286 244 L 342 186 L 398 222 L 450 258"
+    stroke="#00e5ff"
+    stroke-width="3.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+    filter="url(#glow)"/>
+
+  <!-- キーポイントのドット -->
+  <circle cx="230" cy="198" r="7" fill="#080808" stroke="#00e5ff" stroke-width="2.5" filter="url(#glow)"/>
+  <circle cx="342" cy="186" r="7" fill="#080808" stroke="#00e5ff" stroke-width="2.5" filter="url(#glow)"/>
+
+  <!-- 縦軸ライン（ターミナル感） -->
+  <line x1="62" y1="192" x2="62" y2="330"
+    stroke="#00e5ff" stroke-width="1.5" stroke-opacity="0.4" stroke-dasharray="3 4"/>
+
+  <!-- ¥マーク（右下、控えめに） -->
+  <text x="388" y="350" font-family="Georgia, serif" font-size="52" font-weight="700"
+    fill="#00e5ff" opacity="0.18" letter-spacing="-2">¥</text>
+
+  <!-- 底部のラベルライン -->
+  <line x1="62" y1="340" x2="450" y2="340"
+    stroke="#00e5ff" stroke-width="1" stroke-opacity="0.15"/>
+
 </svg>
