@@ -60,7 +60,7 @@ export default function AppShell({ data }) {
   return (
     <div className={`min-h-screen ${theme.bg} pb-20 transition-colors duration-200`}>
 
-      {/* --- ヘッダー ─────────────────────────────────────────── */}
+      {/* --- ヘッダー ------------------------------------------- */}
       <div
         className="sticky top-0 z-30 transition-colors duration-200"
         style={{
@@ -183,7 +183,7 @@ export default function AppShell({ data }) {
         </div>
       )}
 
-      {/* --- タブバー ─────────────────────────────────────────── */}
+      {/* --- タブバー ------------------------------------------- */}
       <div
         className="fixed bottom-0 left-0 right-0"
         style={{
