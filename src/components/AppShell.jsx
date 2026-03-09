@@ -24,6 +24,7 @@ import BenchmarkModal        from './modals/BenchmarkModal';
 import LifeEventModal        from './modals/LifeEventModal';
 import TutorialModal         from './modals/TutorialModal';
 import OnboardingModal       from './modals/OnboardingModal';
+import DemoTourOverlay       from './DemoTourOverlay';
 import AddTransactionModal   from './modals/AddTransactionModal';
 import CloseMonthModal       from './modals/CloseMonthModal';
 import EditTransactionModal  from './modals/EditTransactionModal';
@@ -103,6 +104,14 @@ export default function AppShell({ data }) {
           </div>
         </div>
       </div>
+
+      {data.isDemoMode && data.isDemoTour && (
+        <DemoTourOverlay
+          setActiveTab={setActiveTab}
+          exitDemo={data.exitDemo}
+          darkMode={darkMode}
+        />
+      )}
 
       {data.isDemoMode && (
         <div style={{
