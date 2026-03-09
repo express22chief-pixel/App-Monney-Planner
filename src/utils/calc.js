@@ -35,6 +35,27 @@ export function buildCategories(defaults, deleted, renamed, custom, orderedOrig)
   return [...activeDefs, ...custom];
 }
 
+// --- 手取り計算（年収帯別実効税率） ----------------------------------------
+// 源泉徴収票ベース概算。社会保険料（約14%）+ 所得税・住民税を反映。
+// 正確な税計算は複雑なため区分線形近似を使用。
+export function calcTakeHome(annualGross) {
+  const g = annualGross;
+  // 手取り率（社保14% + 所得税・住民税の実効税率）
+  if (g <= 1_000_000)  return g * 0.90;   // 100万以下: 約90%
+  if (g <= 2_000_000)  return g * 0.85;   // 200万以下: 約85%
+  if (g <= 3_000_000)  return g * 0.80;   // 300万以下: 約80%
+  if (g <= 4_000_000)  return g * 0.78;   // 400万以下: 約78%
+  if (g <= 5_000_000)  return g * 0.76;   // 500万以下: 約76%
+  if (g <= 6_000_000)  return g * 0.75;   // 600万以下: 約75%
+  if (g <= 7_000_000)  return g * 0.74;   // 700万以下: 約74%
+  if (g <= 8_000_000)  return g * 0.73;   // 800万以下: 約73%
+  if (g <= 10_000_000) return g * 0.71;   // 1000万以下: 約71%
+  if (g <= 12_000_000) return g * 0.69;   // 1200万以下: 約69%
+  if (g <= 15_000_000) return g * 0.66;   // 1500万以下: 約66%
+  if (g <= 20_000_000) return g * 0.62;   // 2000万以下: 約62%
+  return g * 0.58;                          // 2000万超: 約58%
+}
+
 // --- 年齢グループ -------------------------------------------------------------
 export function getAgeGroup(age) {
   const a = age ?? 25;
@@ -335,10 +356,13 @@ export function calculateSimulation(simulationSettings, assetData, lifeEvents, o
 
     const totalValue = Number(savings) + Number(regularInvestment) + Number(nisaInvestment) + Number(dryPowder);
     const realValue = inflationRate > 0 ? Math.round(totalValue / Math.pow(1 + inflationRate / 100, year)) : totalValue;
-    const peerAverage = 3500000 * Math.pow(1.065, year);
+    // ピア比較: BENCHMARKDATAの年齢帯別平均資産を使用（恣意的な成長式を廃止）
+    const simAge    = (overrides.startAge || 30) + year;
+    const ageGroup  = getAgeGroup(simAge);
+    const peerAverage = BENCHMARK_DATA[ageGroup]?.average ?? BENCHMARK_DATA['30s'].average;
     const diff = totalValue - peerAverage;
-    const outperformRate = ((totalValue / peerAverage) - 1) * 100;
-    const ratio = totalValue / peerAverage;
+    const outperformRate = peerAverage > 0 ? ((totalValue / peerAverage) - 1) * 100 : 0;
+    const ratio = peerAverage > 0 ? totalValue / peerAverage : 1;
     let percentile = 50 / Math.pow(ratio, 2);
     percentile = Math.max(0.1, Math.min(99, percentile));
 
@@ -445,7 +469,10 @@ export function getRecurringTargetDates(recurring, currentMonth) {
   let targetDates = [];
 
   if (recurrenceType === 'monthly-date') {
-    targetDates.push(`${currentMonth}-${String(recurring.day).padStart(2, '0')}`);
+    const [cy, cm] = currentMonth.split('-').map(Number);
+    const lastDay = new Date(cy, cm, 0).getDate();
+    const clampedDay = Math.min(recurring.day, lastDay);
+    targetDates.push(`${currentMonth}-${String(clampedDay).padStart(2, '0')}`);
   } else if (recurrenceType === 'monthly-weekday') {
     const [year, month] = currentMonth.split('-').map(Number);
     const weekdayMap = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
@@ -949,11 +976,15 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
 
       if (!isRetired) {
         // 現役フェーズ
-        const monthlyGross = (annualIncome * growthMult) / 12;
-        const monthlyNet   = monthlyGross * 0.8; // 手取り80%
+        const annualGross  = annualIncome * growthMult;
+        const monthlyGross = annualGross / 12;
+        // 手取りを年収帯別テーブルで計算（固定80%より精度UP）
+        const monthlyNet   = calcTakeHome(annualGross) / 12;
 
-        // 住宅コスト：ローン中は mp 分を deductAssets で払済、賃貸は生活費に含む
-        const livingCost = monthlyExpense;
+        // インフレ考慮の生活費（年率inflationRateで上昇）
+        const inflMult   = Math.pow(1 + (simSettings.inflationRate || 0) / 100, y);
+        const livingCost = monthlyExpense * inflMult;
+
         const invest     = Math.min(
           monthlyInvestment * growthMult,
           Math.max(0, monthlyNet - livingCost)
@@ -980,7 +1011,11 @@ export function calculateLifePlanSimulation(lifePlan, simSettings, assetData, li
         }
       } else {
         // リタイア後フェーズ
-        const cf = retirementMonthlyIncome - retirementMonthlyExpense;
+        // インフレ + 後期高齢（75歳以降）の医療費増加（+1.5万/月）を反映
+        const inflMult       = Math.pow(1 + (simSettings.inflationRate || 0) / 100, y);
+        const medicalExtra   = age >= 75 ? 15000 * Math.pow(inflMult, age - 75) : 0;
+        const adjExpense     = retirementMonthlyExpense * inflMult + medicalExtra;
+        const cf             = retirementMonthlyIncome - adjExpense;
         if (cf >= 0) {
           savings += cf;
         } else {
