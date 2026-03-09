@@ -60,7 +60,6 @@ export default function AppShell({ data }) {
   return (
     <div className={`min-h-screen ${theme.bg} pb-20 transition-colors duration-200`}>
 
-      
       <div
         className="sticky top-0 z-30 transition-colors duration-200"
         style={{
@@ -105,7 +104,6 @@ export default function AppShell({ data }) {
         </div>
       </div>
 
-      
       <div className="max-w-md mx-auto p-3">
         {activeTab === 'home'       && <HomeTab       {...tabProps} />}
         {activeTab === 'calendar'   && <CalendarTab   {...tabProps} />}
@@ -114,22 +112,18 @@ export default function AppShell({ data }) {
         {activeTab === 'settings'   && <SettingsTab   {...tabProps} />}
       </div>
 
-      
-      
       {/* 実装例: {!isPremium && <AdBanner />} */}
       {!isPremium && (
         <div></div>
       )}
 
-      
       {activeTab !== 'settings' && (
         <div className="fixed z-40" style={{ bottom: 'calc(env(safe-area-inset-bottom) + 72px)', right: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px' }}>
-          
+
           {fabOpen && (
             <div className="fixed inset-0 z-[-1]" onClick={() => setFabOpen(false)} />
           )}
 
-          
           {fabOpen && (
             <div className="flex flex-col items-end gap-2 animate-fadeIn">
               {[
@@ -161,7 +155,6 @@ export default function AppShell({ data }) {
             </div>
           )}
 
-          
           <button
             onClick={() => setFabOpen(v => !v)}
             style={{
@@ -183,7 +176,6 @@ export default function AppShell({ data }) {
         </div>
       )}
 
-      
       <div
         className="fixed bottom-0 left-0 right-0"
         style={{
@@ -211,7 +203,7 @@ export default function AppShell({ data }) {
                   paddingBottom: 2,
                 }}
               >
-                
+
                 <span style={{
                   position: 'absolute', top: 0,
                   left: '28%', right: '28%', height: 2,
@@ -241,7 +233,6 @@ export default function AppShell({ data }) {
         </div>
       </div>
 
-      
       {data.showAssetEditModal        && <AssetEditModal        {...tabProps} />}
       {data.showBudgetModal           && <BudgetModal           {...tabProps} />}
       {data.showCategoryModal         && <CategoryModal         {...tabProps} />}
