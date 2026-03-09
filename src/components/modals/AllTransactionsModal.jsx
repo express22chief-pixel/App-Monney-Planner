@@ -82,7 +82,7 @@ export default function AllTransactionsModal({
   return (
     <div className="fixed inset-0 z-50 flex flex-col animate-fadeIn" style={{ backgroundColor: darkMode ? '#0a0a0a' : '#f5f5f5' }}>
 
-      {/* ヘッ-ー */}
+      
       <div className={`flex items-center gap-3 px-4 pt-12 pb-3 ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border}`}>
         <button onClick={onClose} className={`w-8 h-8 flex items-center justify-center rounded-full ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'}`}>
           ‹
@@ -91,7 +91,7 @@ export default function AllTransactionsModal({
         <span className={`text-xs ${theme.textSecondary}`}>{filtered.length}件</span>
       </div>
 
-      {/* 検索バー */}
+      
       <div className={`px-4 py-2 ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border}`}>
         <input
           type="text"
@@ -102,7 +102,7 @@ export default function AllTransactionsModal({
         />
       </div>
 
-      {/* フィルタータブ */}
+      
       <div className={`flex gap-1.5 px-4 py-2 overflow-x-auto ${darkMode ? 'bg-neutral-900' : 'bg-white'} border-b ${theme.border}`} style={{ scrollbarWidth: 'none' }}>
         {FILTERS.map(f => (
           <button key={f.key}
@@ -116,7 +116,7 @@ export default function AllTransactionsModal({
         ))}
       </div>
 
-      {/* 取引リスト */}
+      
       <div className="flex-1 overflow-y-auto">
         {groups.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64">
@@ -126,20 +126,20 @@ export default function AllTransactionsModal({
         ) : (
           groups.map(({ ym, items }) => (
             <div key={ym}>
-              {/* 月ヘッ-ー */}
+              
               <div className={`flex items-center justify-between px-4 py-2 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-200/60'}`}>
                 <span className={`text-xs font-bold ${theme.textSecondary}`}>{formatYM(ym)}</span>
                 <span className={`text-xs ${theme.textSecondary}`}>
                   {items.filter(t => t.type === 'expense').reduce((s, t) => s + Math.abs(t.amount), 0).toLocaleString()}円支出
                 </span>
               </div>
-              {/* 取引行 */}
+              
               <div className={`${darkMode ? 'bg-neutral-900' : 'bg-white'} divide-y ${darkMode ? 'divide-neutral-800' : 'divide-neutral-100'}`}>
                 {items.map(t => (
                   <button key={t.id} onClick={() => { setEditingTransaction(t); onClose(); }}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${darkMode ? 'hover:bg-neutral-800/50' : 'hover:bg-neutral-50'}`}
                   >
-                    {/* アイコン */}
+                    
                     <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${
                       t.type === 'income' ? (darkMode ? 'bg-green-500/15' : 'bg-green-50') :
                       t.paymentMethod === 'credit' ? (darkMode ? 'bg-blue-500/15' : 'bg-blue-50') :
@@ -148,7 +148,7 @@ export default function AllTransactionsModal({
                     }`}>
                       {paymentIcon(t)}
                     </div>
-                    {/* テキスト */}
+                    
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
                         <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
@@ -172,7 +172,7 @@ export default function AllTransactionsModal({
                         )}
                       </div>
                     </div>
-                    {/* 金額 */}
+                    
                     <p className="text-sm font-bold tabular-nums shrink-0" style={{ color: t.amount >= 0 ? theme.green : theme.red }}>
                       {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
                     </p>

@@ -86,7 +86,7 @@ export default function TutorialModal(props) {
             <div className={`w-full max-w-md rounded-t-3xl animate-slideUp overflow-hidden`}
               style={{ backgroundColor: darkMode ? '#141414' : '#ffffff', paddingBottom: 'env(safe-area-inset-bottom)' }}>
 
-              {/* プログレスバー */}
+              
               <div className="flex gap-1 px-5 pt-5">
                 {slides.map((_, i) => (
                   <div key={i} className="flex-1 h-1 rounded-full overflow-hidden"
@@ -100,15 +100,15 @@ export default function TutorialModal(props) {
                 ))}
               </div>
 
-              {/* スライドコンテンツ */}
+              
               <div className="px-6 pt-6 pb-4">
-                {/* 絵文字アイコン */}
+                
                 <div className="w-16 h-16 rounded-lg flex items-center justify-center text-4xl mb-4"
                   style={{ backgroundColor: slide.color + '20' }}>
                   {slide.emoji}
                 </div>
 
-                {/* タイトル */}
+                
                 <p className={`text-xs font-bold uppercase tracking-widest mb-1`} style={{ color: slide.color }}>
                   {slide.subtitle}
                 </p>
@@ -119,7 +119,7 @@ export default function TutorialModal(props) {
                   {slide.desc}
                 </p>
 
-                {/* Tipsリスト */}
+                
                 {slide.tips && (
                   <div className="space-y-1.5 mb-4">
                     {slide.tips.map((tip, i) => (
@@ -175,7 +175,7 @@ export default function TutorialModal(props) {
                   </div>
                 )}
 
-                {/* コンセプト図 */}
+                
                 {slide.visual === 'concept' && (
                   <div className={`rounded-lg p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>一般的な家計簿 vs このアプリ</p>
@@ -200,7 +200,7 @@ export default function TutorialModal(props) {
                   </div>
                 )}
 
-                {/* キャッシュフロー図 */}
+                
                 {slide.visual === 'cashflow' && (
                   <div className={`rounded-lg p-4 mb-4 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                     <p className={`text-xs font-bold mb-3 text-center ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>クレカ払い ¥10,000 の場合</p>
@@ -232,7 +232,7 @@ export default function TutorialModal(props) {
                 )}
               </div>
 
-              {/* ボタン */}
+              
               <div className="flex gap-3 px-6 pb-6">
                 {tutorialPage > 0 && (
                   <button
@@ -254,7 +254,7 @@ export default function TutorialModal(props) {
                 </button>
               </div>
 
-              {/* スキップ */}
+              
               {!isLast && (
                 <button
                   onClick={() => setShowTutorial(false)}

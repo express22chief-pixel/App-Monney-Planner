@@ -50,7 +50,7 @@ export default function CardModal(props) {
         </div>
 
         <div className="space-y-4">
-          {/* カード名 */}
+          
           <div>
             <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>カード名</label>
             <input
@@ -62,7 +62,7 @@ export default function CardModal(props) {
             />
           </div>
 
-          {/* 締め日・引き落とし月 */}
+          
           <div className="flex gap-3">
             <div className="flex-1">
               <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>締め日</label>
@@ -88,7 +88,7 @@ export default function CardModal(props) {
             </div>
           </div>
 
-          {/* 引き落とし日 */}
+          
           <div>
             <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>引き落とし日</label>
             <div className="flex items-center gap-2">
@@ -105,7 +105,7 @@ export default function CardModal(props) {
             </div>
           </div>
 
-          {/* 土日祝 */}
+          
           <div>
             <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>引き落とし日が土日祝の場合</label>
             <select
@@ -119,7 +119,7 @@ export default function CardModal(props) {
             </select>
           </div>
 
-          {/* -- PayPay連携設定 --------------------------------------- */}
+          
           <div
             style={{
               padding: '12px 14px',
@@ -148,7 +148,7 @@ export default function CardModal(props) {
                   </div>
                 </div>
               </div>
-              {/* トグル */}
+              
               <div style={{
                 width: 42, height: 24, borderRadius: 12, position: 'relative',
                 backgroundColor: isPayPayLinked ? '#FF4B4B' : (darkMode ? '#404040' : '#d1d5db'),

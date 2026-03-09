@@ -53,7 +53,7 @@ export default function TemplateModal({
     <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 animate-fadeIn" onClick={() => setShowTemplateModal(false)}>
       <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[80vh] overflow-y-auto animate-slideUp`} onClick={e => e.stopPropagation()}>
 
-        {/* ヘッ-ー */}
+        
         <div className={`sticky top-0 flex items-center justify-between px-5 pt-4 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
           <h2 className={`text-lg font-bold ${theme.text}`}>⚡ テンプレから追加</h2>
           <button onClick={() => setShowTemplateModal(false)} className={`w-8 h-8 flex items-center justify-center rounded-full ${darkMode ? 'bg-neutral-800 text-neutral-300' : 'bg-neutral-100 text-neutral-600'} text-sm font-bold`}>✕</button>

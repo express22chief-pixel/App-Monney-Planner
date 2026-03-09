@@ -58,7 +58,7 @@ export default function CloseMonthModal(props) {
         borderRadius: '20px 20px 0 0', maxHeight: '92vh',
         display: 'flex', flexDirection: 'column',
       }}>
-        {/* ヘッダー */}
+        
         <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
           <p style={{ fontSize: 17, fontWeight: 800, color: txt }}>
             {formatYM(targetMonth)}の収支を確定
@@ -68,7 +68,7 @@ export default function CloseMonthModal(props) {
 
         <div style={{ overflowY: 'auto', flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-          {/* PL / CF サマリー */}
+          
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {[
               { label: 'PL（発生ベース）', val: tb?.plBalance ?? 0 },
@@ -83,7 +83,7 @@ export default function CloseMonthModal(props) {
             ))}
           </div>
 
-          {/* 投資計画不足の警告 */}
+          
           {budgetAnalysis?.investment?.needsWithdrawal && (!targetMonth) && (
             <div style={{ padding: '12px 14px', background: darkMode ? '#2b1a08' : '#fffbeb', borderRadius: 12, border: `1px solid ${darkMode ? '#78350f' : '#fde68a'}` }}>
               <p style={{ fontSize: 12, fontWeight: 700, color: orange, marginBottom: 4 }}>⚠ 投資計画のお知らせ</p>
@@ -94,9 +94,9 @@ export default function CloseMonthModal(props) {
             </div>
           )}
 
-          {/* 配分スライダー */}
+          
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* 投資 */}
+            
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -118,7 +118,7 @@ export default function CloseMonthModal(props) {
               />
             </div>
 
-            {/* 待機資金 */}
+            
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
@@ -141,7 +141,7 @@ export default function CloseMonthModal(props) {
             </div>
           </div>
 
-          {/* 配分サマリー */}
+          
           <div style={{ background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12, padding: '12px 14px' }}>
             {[
               { label: '貯金へ',    val: closeMonthData.savedAmount,     color: blue   },
@@ -165,7 +165,7 @@ export default function CloseMonthModal(props) {
             )}
           </div>
 
-          {/* ✨ 将来影響インサイト */}
+          
           {cfBalance > 0 && (
             <div style={{
               padding: '14px 16px',
@@ -179,7 +179,7 @@ export default function CloseMonthModal(props) {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {/* 現在の配分での将来価値 */}
+                
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: 11, color: sub }}>現在の配分（投資¥{closeMonthData.investAmount.toLocaleString()}）なら</span>
                   <span style={{ fontSize: 14, fontWeight: 800, color: blue, fontVariantNumeric: 'tabular-nums' }}>
@@ -187,7 +187,7 @@ export default function CloseMonthModal(props) {
                   </span>
                 </div>
 
-                {/* 全額投資した場合との比較 */}
+                
                 {cfBalance > closeMonthData.investAmount && (
                   <>
                     <div style={{ height: 1, background: bdr }} />
@@ -211,7 +211,7 @@ export default function CloseMonthModal(props) {
 
         </div>
 
-        {/* フッター */}
+        
         <div style={{ padding: '14px 20px', flexShrink: 0, borderTop: `1px solid ${bdr}`, display: 'flex', gap: 10 }}>
           <button onClick={() => setShowCloseMonthModal(false)} style={{
             flex: 1, padding: '13px', background: darkMode ? '#252525' : '#f2f2f7',

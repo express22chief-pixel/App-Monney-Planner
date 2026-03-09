@@ -23,7 +23,7 @@ export default function DateTransactionsModal(props) {
         <div className="fixed inset-0 bg-black/60 flex items-end justify-center z-50 animate-fadeIn" onClick={() => { setShowDateTransactionsModal(false); setSelectedDate(null); }}>
           <div className={`${theme.cardGlass} rounded-t-3xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-slideUp`} onClick={e => e.stopPropagation()}>
 
-            {/* ヘッ-ー */}
+            
             <div className={`sticky top-0 flex items-center justify-between px-5 pt-5 pb-3 ${darkMode ? 'bg-neutral-900/95' : 'bg-white/95'} backdrop-blur-md border-b ${theme.border}`}>
               <div>
                 <p className={`text-xs font-bold ${theme.textSecondary} uppercase tracking-widest`}>履歴</p>
@@ -37,7 +37,7 @@ export default function DateTransactionsModal(props) {
 
             <div className="px-5 pb-8 pt-4 space-y-4">
 
-              {/* 既存の取引-覧 */}
+              
               {(() => {
                 if (dayTxns.length === 0) return (
                   <p className={`text-sm text-center py-4 ${theme.textSecondary}`}>この日の取引はありません</p>
@@ -64,7 +64,7 @@ export default function DateTransactionsModal(props) {
 
                 return (
                   <div className="space-y-2">
-                    {/* クレジット引き落とし（グループ化） */}
+                    
                     {settlementRows.map(g => {
                       const groupKey = `settle-${g.key}`;
                       const isExpanded = !!expandedCreditGroups[groupKey];
@@ -105,7 +105,7 @@ export default function DateTransactionsModal(props) {
                               )}
                             </div>
                           </div>
-                          {/* 内訳展開 */}
+                          
                           {canExpand && isExpanded && (
                             <div className="animate-fadeIn" style={{ borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
                               {g.items.map(t => (
@@ -141,7 +141,7 @@ export default function DateTransactionsModal(props) {
                       );
                     })}
 
-                    {/* -常の取引 */}
+                    
                     {normalTxns.map((t) => (
                       <button
                         key={t.id}
@@ -184,10 +184,10 @@ export default function DateTransactionsModal(props) {
                 );
               })()}
 
-              {/* 区切り */}
+              
               <div className={`border-t ${theme.border}`} />
 
-              {/* この日に新規取引を追加するフォーム */}
+              
               <div>
                 <p className={`text-xs font-bold ${theme.textSecondary} uppercase tracking-widest mb-3`}>この日に追加</p>
                 <div className="space-y-2">

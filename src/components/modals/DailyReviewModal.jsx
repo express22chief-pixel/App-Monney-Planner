@@ -42,7 +42,7 @@ export default function DailyReviewModal(props) {
                 </div>
               )}
 
-              {/* 追加フォーム */}
+              
               {dailyReviewAddForm ? (
                 <div className={`rounded-lg p-4 space-y-3 ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'} mb-4`}>
                   <p className={`text-xs font-bold ${theme.text}`}>前日分を追加</p>

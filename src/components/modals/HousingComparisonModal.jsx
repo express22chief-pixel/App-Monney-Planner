@@ -140,7 +140,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
           ))}
         </div>
 
-        {/* 直接入力 */}
+        
         <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 12, color: sub }}>または直接入力:</span>
           <input
@@ -292,7 +292,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
       <div style={{ width: '100%', maxWidth: 480, background: bg, borderRadius: '20px 20px 0 0', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}>
 
-        {/* ヘッダー */}
+        
         <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div>
@@ -304,7 +304,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
             </button>
           </div>
 
-          {/* ステップインジケーター */}
+          
           <div style={{ display: 'flex', gap: 3, marginBottom: 18 }}>
             {STEPS.map((s, i) => (
               <div key={s.id} onClick={() => i < step && setStep(i)} style={{ flex: 1, cursor: i < step ? 'pointer' : 'default' }}>
@@ -317,12 +317,12 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
           </div>
         </div>
 
-        {/* コンテンツ */}
+        
         <div style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px' }}>
           {stepContent[step]}
         </div>
 
-        {/* フッター */}
+        
         <div style={{ padding: '14px 20px', flexShrink: 0, display: 'flex', gap: 8, borderTop: `1px solid ${darkMode ? '#2a2a2a' : '#f3f4f6'}` }}>
           {step > 0 && (
             <button onClick={() => setStep(s => s - 1)}
