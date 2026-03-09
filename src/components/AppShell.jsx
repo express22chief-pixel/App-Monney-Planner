@@ -104,6 +104,29 @@ export default function AppShell({ data }) {
         </div>
       </div>
 
+      {data.isDemoMode && (
+        <div style={{
+          background: 'rgba(0,229,255,0.08)',
+          borderBottom: '1px solid rgba(0,229,255,0.2)',
+          padding: '8px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 13 }}>🎮</span>
+            <span style={{ fontSize: 11, color: '#00e5ff', fontWeight: 600 }}>デモモード</span>
+            <span style={{ fontSize: 10, color: theme.subHex }}>架空データで閲覧中</span>
+          </div>
+          <button
+            onClick={() => data.exitDemo()}
+            style={{
+              padding: '5px 12px', borderRadius: 8, border: '1px solid rgba(0,229,255,0.4)',
+              background: 'transparent', color: '#00e5ff',
+              fontSize: 11, fontWeight: 700, cursor: 'pointer',
+            }}
+          >自分のデータで始める</button>
+        </div>
+      )}
+
       <div className="max-w-md mx-auto p-3">
         {activeTab === 'home'       && <HomeTab       {...tabProps} />}
         {activeTab === 'calendar'   && <CalendarTab   {...tabProps} />}
