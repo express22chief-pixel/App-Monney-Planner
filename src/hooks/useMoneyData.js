@@ -16,6 +16,10 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { load, clearAll } from '../services/storage';
 import { usePersistence } from './usePersistence';
 import {
+  DEMO_USER_INFO, DEMO_CREDIT_CARDS, DEMO_ASSET_DATA, DEMO_TRANSACTIONS,
+  DEMO_MONTHLY_HISTORY, DEMO_LIFE_PLAN, DEMO_SIMULATION_SETTINGS, DEMO_MONTHLY_BUDGET,
+} from '../demoData';
+import {
   DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES,
   buildCategories, getSettlementDate, calculateMonthlyBalance,
   getUnclosedMonths, calculateBudgetAnalysis, calculateCategoryExpenses,
@@ -57,6 +61,7 @@ export function useMoneyData() {
   // STATE: モーダル表示フラグ
   // ----------------------------------------------------------------------------
   const [showSettings, setShowSettings]                   = useState(false);
+  const [isDemoMode, setIsDemoMode]                       = useState(false);
   const [showOnboarding, setShowOnboarding]               = useState(() => !load('userInfo', null));
   const [showTutorial, setShowTutorial]                   = useState(false);
   const [tutorialPage, setTutorialPage]                   = useState(0);
@@ -113,13 +118,7 @@ export function useMoneyData() {
   // ----------------------------------------------------------------------------
   const [userInfo, setUserInfo] = useState(() => load('userInfo', null));
 
-  const [transactions, setTransactions] = useState(() =>
-    load('transactions', [
-      { id: 1, date: '2026-02-14', category: '食費',  amount: -1200,  type: 'expense', paymentMethod: 'credit', settled: false },
-      { id: 2, date: '2026-02-13', category: '交通費', amount: -500,   type: 'expense', paymentMethod: 'cash',   settled: true  },
-      { id: 3, date: '2026-02-10', category: '給料',   amount: 250000, type: 'income',  settled: true            },
-    ])
-  );
+  const [transactions, setTransactions] = useState(() => load('transactions', []));
 
   const [assetData, setAssetData] = useState(() =>
     load('assetData', { savings: 500000, investments: 300000, nisa: 0, dryPowder: 0 })
@@ -776,8 +775,36 @@ export function useMoneyData() {
     setShowCloseMonthModal(true);
   };
 
+  const startDemo = () => {
+    setIsDemoMode(true);
+    setUserInfo(DEMO_USER_INFO);
+    setCreditCards(DEMO_CREDIT_CARDS);
+    setAssetData(DEMO_ASSET_DATA);
+    setTransactions(DEMO_TRANSACTIONS);
+    setMonthlyHistory(DEMO_MONTHLY_HISTORY);
+    setLifePlan(prev => ({ ...prev, ...DEMO_LIFE_PLAN }));
+    setSimulationSettings(prev => ({ ...prev, ...DEMO_SIMULATION_SETTINGS }));
+    setMonthlyBudget(DEMO_MONTHLY_BUDGET);
+    setShowOnboarding(false);
+  };
+
+  const exitDemo = () => {
+    setIsDemoMode(false);
+    setUserInfo(null);
+    setCreditCards([]);
+    setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
+    setTransactions([]);
+    setMonthlyHistory({});
+    setShowOnboarding(true);
+  };
+
   const closeMonth = (targetMonth) => {
     const tMonth    = targetMonth || currentMonth;
+    if (monthlyHistory[tMonth]) {
+      console.warn('closeMonth: already closed', tMonth);
+      setShowCloseMonthModal(false);
+      return;
+    }
     const tBalance  = calculateMonthlyBalance(tMonth, transactions, recurringTransactions);
     const cfBalance = isNaN(tBalance.cfBalance) ? 0 : tBalance.cfBalance;
     const plannedInvestment = simulationSettings.monthlyInvestment;
@@ -955,6 +982,7 @@ export function useMoneyData() {
     expandedCreditGroups, setExpandedCreditGroups,
     // -- モーダル ---------------------------------------------------------------
     showSettings, setShowSettings,
+    isDemoMode, setIsDemoMode, startDemo, exitDemo,
     showOnboarding, setShowOnboarding,
     showTutorial, setShowTutorial,
     tutorialPage, setTutorialPage,
