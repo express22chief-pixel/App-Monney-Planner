@@ -52,7 +52,7 @@ function SectionTitle({ children, action, collapsible, expanded, onToggle, sub =
 }
 
 // カスタムツールチップ
-function CustomTooltip({ active, payload, label, retirementAge }) {
+function CustomTooltip({ active, payload, label, retirementAge, red }) {
   if (!active || !payload?.length) return null;
   const fmt = (v) => {
     const abs = Math.abs(v);
@@ -363,7 +363,7 @@ export default function SimulationTab(props) {
               />
             )}
 
-            <Tooltip content={<CustomTooltip retirementAge={retirementAge} />} />
+            <Tooltip content={<CustomTooltip retirementAge={retirementAge} red={red} />} />
 
             <ReferenceLine yAxisId="left" y={0} stroke={darkMode ? '#444' : '#d1d5db'} strokeDasharray="2 2" strokeOpacity={0.8} />
 
