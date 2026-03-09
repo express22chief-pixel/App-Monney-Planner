@@ -57,7 +57,7 @@ export default function CalendarTab(props) {
                 </button>
               </div>
 
-              {/* 検索・フィルター */}
+              
               <div className="flex flex-col gap-2 mb-3">
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                   <span className={`text-xs ${theme.textSecondary}`}>🔍</span>
@@ -174,7 +174,7 @@ export default function CalendarTab(props) {
               </div>
             </div>
 
-            {/* フィルター適-時：検索結果リスト */}
+            
             {(historySearch || historyCategory !== 'all') && (() => {
               const filtered = transactions.filter(t => {
                 const matchMonth = t.date.startsWith(selectedMonth);
@@ -232,7 +232,7 @@ export default function CalendarTab(props) {
               );
             })()}
 
-            {/* 未締め月の締めるボタン（履歴タブ） */}
+            
             {!monthlyHistory[selectedMonth] && calculateMonthlyBalance(selectedMonth).cfBalance !== 0 && selectedMonth < currentMonth && (
               <button
                 onClick={() => openCloseMonthModal(selectedMonth)}

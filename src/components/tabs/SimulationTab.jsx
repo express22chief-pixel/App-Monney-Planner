@@ -222,9 +222,7 @@ export default function SimulationTab(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      {/* ==================================================================
-          1. ステータスバナー
-      ================================================================== */}
+      
       <div style={{ background: card, borderRadius: 8, overflow: 'hidden' }}>
         <button onClick={() => setSecStatus(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -299,7 +297,7 @@ export default function SimulationTab(props) {
         </div>}
       </div>
 
-      {/* -- リタイア時/最終 サマリーピル ------------------------------- */}
+      
       <div style={{ display: 'flex', gap: 8 }}>
         <StatPill label={`RETIRE · ${retirementAge}歳`} value={fmtMan(retireWorth)}
           color={blue} bg={darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(0,229,255,0.04)'} />
@@ -307,9 +305,7 @@ export default function SimulationTab(props) {
           color={finalWorth > 0 ? green : red} bg={darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} />
       </div>
 
-      {/* ==================================================================
-          2. タイムライングラフ
-      ================================================================== */}
+      
       <div style={{ background: card, borderRadius: 8 }}>
         <button onClick={() => setSecTimeline(v => !v)} style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -345,7 +341,7 @@ export default function SimulationTab(props) {
               tickFormatter={v => `${v}歳`}
               ticks={Array.from({ length: Math.ceil((lifeExpectancy - currentAge) / 5) + 1 }, (_, i) => currentAge + i * 5).filter(a => a <= lifeExpectancy)}
             />
-            {/* 左軸：純資産（メイン） */}
+            
             <YAxis yAxisId="left" tick={{ fontSize: 10, fill: sub }}
               tickFormatter={v => {
                 if (v === 0) return '0';
@@ -355,7 +351,7 @@ export default function SimulationTab(props) {
               }}
               width={48}
             />
-            {/* 右軸：不動産・負債残高（サブ） */}
+            
             {(byAge.some(r => r.propertyValue > 0) || byAge.some(r => r.loanBalance > 0)) && (
               <YAxis yAxisId="right" orientation="right"
                 tick={{ fontSize: 9, fill: sub }} tickLine={false} axisLine={false}
@@ -372,27 +368,27 @@ export default function SimulationTab(props) {
 
             <Tooltip content={<CustomTooltip retirementAge={retirementAge} />} />
 
-            {/* ゼロライン */}
+            
             <ReferenceLine yAxisId="left" y={0} stroke={darkMode ? '#444' : '#d1d5db'} strokeDasharray="2 2" strokeOpacity={0.8} />
 
-            {/* リタイア縦線 */}
+            
             <ReferenceLine yAxisId="left" x={retirementAge} stroke={amber} strokeDasharray="4 3" strokeWidth={1.5}
               label={{ value: 'リタイア', position: 'insideTopRight', fontSize: 9, fill: amber, dy: -2 }} />
 
-            {/* 目標資産ライン */}
+            
             {(lifePlan.retirementTargetAmount ?? 30000000) > 0 && (
               <ReferenceLine yAxisId="left" y={lifePlan.retirementTargetAmount ?? 30000000}
                 stroke={green} strokeDasharray="5 3" strokeWidth={1.5} strokeOpacity={0.8}
                 label={{ value: '目標', position: 'insideTopRight', fontSize: 9, fill: green }} />
             )}
 
-            {/* ライフイベントピン */}
+            
             {eventPins.filter(ev => ev.enabled !== false).map(ev => (
               <ReferenceLine yAxisId="left" key={ev.id} x={ev.age} stroke={sub} strokeDasharray="2 3" strokeWidth={1}
                 label={{ value: ev.icon || '📌', position: 'top', fontSize: 11 }} />
             ))}
 
-            {/* 不動産エリア（右軸） */}
+            
             {byAge.some(r => r.propertyValue > 0) && (
               <Area yAxisId="right" type="monotone" dataKey="不動産"
                 stroke={amber} strokeWidth={2}
@@ -401,7 +397,7 @@ export default function SimulationTab(props) {
               />
             )}
 
-            {/* 負債面積（右軸、半透明） */}
+            
             {byAge.some(r => r.loanBalance > 0) && (
               <Area yAxisId="right" type="monotone" dataKey="負債残高"
                 stroke={red} strokeWidth={1.5} strokeDasharray="5 2"
@@ -409,14 +405,14 @@ export default function SimulationTab(props) {
               />
             )}
 
-            {/* 純資産メインライン（左軸・最前面） */}
+            
             <Area yAxisId="left" type="monotone" dataKey="純資産" stroke={blue} strokeWidth={2.5}
               fill="url(#gradNet)" dot={false} activeDot={{ r: 4, fill: blue }} />
 
           </ComposedChart>
         </ResponsiveContainer>
 
-        {/* 凡例 */}
+        
         <div style={{ display: 'flex', gap: 14, marginTop: 8, paddingLeft: 8 }}>
           {[
             { color: blue,  label: '純資産（左軸）' },
@@ -438,9 +434,7 @@ export default function SimulationTab(props) {
         </div>)}
       </div>
 
-      {/* ==================================================================
-          3. 家計実績インサイト
-      ================================================================== */}
+      
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
         <div style={{ background: card, borderRadius: 8 }}>
           <div style={{ padding: '14px 16px', borderBottom: secInsight ? `1px solid ${bdr}` : 'none' }}><SectionTitle
@@ -452,7 +446,7 @@ export default function SimulationTab(props) {
           {secInsight && (
           <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px' }}>
 
-            {/* 今月の過不足 → 将来影響 */}
+            
             {monthlyGapImpact && (
               <div style={{
                 padding: '12px 14px', borderRadius: 12,
@@ -484,7 +478,7 @@ export default function SimulationTab(props) {
               </div>
             )}
 
-            {/* 直近3ヶ月平均 → ライフプランとの乖離 */}
+            
             {recentMonthlyAverages && (() => {
               const avgExp = recentMonthlyAverages.avgExpense;
               const planExp = lifePlan.monthlyExpense;
@@ -536,7 +530,7 @@ export default function SimulationTab(props) {
               );
             })()}
 
-            {/* 実績ベースの収入成長率 */}
+            
             {incomeGrowthEstimate !== null && (() => {
               const planRate = lifePlan.incomeGrowthRate ?? 1;
               const diff = incomeGrowthEstimate - planRate;
@@ -569,9 +563,7 @@ export default function SimulationTab(props) {
         </div>
       )}
 
-      {/* ==================================================================
-          4. ライフプラン調整パネル（インライン編集）
-      ================================================================== */}
+      
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <SectionTitle
           collapsible expanded={secLifePlan} onToggle={() => setSecLifePlan(v => !v)}
@@ -590,7 +582,7 @@ export default function SimulationTab(props) {
         </SectionTitle></div>
         {secLifePlan && (<div className="animate-fadeIn" style={{ padding: '0 16px 16px' }}>
 
-        {/* -- 現役フェーズ -------------------------------------- */}
+        
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>現役フェーズ</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -621,11 +613,11 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
 
-        {/* -- リタイア ------------------------------------------ */}
+        
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>リタイア</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* リタイア年齢 - セグメント */}
+            
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <span style={{ fontSize: 11, color: sub }}>リタイア年齢</span>
@@ -643,7 +635,7 @@ export default function SimulationTab(props) {
                 ))}
               </div>
             </div>
-            {/* 目標資産 */}
+            
             {[
               { key: 'retirementTargetAmount', label: 'リタイア目標資産', min: 5000000, max: 200000000, step: 1000000,
                 fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万` },
@@ -668,7 +660,7 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
 
-        {/* -- 老後 ---------------------------------------------- */}
+        
         <div style={{ marginBottom: 14 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>老後の収支</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -693,7 +685,7 @@ export default function SimulationTab(props) {
               </div>
             ))}
           </div>
-          {/* 老後収支サマリー */}
+          
           {(() => {
             const cf = (lifePlan.retirementMonthlyIncome ?? 0) - (lifePlan.retirementMonthlyExpense ?? 0);
             return (
@@ -709,7 +701,7 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 12 }} />
 
-        {/* -- 投資設定ショートカット -------------------------- */}
+        
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
             { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 200000, step: 5000,
@@ -735,9 +727,7 @@ export default function SimulationTab(props) {
         </div>)}
       </div>
 
-      {/* ==================================================================
-          4. ライフイベント（デフォルトテンプレート＋インライン調整）
-      ================================================================== */}
+      
       <div style={{ background: card, borderRadius: 16 }}>
         <button onClick={() => setSecLifeEvent(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -770,9 +760,7 @@ export default function SimulationTab(props) {
       /></div>}
       </div>
 
-            {/* ==================================================================
-          5. フェーズ別内訳（リタイア前後の資産構成）
-      ================================================================== */}
+            
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <SectionTitle collapsible expanded={secPhaseSnap} onToggle={() => setSecPhaseSnap(v => !v)}>フェーズ別スナップショット</SectionTitle>
         {secPhaseSnap && <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -795,7 +783,7 @@ export default function SimulationTab(props) {
             const hasLoan = snap.loanBalance > 0;
             return (
               <div key={age} style={{ padding: '12px 14px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12 }}>
-                {/* ヘッダー行 */}
+                
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: txt }}>{label}</span>
                   <div style={{ textAlign: 'right' }}>
@@ -810,14 +798,14 @@ export default function SimulationTab(props) {
                   </div>
                 </div>
 
-                {/* 資産バー */}
+                
                 <div style={{ height: 5, borderRadius: 3, overflow: 'hidden', display: 'flex', background: darkMode ? '#333' : '#e5e7eb' }}>
                   {bars.map(b => (
                     <div key={b.label} style={{ width: `${b.val/total*100}%`, background: b.color }} />
                   ))}
                 </div>
 
-                {/* 凡例 + 負債 */}
+                
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 6, justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                     {bars.map(b => (
@@ -838,9 +826,7 @@ export default function SimulationTab(props) {
         </div>}
       </div>
 
-      {/* ==================================================================
-          6. 購入 vs 賃貸 比較
-      ================================================================== */}
+      
       {housingParams && housingComparison && (() => {
         const hc      = housingComparison;
         const yrs     = housingParams.compareYears ?? 30;
@@ -874,7 +860,7 @@ export default function SimulationTab(props) {
             </SectionTitle>
             {secHousing && (<div className="animate-fadeIn">
 
-            {/* 購入年齢バナー */}
+            
             <div style={{
               marginBottom: 12, padding: '10px 12px',
               background: darkMode ? '#0d1a2b' : '#eff6ff',
@@ -888,7 +874,7 @@ export default function SimulationTab(props) {
               </p>
             </div>
 
-            {/* 勝敗バナー */}
+            
             <div style={{
               padding: '14px 16px', borderRadius: 12, marginBottom: 12,
               background: isBuyWin
@@ -907,7 +893,7 @@ export default function SimulationTab(props) {
               </p>
             </div>
 
-            {/* コスト比較グリッド */}
+            
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[
                 { icon: '🏠', label: '購入', totalCost: buyTotal,  endAsset: buyEnd,  color: blue,      scenarios: hc.buyScenarios?.length },
@@ -935,7 +921,7 @@ export default function SimulationTab(props) {
               ))}
             </div>
 
-            {/* 月次コスト比較 */}
+            
             {(() => {
               const loanAmt = (housingParams.propertyPrice||0) - (housingParams.downPayment||0);
               const monthlyLoan = loanAmt > 0
@@ -972,7 +958,7 @@ export default function SimulationTab(props) {
         );
       })()}
 
-      {/* -- モーダル ---------------------------------------------------- */}
+      
       {showLifePlanSettings && (
         <LifePlanSettingsModal
           lifePlan={lifePlan} setLifePlan={setLifePlan}
