@@ -164,7 +164,7 @@ export default function CloseMonthModal(props) {
             <div style={{
               padding: '14px 16px',
               background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff',
-              borderRadius: 12, border: `1px solid ${darkMode ? 'rgba(10,132,255,0.3)' : '#bfdbfe'}``,
+              borderRadius: 12, border: `1px solid ${darkMode ? 'rgba(10,132,255,0.3)' : '#bfdbfe'}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                 <TrendingUp size={14} color={blue} />
