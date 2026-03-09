@@ -117,7 +117,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
 
   const stepContent = [
 
-    // ── STEP 0: 購入時期 ─────────────────────────────────────────────
+    // -- STEP 0: 購入時期 ---------------------------------------------
     <div key="when" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={{ padding: '16px', background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff', borderRadius: 12 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: blue, marginBottom: 4 }}>📅 いつ購入する予定ですか？</p>
@@ -171,7 +171,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       </div>
     </div>,
 
-    // ── STEP 1: 物件 ─────────────────────────────────────────────────
+    // -- STEP 1: 物件 -------------------------------------------------
     <div key="property" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <NumInput darkMode={darkMode} label="物件価格" value={params.propertyPrice} onChange={v => set('propertyPrice', v)}
         hint={`頭金 ¥${params.downPayment.toLocaleString()} → 借入 ¥${loanAmount.toLocaleString()}`} />
@@ -189,7 +189,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
         options={[{value:'-1',label:'下落(-1%)'},{value:'0',label:'横ばい'},{value:'1',label:'上昇(+1%)'}]} />
     </div>,
 
-    // ── STEP 2: ローン ───────────────────────────────────────────────
+    // -- STEP 2: ローン -----------------------------------------------
     <div key="loan" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ padding: '12px 16px', background: darkMode ? 'rgba(10,132,255,0.1)' : '#eff6ff', borderRadius: 12 }}>
         <p style={{ fontSize: 11, color: blue }}>借入額</p>
@@ -208,7 +208,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       )}
     </div>,
 
-    // ── STEP 3: ランニングコスト ────────────────────────────────────
+    // -- STEP 3: ランニングコスト ------------------------------------
     <div key="running" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <NumInput darkMode={darkMode} label="管理費・修繕積立（月額）" value={params.managementFee} onChange={v => set('managementFee', v)}
         hint="マンション：15,000〜30,000円が目安。戸建は0円でOK" />
@@ -227,7 +227,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       </div>
     </div>,
 
-    // ── STEP 4: 賃貸 ─────────────────────────────────────────────────
+    // -- STEP 4: 賃貸 -------------------------------------------------
     <div key="rent" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <NumInput darkMode={darkMode} label="月額家賃" value={params.monthlyRent} onChange={v => set('monthlyRent', v)}
         hint="購入予定物件と同等の賃貸相場を入力" />
@@ -262,7 +262,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       </div>
     </div>,
 
-    // ── STEP 5: 確認 ─────────────────────────────────────────────────
+    // -- STEP 5: 確認 -------------------------------------------------
     <div key="summary" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ padding: '14px 16px', background: darkMode ? 'rgba(10,214,100,0.1)' : '#ecfdf5', borderRadius: 12 }}>
         <p style={{ fontSize: 13, fontWeight: 800, color: green, marginBottom: 10 }}>設定内容の確認</p>

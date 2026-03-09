@@ -101,7 +101,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
         <div style={{ overflowY: 'auto', flex: 1, padding: '20px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24, color: txt }}>
 
-            {/* ── 現役フェーズ ──────────────────────────────────────── */}
+            {/* -- 現役フェーズ ---------------------------------------- */}
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>現役フェーズ</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -125,7 +125,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            {/* ── リタイア設定 ──────────────────────────────────────── */}
+            {/* -- リタイア設定 ---------------------------------------- */}
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -142,7 +142,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            {/* ── リタイア目標 ────────────────────────────────────────── */}
+            {/* -- リタイア目標 ------------------------------------------ */}
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>リタイア目標資産</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -157,7 +157,7 @@ export default function LifePlanSettingsModal({ lifePlan, setLifePlan, onClose, 
 
             <div style={{ height: 1, background: bdr }} />
 
-            {/* ── 老後収支 ──────────────────────────────────────────── */}
+            {/* -- 老後収支 -------------------------------------------- */}
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: sub, marginBottom: 14 }}>老後の収支</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
