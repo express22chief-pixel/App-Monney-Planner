@@ -62,6 +62,7 @@ export function useMoneyData() {
   // ----------------------------------------------------------------------------
   const [showSettings, setShowSettings]                   = useState(false);
   const [isDemoMode, setIsDemoMode]                       = useState(false);
+  const [isDemoTour, setIsDemoTour]                       = useState(false);
   const [showOnboarding, setShowOnboarding]               = useState(() => !load('userInfo', null));
   const [showTutorial, setShowTutorial]                   = useState(false);
   const [tutorialPage, setTutorialPage]                   = useState(0);
@@ -777,6 +778,7 @@ export function useMoneyData() {
 
   const startDemo = () => {
     setIsDemoMode(true);
+    setIsDemoTour(true);
     setUserInfo(DEMO_USER_INFO);
     setCreditCards(DEMO_CREDIT_CARDS);
     setAssetData(DEMO_ASSET_DATA);
@@ -790,6 +792,7 @@ export function useMoneyData() {
 
   const exitDemo = () => {
     setIsDemoMode(false);
+    setIsDemoTour(false);
     setUserInfo(null);
     setCreditCards([]);
     setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
@@ -982,7 +985,7 @@ export function useMoneyData() {
     expandedCreditGroups, setExpandedCreditGroups,
     // -- モーダル ---------------------------------------------------------------
     showSettings, setShowSettings,
-    isDemoMode, setIsDemoMode, startDemo, exitDemo,
+    isDemoMode, setIsDemoMode, isDemoTour, setIsDemoTour, startDemo, exitDemo,
     showOnboarding, setShowOnboarding,
     showTutorial, setShowTutorial,
     tutorialPage, setTutorialPage,
