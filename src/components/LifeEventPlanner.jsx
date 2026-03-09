@@ -70,11 +70,11 @@ export default function LifeEventPlanner({
         opacity: ev.enabled ? 1 : 0.65,
         transition: 'all 0.2s',
       }}>
-        {/* -- ヘッダー行 -- */}
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', cursor: 'pointer' }}
           onClick={() => ev.enabled && setOpen(v => !v)}>
 
-          {/* ON/OFFトグル */}
+          
           <button
             onClick={(e) => { e.stopPropagation(); updateEvent(ev.id, { enabled: !ev.enabled }); }}
             style={{
@@ -104,7 +104,7 @@ export default function LifeEventPlanner({
             )}
           </div>
 
-          {/* 金額バッジ */}
+          
           {ev.enabled && !isHousing && ev.amount > 0 && (
             <span style={{ fontSize: 12, fontWeight: 700, color: _red, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
               -{fmtMan(ev.amount)}
@@ -126,11 +126,11 @@ export default function LifeEventPlanner({
           )}
         </div>
 
-        {/* -- 展開パネル -- */}
+        
         {open && ev.enabled && (
           <div style={{ padding: '0 14px 14px', borderTop: `1px solid ${bdr}`, paddingTop: 12 }}>
 
-            {/* 住居：選択肢ボタン */}
+            
             {isHousing && (
               <div style={{ marginBottom: 12 }}>
                 <p style={{ fontSize: 10, color: sub, marginBottom: 6, fontWeight: 600 }}>住居スタイルを選択</p>
@@ -171,7 +171,7 @@ export default function LifeEventPlanner({
               </div>
             )}
 
-            {/* 発生年齢スライダー */}
+            
             {(!isHousing || isBuy) && (
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -193,7 +193,7 @@ export default function LifeEventPlanner({
               </div>
             )}
 
-            {/* 金額スライダー（住居購入以外） */}
+            
             {!isHousing && ev.amountRange && (
               <div style={{ marginBottom: 10 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
@@ -214,7 +214,7 @@ export default function LifeEventPlanner({
               </div>
             )}
 
-            {/* ヒント */}
+            
             {ev.hint && (
               <p style={{ fontSize: 10, color: sub, background: bg3, padding: '6px 8px', borderRadius: 6, marginTop: 4, lineHeight: 1.5 }}>
                 💡 {ev.hint}
@@ -228,7 +228,7 @@ export default function LifeEventPlanner({
 
   return (
     <div style={{ padding: '0 16px 16px' }}>
-      {/* -- 説明テキスト + カスタムボタン -- */}
+      
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 8 }}>
         <p style={{ fontSize: 11, color: sub, margin: 0, flex: 1, minWidth: 0 }}>
           ONにしたイベントが資産シミュレーションに反映されます
@@ -246,7 +246,7 @@ export default function LifeEventPlanner({
         </button>
       </div>
 
-      {/* -- 総支出サマリー -- */}
+      
       {(() => {
         const activeEvents = lifeEvents.filter(e => e.enabled && e.type !== 'housing_choice' && e.amount > 0);
         const total = activeEvents.reduce((s, e) => s + e.amount, 0);
@@ -267,7 +267,7 @@ export default function LifeEventPlanner({
         );
       })()}
 
-      {/* -- グループ別テンプレートカード -- */}
+      
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {GROUPS.map(group => {
           const groupEvents = group.ids.map(id => templateEvents.find(e => e.id === id)).filter(Boolean);
@@ -285,7 +285,7 @@ export default function LifeEventPlanner({
         })}
       </div>
 
-      {/* -- カスタムイベント -- */}
+      
       {customEvents.length > 0 && (
         <div style={{ marginTop: 16 }}>
           <button onClick={() => setExpandCustom(v => !v)}
