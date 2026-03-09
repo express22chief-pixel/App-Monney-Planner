@@ -60,6 +60,24 @@ export default function AssetsTab(props) {
               </div>
             </button>
 
+            {(!monthlyHistory || Object.keys(monthlyHistory).length === 0) && (
+              <div style={{
+                borderRadius: 10, padding: '12px 16px',
+                background: 'linear-gradient(135deg, rgba(0,229,255,0.06), rgba(0,229,255,0.02))',
+                border: '1px solid rgba(0,229,255,0.15)',
+              }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: '#00e5ff', marginBottom: 4 }}>📊 資産推移はここに表示されます</p>
+                <p style={{ fontSize: 11, color: 'inherit', opacity: 0.6, lineHeight: 1.6 }}>
+                  ホームタブで取引を記録し、月末に「収支を確定する」を押すと<br/>
+                  貯金・投資額がここに自動で反映されます。
+                </p>
+                <button
+                  onClick={() => {}}
+                  style={{ marginTop: 8, fontSize: 11, color: '#00e5ff', fontWeight: 600, background: 'none', border: 'none', padding: 0, cursor: 'default', opacity: 0.7 }}
+                >月締め → 資産タブ反映 のながれ</button>
+              </div>
+            )}
+
             {wallets && wallets.length > 0 && (
               <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                 <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>

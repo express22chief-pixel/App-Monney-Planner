@@ -61,37 +61,40 @@ function CustomTooltip({ active, payload, label, retirementAge, red }) {
     if (abs >= 10_000)      return `¥${Math.round(abs/10000)}万`;
     return `¥${abs.toLocaleString()}`;
   };
-  // 純資産を先頭に、右軸の値は後ろに
-  const sorted = [...payload].sort((a, b) =>
-    a.name === '純資産' ? -1 : b.name === '純資産' ? 1 : 0
-  );
+  const order = ['純資産', '金融資産', '不動産', '負債'];
+  const sorted = [...payload]
+    .filter(p => p.value != null && p.value !== 0)
+    .sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
   return (
     <div style={{
-      background: 'rgba(17,17,17,0.95)', backdropFilter: 'blur(10px)',
-      borderRadius: 12, padding: '10px 14px', border: '1px solid #333',
-      minWidth: 140,
+      background: 'rgba(12,12,12,0.97)', backdropFilter: 'blur(10px)',
+      borderRadius: 12, padding: '10px 14px', border: '1px solid #2a2a2a',
+      minWidth: 150,
     }}>
       <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 8, fontWeight: 700 }}>
         {label}歳{label >= retirementAge ? ' · 老後' : ''}
       </p>
-      {sorted.filter(p => p.value != null).map((p, i) => {
-        const isDebt = p.name === '負債残高';
-        const displayVal = isDebt ? `-${fmt(p.value)}` : fmt(p.value);
-        const isRight = p.name === '不動産' || p.name === '負債残高';
+      {sorted.map((p, i) => {
+        const isDebt = p.name === '負債';
+        const val = isDebt ? Math.abs(p.value) : p.value;
+        const isPrimary = p.name === '純資産';
         return (
-          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 3 }}>
-            <span style={{ fontSize: 11, color: '#9ca3af' }}>
-              {p.name}{isRight ? ' *' : ''}
+          <div key={i} style={{
+            display: 'flex', justifyContent: 'space-between', gap: 16,
+            marginBottom: isPrimary ? 6 : 3,
+            paddingBottom: isPrimary ? 6 : 0,
+            borderBottom: isPrimary ? '1px solid #2a2a2a' : 'none',
+          }}>
+            <span style={{ fontSize: isPrimary ? 12 : 10, color: isPrimary ? '#e5e7eb' : '#9ca3af', fontWeight: isPrimary ? 700 : 400 }}>
+              {isDebt ? '負債残高' : p.name}
             </span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: isDebt ? red : p.color, fontVariantNumeric: 'tabular-nums' }}>
-              {displayVal}
+            <span style={{ fontSize: isPrimary ? 13 : 11, fontWeight: isPrimary ? 900 : 700,
+              color: isDebt ? red : p.color, fontVariantNumeric: 'tabular-nums' }}>
+              {isDebt ? `-${fmt(val)}` : fmt(val)}
             </span>
           </div>
         );
       })}
-      {sorted.some(p => p.name === '不動産' || p.name === '負債残高') && (
-        <p style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>* 右軸スケール</p>
-      )}
     </div>
   );
 }
@@ -158,13 +161,35 @@ export default function SimulationTab(props) {
   // --- グラフデータ ----------------------------------------------------
   const chartData = useMemo(() => {
     return byAge.map(r => ({
-      age:       r.age,
-      純資産:    r.netWorth,
-      金融資産:  r.totalAssets,
-      不動産:    r.propertyValue > 0 ? r.propertyValue : undefined,
-      負債残高:  r.loanBalance  > 0 ?  r.loanBalance  : undefined,
+      age:      r.age,
+      純資産:   r.netWorth,
+      金融資産: r.totalAssets,
+      不動産:   r.propertyValue > 0 ? r.propertyValue : 0,
+      負債:     r.loanBalance   > 0 ? -r.loanBalance  : 0,
     }));
   }, [byAge]);
+
+  // 老後資産減少の理由テキストを生成
+  const retirementDrawdownNote = useMemo(() => {
+    if (!byAge.length || !lifePlan) return null;
+    const retSnap = byAge.find(r => r.age === (lifePlan.retirementAge ?? 65));
+    const endSnap = byAge[byAge.length - 1];
+    if (!retSnap || !endSnap) return null;
+    const drop = retSnap.netWorth - endSnap.netWorth;
+    if (drop <= 0) return null;
+
+    const monthlyShortfall = (lifePlan.retirementMonthlyExpense ?? 200000) - (lifePlan.retirementMonthlyIncome ?? 150000);
+    const parts = [];
+    if (monthlyShortfall > 0) {
+      parts.push(`年金等では月${Math.round(monthlyShortfall/10000)}万不足のため毎月取り崩し`);
+    }
+    const hasLoan = byAge.filter(r => r.age >= (lifePlan.retirementAge ?? 65)).some(r => r.loanBalance > 0);
+    if (hasLoan) parts.push('住宅ローン返済継続');
+    const medAge = 75;
+    if ((lifePlan.lifeExpectancy ?? 90) > medAge) parts.push('75歳以降は医療費増加を加算');
+    if (!parts.length) return null;
+    return { drop, parts };
+  }, [byAge, lifePlan]);
 
   // ライフイベントのピン（グラフ上の参照線用）
   const eventPins = useMemo(() => {
@@ -369,19 +394,19 @@ export default function SimulationTab(props) {
         </button>
         {secTimeline && (<div className="animate-fadeIn" style={{ padding: '14px 14px 14px' }}>
         <ResponsiveContainer width="100%" height={260}>
-          <ComposedChart data={chartData} margin={{ top: 4, right: 44, left: 0, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
-              <linearGradient id="gradNet" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={blue}  stopOpacity={0.3} />
-                <stop offset="95%" stopColor={blue}  stopOpacity={0.02} />
+              <linearGradient id="gradFinancial" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor={blue}  stopOpacity={0.18} />
+                <stop offset="100%" stopColor={blue} stopOpacity={0.04} />
               </linearGradient>
-              <linearGradient id="gradProp" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={amber} stopOpacity={0.35} />
-                <stop offset="95%" stopColor={amber} stopOpacity={0.05} />
+              <linearGradient id="gradProperty" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor={amber} stopOpacity={0.22} />
+                <stop offset="100%" stopColor={amber} stopOpacity={0.05} />
               </linearGradient>
-              <linearGradient id="gradDebt" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%"  stopColor={red}   stopOpacity={0.3} />
-                <stop offset="95%" stopColor={red}   stopOpacity={0.02} />
+              <linearGradient id="gradDebtFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor={red}   stopOpacity={0.18} />
+                <stop offset="100%" stopColor={red}  stopOpacity={0.04} />
               </linearGradient>
             </defs>
 
@@ -392,7 +417,7 @@ export default function SimulationTab(props) {
               ticks={Array.from({ length: Math.ceil((lifeExpectancy - currentAge) / 5) + 1 }, (_, i) => currentAge + i * 5).filter(a => a <= lifeExpectancy)}
             />
 
-            <YAxis yAxisId="left" tick={{ fontSize: 10, fill: sub }}
+            <YAxis tick={{ fontSize: 10, fill: sub }}
               tickFormatter={v => {
                 if (v === 0) return '0';
                 const abs = Math.abs(v);
@@ -402,77 +427,84 @@ export default function SimulationTab(props) {
               width={48}
             />
 
-            {(byAge.some(r => r.propertyValue > 0) || byAge.some(r => r.loanBalance > 0)) && (
-              <YAxis yAxisId="right" orientation="right"
-                tick={{ fontSize: 9, fill: sub }} tickLine={false} axisLine={false}
-                tickFormatter={v => {
-                  if (v === 0) return '';
-                  const abs = Math.abs(v);
-                  if (abs >= 100_000_000) return `${(abs/100_000_000).toFixed(1)}億`;
-                  if (abs >= 10_000)      return `${Math.round(abs/10000)}万`;
-                  return '';
-                }}
-                width={40}
-              />
-            )}
-
             <Tooltip content={<CustomTooltip retirementAge={retirementAge} red={red} />} />
 
-            <ReferenceLine yAxisId="left" y={0} stroke={darkMode ? '#444' : '#d1d5db'} strokeDasharray="2 2" strokeOpacity={0.8} />
+            <ReferenceLine y={0} stroke={darkMode ? '#555' : '#d1d5db'} strokeDasharray="2 2" strokeOpacity={0.8} />
 
-            <ReferenceLine yAxisId="left" x={retirementAge} stroke={amber} strokeDasharray="4 3" strokeWidth={1.5}
+            <ReferenceLine x={retirementAge} stroke={amber} strokeDasharray="4 3" strokeWidth={1.5}
               label={{ value: 'リタイア', position: 'insideTopRight', fontSize: 9, fill: amber, dy: -2 }} />
 
             {(lifePlan.retirementTargetAmount ?? 30000000) > 0 && (
-              <ReferenceLine yAxisId="left" y={lifePlan.retirementTargetAmount ?? 30000000}
-                stroke={green} strokeDasharray="5 3" strokeWidth={1.5} strokeOpacity={0.8}
+              <ReferenceLine y={lifePlan.retirementTargetAmount ?? 30000000}
+                stroke={green} strokeDasharray="5 3" strokeWidth={1} strokeOpacity={0.6}
                 label={{ value: '目標', position: 'insideTopRight', fontSize: 9, fill: green }} />
             )}
 
             {eventPins.filter(ev => ev.enabled !== false).map(ev => (
-              <ReferenceLine yAxisId="left" key={ev.id} x={ev.age} stroke={sub} strokeDasharray="2 3" strokeWidth={1}
+              <ReferenceLine key={ev.id} x={ev.age} stroke={sub} strokeDasharray="2 3" strokeWidth={1}
                 label={{ value: ev.icon || '📌', position: 'top', fontSize: 11 }} />
             ))}
 
-            {byAge.some(r => r.propertyValue > 0) && (
-              <Area yAxisId="right" type="monotone" dataKey="不動産"
-                stroke={amber} strokeWidth={2}
-                fill="url(#gradProp)" dot={false}
-                strokeOpacity={0.9}
-              />
-            )}
-
             {byAge.some(r => r.loanBalance > 0) && (
-              <Area yAxisId="right" type="monotone" dataKey="負債残高"
-                stroke={red} strokeWidth={1.5} strokeDasharray="5 2"
-                fill="url(#gradDebt)" dot={false} strokeOpacity={0.8}
+              <Area type="monotone" dataKey="負債"
+                stroke={red} strokeWidth={1} strokeOpacity={0.5}
+                fill="url(#gradDebtFill)" dot={false}
               />
             )}
 
-            <Area yAxisId="left" type="monotone" dataKey="純資産" stroke={blue} strokeWidth={2.5}
-              fill="url(#gradNet)" dot={false} activeDot={{ r: 4, fill: blue }} />
+            {byAge.some(r => r.propertyValue > 0) && (
+              <Area type="monotone" dataKey="不動産"
+                stroke={amber} strokeWidth={1} strokeOpacity={0.5}
+                fill="url(#gradProperty)" dot={false}
+              />
+            )}
+
+            <Area type="monotone" dataKey="金融資産"
+              stroke={blue} strokeWidth={1} strokeOpacity={0.4}
+              fill="url(#gradFinancial)" dot={false}
+            />
+
+            <Line type="monotone" dataKey="純資産"
+              stroke={blue} strokeWidth={3}
+              dot={false} activeDot={{ r: 5, fill: blue, stroke: '#000', strokeWidth: 2 }}
+            />
 
           </ComposedChart>
         </ResponsiveContainer>
 
-        <div style={{ display: 'flex', gap: 14, marginTop: 8, paddingLeft: 8 }}>
+        <div style={{ display: 'flex', gap: 12, marginTop: 8, paddingLeft: 4, flexWrap: 'wrap' }}>
           {[
-            { color: blue,  label: '純資産（左軸）' },
-            ...(byAge.some(r => r.propertyValue > 0) ? [{ color: amber, label: '不動産（右軸）' }] : []),
-            ...(byAge.some(r => r.loanBalance > 0)   ? [{ color: red,   label: '負債残高（右軸）', dashed: true }] : []),
-            { color: amber, label: 'リタイア', dashed: true },
+            { color: blue,  label: '純資産', line: true, bold: true },
+            { color: blue,  label: '金融資産', area: true },
+            ...(byAge.some(r => r.propertyValue > 0) ? [{ color: amber, label: '不動産',  area: true }] : []),
+            ...(byAge.some(r => r.loanBalance > 0)   ? [{ color: red,   label: '負債残高', area: true }] : []),
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 16, height: 2,
-                background: item.dashed ? 'transparent' : item.color,
-                borderBottom: item.dashed ? `2px dashed ${item.color}` : 'none',
-                borderRadius: 1,
-              }} />
-              <span style={{ fontSize: 10, color: sub }}>{item.label}</span>
+              {item.line
+                ? <div style={{ width: 18, height: 3, borderRadius: 2, background: item.color }} />
+                : <div style={{ width: 12, height: 10, borderRadius: 2, background: item.color, opacity: 0.4 }} />
+              }
+              <span style={{ fontSize: 10, color: item.bold ? blue : sub, fontWeight: item.bold ? 700 : 400 }}>{item.label}</span>
             </div>
           ))}
         </div>
+
+        {retirementDrawdownNote && (
+          <div style={{
+            marginTop: 12, padding: '10px 12px', borderRadius: 8,
+            background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+            border: `1px solid ${bdr}`,
+          }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: sub, marginBottom: 5 }}>
+              📉 リタイア後に資産が減る主な理由（{fmtMan(retirementDrawdownNote.drop)}減少）
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {retirementDrawdownNote.parts.map((p, i) => (
+                <p key={i} style={{ fontSize: 10, color: sub }}>・{p}</p>
+              ))}
+            </div>
+          </div>
+        )}
         </div>)}
       </div>
 

@@ -35,7 +35,8 @@ export default function HomeTab(props) {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <p className="text-sm font-bold mb-1" style={{ color: theme.orange }}>⚠ 未締めの月があります</p>
-                    <p className={`text-xs ${theme.textSecondary} mb-2`}>以下の月の収支がまだ確定していません。</p>
+                    <p className={`text-xs ${theme.textSecondary} mb-1`}>以下の月の収支がまだ確定していません。</p>
+                    <p className={`text-xs mb-2`} style={{ color: darkMode ? '#888' : '#999' }}>確定すると貯金・投資額が資産タブに反映され、翌月の管理を始められます。</p>
                     <div className="flex flex-wrap gap-2">
                       {unclosedMonths.map(ym => (
                         <button
@@ -806,6 +807,7 @@ export default function HomeTab(props) {
                           style={{ backgroundColor: theme.accent }}>
                           今月の収支を確定する
                         </button>
+                        <p className={`text-[10px] text-center mt-1.5 ${theme.textSecondary}`}>確定すると資産タブに反映されます</p>
                       </div>
                     )}
                   </div>
