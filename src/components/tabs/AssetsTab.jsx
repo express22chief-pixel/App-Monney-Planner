@@ -22,7 +22,6 @@ export default function AssetsTab(props) {
   return (
           <div className="space-y-3 animate-fadeIn">
 
-            
             <button
               onClick={() => setShowAssetEditModal(true)}
               className={`w-full ${theme.cardGlass} rounded-lg p-4 transition-all duration-200 hover-scale text-left`}
@@ -61,7 +60,6 @@ export default function AssetsTab(props) {
               </div>
             </button>
 
-            
             {wallets && wallets.length > 0 && (
               <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                 <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
@@ -102,7 +100,6 @@ export default function AssetsTab(props) {
                   })}
                   <p className={`text-[10px] text-center pt-1 ${theme.textSecondary}`}>「修正」で現在の実際の残高に合わせられます</p>
 
-                  
                   {editingWallet && (
                     <div className={`mt-3 p-4 rounded-lg border-2 ${darkMode ? 'bg-neutral-800 border-blue-500/40' : 'bg-blue-50 border-blue-200'}`}>
                       <p className={`text-xs font-bold mb-2 ${theme.text}`}>
@@ -141,7 +138,6 @@ export default function AssetsTab(props) {
               </div>
             )}
 
-            
             <button
               onClick={() => setShowInvestModal(true)}
               className={`w-full ${theme.cardGlass} rounded-lg p-3.5 transition-all duration-200 hover-scale text-left`}
@@ -155,7 +151,6 @@ export default function AssetsTab(props) {
               </div>
             </button>
 
-            
             <button
               onClick={() => setShowBenchmark(true)}
               className={`w-full ${theme.cardGlass} rounded-lg p-3.5 transition-all duration-200 hover-scale text-left`}
@@ -186,7 +181,6 @@ export default function AssetsTab(props) {
               </div>
             </button>
 
-            
             {(() => {
               const today = new Date();
               const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
@@ -237,7 +231,6 @@ export default function AssetsTab(props) {
                 );
               });
             })()}
-
 
           </div>
 

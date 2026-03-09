@@ -57,7 +57,6 @@ export default function CalendarTab(props) {
                 </button>
               </div>
 
-              
               <div className="flex flex-col gap-2 mb-3">
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-neutral-800 border border-neutral-700' : 'bg-neutral-50 border border-neutral-200'}`}>
                   <span className={`text-xs ${theme.textSecondary}`}>🔍</span>
@@ -85,7 +84,6 @@ export default function CalendarTab(props) {
                 </select>
               </div>
 
-
               <div className="mb-3">
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['日', '月', '火', '水', '木', '金', '土'].map((day, i) => (
@@ -101,14 +99,14 @@ export default function CalendarTab(props) {
                   {[...Array(getFirstDayOfMonth(selectedMonth))].map((_, i) => (
                     <div key={`empty-${i}`} className="aspect-square"></div>
                   ))}
-                  
+
                   {[...Array(getDaysInMonth(selectedMonth))].map((_, i) => {
                     const day = i + 1;
                     const dayTransactions = getTransactionsForDay(selectedMonth, day);
                     const dayBalance = getDayBalance(selectedMonth, day);
                     const hasTransactions = dayTransactions.length > 0;
                     const isToday = selectedMonth === new Date().toISOString().slice(0, 7) && day === new Date().getDate();
-                    
+
                     return (
                       <button
                         key={day}
@@ -174,7 +172,6 @@ export default function CalendarTab(props) {
               </div>
             </div>
 
-            
             {(historySearch || historyCategory !== 'all') && (() => {
               const filtered = transactions.filter(t => {
                 const matchMonth = t.date.startsWith(selectedMonth);
@@ -232,7 +229,6 @@ export default function CalendarTab(props) {
               );
             })()}
 
-            
             {!monthlyHistory[selectedMonth] && calculateMonthlyBalance(selectedMonth).cfBalance !== 0 && selectedMonth < currentMonth && (
               <button
                 onClick={() => openCloseMonthModal(selectedMonth)}

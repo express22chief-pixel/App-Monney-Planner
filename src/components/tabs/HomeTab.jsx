@@ -30,7 +30,6 @@ export default function HomeTab(props) {
   return (
           <div className="space-y-3 animate-fadeIn">
 
-            
             {unclosedMonths.length > 0 && (
               <div style={{ borderRadius: 6, padding: '12px 14px', borderLeft: `3px solid ${theme.orange}`, backgroundColor: darkMode ? 'rgba(255,145,0,0.08)' : 'rgba(255,109,0,0.05)' }}>
                 <div className="flex items-start justify-between gap-3">
@@ -60,7 +59,6 @@ export default function HomeTab(props) {
               </div>
             )}
 
-            
             {(() => {
               const today = new Date();
               // toISOString()はUTC変換でJSTが1日ずれるためローカル時刻で計算
@@ -98,7 +96,7 @@ export default function HomeTab(props) {
                     if (Math.abs(dx) > 40) setSummaryMonthOffset(o => Math.max(-11, Math.min(0, o + (dx > 0 ? -1 : 1))));
                   }}
                 >
-                  
+
                   <div className="px-5 pt-5 pb-4" style={{
                     background: darkMode
                       ? isPositive
@@ -108,10 +106,10 @@ export default function HomeTab(props) {
                         ? 'linear-gradient(135deg, rgba(0,229,255,0.04) 0%, transparent 60%)'
                         : 'linear-gradient(135deg, rgba(229,57,53,0.06) 0%, transparent 60%)'
                   }}>
-                    
+
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        
+
                         <button
                           onClick={() => setSummaryMonthOffset(o => Math.max(-11, o - 1))}
                           className={`text-xs px-1.5 py-1 rounded-lg transition-all ${darkMode ? 'text-neutral-600 hover:text-neutral-400' : 'text-neutral-300 hover:text-neutral-500'}`}
@@ -122,7 +120,7 @@ export default function HomeTab(props) {
                         {monthlyHistory[targetMonth] && (
                           <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/15 text-green-500">締済</span>
                         )}
-                        
+
                         <button
                           onClick={() => setSummaryMonthOffset(o => Math.min(0, o + 1))}
                           className={`text-xs px-1.5 py-1 rounded-lg transition-all ${summaryMonthOffset >= 0 ? 'opacity-20 pointer-events-none' : (darkMode ? 'text-neutral-600 hover:text-neutral-400' : 'text-neutral-300 hover:text-neutral-500')}`}
@@ -140,7 +138,6 @@ export default function HomeTab(props) {
                       >❓</button>
                     </div>
 
-                    
                     <div className="mb-1">
                       <p className={`text-[10px] font-medium ${theme.textSecondary} mb-1`}>収支</p>
                       <p style={{
@@ -156,7 +153,6 @@ export default function HomeTab(props) {
                     </div>
                   </div>
 
-                  
                   <div className="px-5 py-4" style={{
                     borderTop: `1px solid ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`
                   }}>
@@ -165,7 +161,7 @@ export default function HomeTab(props) {
                       const expBarPct = inc > 0 ? Math.min((exp / inc) * 100, 100) : 100;
                       return (
                         <div>
-                          
+
                           <div className="flex justify-between items-center mb-3">
                             <div>
                               <p className="text-[10px] font-medium mb-0.5" style={{ color: theme.green }}>↑ 収入</p>
@@ -186,11 +182,10 @@ export default function HomeTab(props) {
                             </div>
                           </div>
 
-                          
                           <div className="relative h-3 rounded-full overflow-hidden" style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)' }}>
-                            
+
                             <div className="absolute inset-0 rounded-full" style={{ backgroundColor: theme.green, opacity: 0.25 }} />
-                            
+
                             <div className="absolute top-0 left-0 h-full rounded-full transition-all duration-700"
                               style={{
                                 width: `${expBarPct}%`,
@@ -201,13 +196,12 @@ export default function HomeTab(props) {
                                     : `linear-gradient(90deg, ${theme.green}99, ${theme.red})`,
                               }}
                             />
-                            
+
                             {!isPositive && (
                               <div className="absolute top-0 right-0 h-full w-2 rounded-r-full animate-pulse" style={{ backgroundColor: theme.red }} />
                             )}
                           </div>
 
-                          
                           <div className="flex justify-between mt-1.5">
                             <p className="text-[9px] font-semibold" style={{ color: theme.green }}>¥0</p>
                             <p className="text-[9px] font-semibold" style={{ color: isPositive ? theme.green : theme.orange }}>
@@ -220,7 +214,6 @@ export default function HomeTab(props) {
                       <p className={`text-xs text-center py-1 ${theme.textSecondary}`}>取引なし</p>
                     )}
 
-                    
                     <div className="flex justify-center gap-1 mt-3">
                       {[-2,-1,0].map(o => (
                         <button
@@ -242,8 +235,6 @@ export default function HomeTab(props) {
               );
             })()}
 
-
-            
             {(() => {
               // 支払い取引（引き落とし予定を除く）を日付降順でグループ化
               const visibleTxns = transactions.filter(t => !t.isSettlement);
@@ -269,7 +260,7 @@ export default function HomeTab(props) {
                   className={`flex items-center gap-3 px-1 py-3 cursor-pointer transition-all duration-150 animate-fadeIn ${darkMode ? 'hover:bg-neutral-700/30' : 'hover:bg-neutral-50'}`}
                   style={{ animationDelay: `${idx * 0.03}s` }}
                 >
-                  
+
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-lg ${
                     t.type==='income' ? (darkMode?'bg-green-500/15':'bg-green-50') :
                     t.paymentMethod==='credit' || t.paymentMethod==='paypay' ? (darkMode?'bg-blue-500/15':'bg-blue-50') :
@@ -277,7 +268,7 @@ export default function HomeTab(props) {
                   }`}>
                     {t.isRecurring ? (t.isInvestment ? '📈' : '🔄') : t.isCharge ? '⚡' : t.type === 'income' ? '💰' : (t.paymentMethod === 'credit' || t.paymentMethod === 'paypay' ? '💳' : t.paymentMethod === 'wallet' ? '👛' : '💵')}
                   </div>
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className={`text-sm font-semibold ${theme.text} truncate`}>{t.category}</p>
@@ -307,7 +298,7 @@ export default function HomeTab(props) {
                       )}
                     </p>
                   </div>
-                  
+
                   <div className="text-right shrink-0">
                     <p className="text-sm font-bold tabular-nums" style={{ color: t.amount >= 0 ? theme.green : (t.isInvestment ? '#a855f7' : theme.red) }}>
                       {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
@@ -318,7 +309,7 @@ export default function HomeTab(props) {
 
               return (
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
-                  
+
                   <div className="flex items-center justify-between px-4 py-3">
                     <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>RECENT TXN</h2>
                     <button
@@ -334,14 +325,14 @@ export default function HomeTab(props) {
                     <p className={`text-sm text-center py-10 ${theme.textSecondary}`}>まだ取引がありません</p>
                   ) : (
                     <>
-                      
+
                       {groups.map((group, gi) => (
                         <div key={group.ym}>
-                          
+
                           <div className={`px-4 py-1.5 ${darkMode ? 'bg-neutral-800/60' : 'bg-neutral-100/80'}`}>
                             <span className={`text-xs font-semibold ${theme.textSecondary}`}>{group.label}</span>
                           </div>
-                          
+
                           <div className="px-3">
                             {group.items.map((t, idx) => (
                               <div key={t.id}>
@@ -355,7 +346,6 @@ export default function HomeTab(props) {
                         </div>
                       ))}
 
-                      
                       {visibleTxns.length > 3 && (
                         <button
                           onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
@@ -370,9 +360,8 @@ export default function HomeTab(props) {
               );
             })()}
 
-            
             <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
-              
+
               <div className="px-4 pt-3 pb-2">
                 <div className="flex items-center justify-between mb-1.5">
                   <button
@@ -418,7 +407,6 @@ export default function HomeTab(props) {
                 })()}
               </div>
 
-              
               {showRecurringList && (
                 <div className={`border-t ${theme.border} animate-fadeIn`}>
                   {recurringTransactions.length === 0 ? (
@@ -462,8 +450,6 @@ export default function HomeTab(props) {
               )}
             </div>
 
-
-            
             {(() => {
               const today = new Date();
               const toYM = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -532,7 +518,7 @@ export default function HomeTab(props) {
 
               return (
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
-                  
+
                   <div className="px-4 pt-3 pb-2">
                     <div className="flex items-center justify-between mb-1.5">
                       <button
@@ -557,7 +543,6 @@ export default function HomeTab(props) {
                     </div>
                   </div>
 
-                  
                   {showPayments && (
                     <div className="border-t animate-fadeIn" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
                       <div className="divide-y" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}>
@@ -567,7 +552,7 @@ export default function HomeTab(props) {
                           const canExpand = item.kind === 'credit' && item.details && item.details.length > 1;
                           return (
                             <div key={i}>
-                              
+
                               <div
                                 className={`flex items-center px-4 py-2.5 transition-colors ${canExpand ? 'cursor-pointer active:opacity-70' : ''}`}
                                 style={{ opacity: item.isPast ? 0.4 : 1 }}
@@ -615,7 +600,6 @@ export default function HomeTab(props) {
                                 </div>
                               </div>
 
-                              
                               {canExpand && isExpanded && (
                                 <div className="animate-fadeIn" style={{ backgroundColor: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
                                   {item.details.map((d, di) => (
@@ -641,10 +625,10 @@ export default function HomeTab(props) {
                 </div>
               );
             })()}
-            
+
             {splitPayments.filter(s => !s.settled).length > 0 && (
               <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
-                
+
                 <button
                   onClick={() => setShowSplit2(v => !v)}
                   className={`w-full flex items-center justify-between px-4 py-3 transition-all`}
@@ -666,7 +650,7 @@ export default function HomeTab(props) {
                   <div className={`border-t ${theme.border} animate-fadeIn`}>
                     {splitPayments.filter(s => !s.settled).map(sp => (
                       <div key={sp.id} className={`px-4 py-3 border-b ${theme.border} last:border-b-0`}>
-                        
+
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
@@ -682,7 +666,6 @@ export default function HomeTab(props) {
                             </p>
                           </div>
 
-                          
                           <button
                             onClick={() => {
                               const settleTransaction = {
@@ -737,7 +720,7 @@ export default function HomeTab(props) {
                 )}
               </div>
             )}
-            
+
             {(() => {
               const today = new Date();
               const toYM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
@@ -759,7 +742,7 @@ export default function HomeTab(props) {
                     </button>
                   </div>
                   <div className={`border-t ${theme.border}`}>
-                    
+
                     <div className="grid grid-cols-2 divide-x" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
                       {[
                         { label: '収入 (PL)', val: ba.income.actual, color: theme.green },
@@ -773,14 +756,14 @@ export default function HomeTab(props) {
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className={`px-3 py-2 flex justify-between items-center border-t ${theme.border}`}>
                       <span className={`text-xs ${theme.textSecondary}`}>月次収支（PL）</span>
                       <span className="text-sm font-bold tabular-nums" style={{ color: currentBalance.plBalance>=0?theme.green:theme.red }}>
                         {currentBalance.plBalance>=0?'+':''}¥{currentBalance.plBalance.toLocaleString()}
                       </span>
                     </div>
-                    
+
                     {items.length > 0 && (
                       <div className={`px-3 pt-2 pb-3 border-t ${theme.border}`}>
                         <p className={`text-[10px] font-bold ${theme.textSecondary} mb-2 uppercase tracking-wide`}>支出内訳</p>
@@ -815,7 +798,7 @@ export default function HomeTab(props) {
                         </div>
                       </div>
                     )}
-                    
+
                     {!monthlyHistory[targetMonth] && currentBalance.cfBalance !== 0 && (
                       <div className="px-3 pb-3">
                         <button onClick={() => openCloseMonthModal()}

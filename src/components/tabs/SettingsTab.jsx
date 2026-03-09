@@ -83,7 +83,6 @@ export default function SettingsTab(props) {
   const renamedExp = customCategories?.renamedDefaults?.expense || {};
   const renamedInc = customCategories?.renamedDefaults?.income || {};
 
-
   return (
     <>
           <div className="space-y-2 animate-fadeIn pb-6">
@@ -210,7 +209,6 @@ export default function SettingsTab(props) {
                   </div>
                 )}
 
-                
                 {simulationSettings.useNisa && (
                   <div className={`pt-2 border-t space-y-3`} style={{ borderColor: darkMode ? '#2C2C2E' : '#e5e7eb' }}>
                     <div className="flex items-center justify-between">
@@ -225,7 +223,7 @@ export default function SettingsTab(props) {
 
                     {simulationSettings.useLumpSum && (
                       <div className="space-y-3">
-                        
+
                         <div>
                           <div className="flex justify-between items-center mb-1">
                             <span className={`text-xs font-medium ${theme.text}`}>1回あたりの投資額</span>
@@ -244,7 +242,6 @@ export default function SettingsTab(props) {
                           </p>
                         </div>
 
-                        
                         <div>
                           <p className={`text-xs font-medium ${theme.text} mb-2`}>投資する月</p>
                           <div className="grid grid-cols-6 gap-1">
@@ -454,7 +451,7 @@ export default function SettingsTab(props) {
             <AccSection id="wallet" icon="👛" title="電子マネー・残高" expanded={settingsExpanded['wallet']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
               <div className="pt-3 space-y-3">
-                
+
                 <div className="space-y-2">
                   {(wallets || []).map(w => (
                     <div key={w.id} className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
@@ -509,7 +506,7 @@ export default function SettingsTab(props) {
                     <p className={`text-xs text-center py-3 ${theme.textSecondary}`}>電子マネーが登録されていません</p>
                   )}
                 </div>
-                
+
                 {(() => {
                   const PRESETS = [
                     { name: 'PayPay残高', icon: '🔴', color: '#FF4B4B' },
@@ -525,7 +522,7 @@ export default function SettingsTab(props) {
                   const available = PRESETS.filter(p => !existing.has(p.name));
                   return (
                     <div className="space-y-3">
-                      
+
                       {available.length > 0 && (
                         <div>
                           <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>プリセットから追加</p>
@@ -539,7 +536,7 @@ export default function SettingsTab(props) {
                           </div>
                         </div>
                       )}
-                      
+
                       <div>
                         <p className={`text-xs font-medium ${theme.textSecondary} mb-2`}>カスタムで追加</p>
                         <div className="flex gap-2">
@@ -587,7 +584,6 @@ export default function SettingsTab(props) {
                   📤 データをエクスポート
                 </button>
 
-
                 <button
                   onClick={() => setDialog({
                     type: 'confirm',
@@ -610,7 +606,6 @@ export default function SettingsTab(props) {
 
           </div>
 
-      
       {dialog && (
         <InlineDialog
           type={dialog.type}
