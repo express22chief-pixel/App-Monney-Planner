@@ -58,7 +58,11 @@ export default function SettingsTab(props) {
     handleRenameDefaultCategory, handleDeleteDefaultCategory,
     deleteCustomCategory, deleteRecurring,
     transactions, setTransactions, setMonthlyHistory,
-    lifePlan,
+    lifePlan, setLifePlan,
+    lifeEvents, setLifeEvents,
+    housingParams, setHousingParams,
+    splitPayments, setSplitPayments,
+    transactionTemplates, setTransactionTemplates,
   } = props;
 
   // -- インラインダイアログ state ----------------------------------------
@@ -73,6 +77,42 @@ export default function SettingsTab(props) {
   return (
     <>
           <div className="space-y-2 animate-fadeIn pb-6">
+
+            {/* --- はじめにやること ----------------------------------------- */}
+            {(creditCards.length === 0 || !userInfo?.age) && (
+              <div style={{
+                borderRadius: 10, padding: '14px 16px',
+                background: darkMode ? 'rgba(0,229,255,0.05)' : 'rgba(0,229,255,0.04)',
+                border: '1px solid rgba(0,229,255,0.2)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 800, color: '#00e5ff', marginBottom: 10, letterSpacing: '0.06em', textTransform: 'uppercase' }}>🚀 最初にやること</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {!userInfo?.age && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                      <span style={{ fontSize: 18 }}>👤</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#f5f5f5' : '#111', marginBottom: 2 }}>年齢・名前を設定</p>
+                        <p style={{ fontSize: 10, color: darkMode ? '#888' : '#999' }}>同世代との資産比較に使用されます</p>
+                      </div>
+                      <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7 }}>↓ 外観</span>
+                    </div>
+                  )}
+                  {creditCards.length === 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 8, background: darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                      <span style={{ fontSize: 18 }}>💳</span>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: darkMode ? '#f5f5f5' : '#111', marginBottom: 2 }}>クレジットカードを登録</p>
+                        <p style={{ fontSize: 10, color: darkMode ? '#888' : '#999' }}>締め日・引き落とし日を設定すると引き落とし予約が自動生成されます</p>
+                      </div>
+                      <button
+                        onClick={() => { setEditingCard(null); setShowCardModal(true); }}
+                        style={{ padding: '6px 12px', borderRadius: 8, background: '#00e5ff', color: '#000', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                      >追加</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <AccSection id="appearance" icon="🌙" title="外観" expanded={settingsExpanded['appearance']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
               darkMode={darkMode} theme={theme}>
@@ -554,7 +594,13 @@ export default function SettingsTab(props) {
               <div className="space-y-2 pt-3">
                 <button
                   onClick={() => {
-                    const data = { transactions, recurringTransactions, creditCards, monthlyBudget, simulationSettings, userInfo, assetData };
+                    const data = {
+                      transactions, recurringTransactions, creditCards, monthlyBudget,
+                      simulationSettings, userInfo, assetData, monthlyHistory,
+                      lifeEvents, lifePlan, wallets, walletAdjustments, housingParams,
+                      customCategories, splitPayments, transactionTemplates,
+                      _version: 2, _exportedAt: new Date().toISOString(),
+                    };
                     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = `money-planner-${new Date().toISOString().slice(0,10)}.json`; a.click();
@@ -562,20 +608,79 @@ export default function SettingsTab(props) {
                   }}
                   className={`w-full py-2.5 rounded-lg text-sm font-semibold border-2 transition-all hover-scale ${darkMode ? 'border-neutral-700 text-neutral-300' : 'border-neutral-200 text-neutral-600'}`}
                 >
-                  📤 データをエクスポート
+                  📤 データをエクスポート（完全バックアップ）
+                </button>
+
+                <button
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file'; input.accept = '.json';
+                    input.onchange = (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        try {
+                          const d = JSON.parse(ev.target.result);
+                          setDialog({
+                            type: 'confirm',
+                            title: 'データをインポート',
+                            message: `${file.name} のデータを復元しますか？現在のデータは上書きされます。`,
+                            confirmLabel: 'インポート',
+                            danger: true,
+                            onConfirm: () => {
+                              closeDialog();
+                              if (d.transactions)          setTransactions(d.transactions);
+                              if (d.recurringTransactions) setRecurringTransactions(d.recurringTransactions);
+                              if (d.creditCards)           setCreditCards(d.creditCards);
+                              if (d.monthlyBudget)         setMonthlyBudget(d.monthlyBudget);
+                              if (d.simulationSettings)    setSimulationSettings(d.simulationSettings);
+                              if (d.userInfo)              setUserInfo(d.userInfo);
+                              if (d.assetData)             setAssetData(d.assetData);
+                              if (d.monthlyHistory)        setMonthlyHistory(d.monthlyHistory);
+                              if (d.lifeEvents)            setLifeEvents(d.lifeEvents);
+                              if (d.lifePlan)              setLifePlan(d.lifePlan);
+                              if (d.wallets)               setWallets(d.wallets);
+                              if (d.walletAdjustments)     setWalletAdjustments(d.walletAdjustments);
+                              if (d.housingParams)         setHousingParams(d.housingParams);
+                              if (d.customCategories)      setCustomCategories(d.customCategories);
+                              if (d.splitPayments)         setSplitPayments(d.splitPayments);
+                              if (d.transactionTemplates)  setTransactionTemplates(d.transactionTemplates);
+                            },
+                          });
+                        } catch {
+                          alert('ファイルの読み込みに失敗しました。有効なJSONファイルを選択してください。');
+                        }
+                      };
+                      reader.readAsText(file);
+                    };
+                    input.click();
+                  }}
+                  className={`w-full py-2.5 rounded-lg text-sm font-semibold border-2 transition-all hover-scale ${darkMode ? 'border-neutral-700 text-neutral-300' : 'border-neutral-200 text-neutral-600'}`}
+                >
+                  📥 データをインポート
                 </button>
 
                 <button
                   onClick={() => setDialog({
                     type: 'confirm',
                     title: 'データを全削除',
-                    message: '全てのデータをリセットしますか？この操作は取り消せません。',
+                    message: '全てのデータをリセットしますか？この操作は取り消せません。事前にエクスポートでバックアップを推奨します。',
                     confirmLabel: '削除する',
                     danger: true,
                     onConfirm: () => {
                       closeDialog();
-                      setTransactions([]); setRecurringTransactions([]); setMonthlyHistory({});
+                      setTransactions([]);
+                      setRecurringTransactions([]);
+                      setMonthlyHistory({});
                       setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
+                      setCreditCards([]);
+                      setMonthlyBudget(prev => ({ ...prev, expenses: {} }));
+                      setCustomCategories({ expense: [], income: [], deletedDefaults: { expense: [], income: [] }, renamedDefaults: { expense: {}, income: {} } });
+                      setWallets([]);
+                      setWalletAdjustments({});
+                      setSplitPayments([]);
+                      setTransactionTemplates([]);
                     },
                   })}
                   className="w-full py-2.5 rounded-lg text-sm font-semibold border-2 border-red-500/30 text-red-500 transition-all hover-scale"

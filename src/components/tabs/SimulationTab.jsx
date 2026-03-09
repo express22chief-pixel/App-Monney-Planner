@@ -8,6 +8,7 @@ import HousingComparisonModal from '../modals/HousingComparisonModal';
 import LifePlanSettingsModal  from '../modals/LifePlanSettingsModal';
 import LifeEventPlanner      from '../LifeEventPlanner';
 import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
+import { calcTakeHome } from '../../utils/calc';
 
 // --- 小コンポーネント -------------------------------------------------------
 
@@ -221,6 +222,58 @@ export default function SimulationTab(props) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      {(() => {
+        if (!recentMonthlyAverages || recentMonthlyAverages.months < 2) return null;
+        const avg = recentMonthlyAverages;
+        const planIncome  = (lifePlan.annualIncome ?? 0) / 12;
+        const planExpense = lifePlan.monthlyExpense ?? 0;
+        const incDiff  = avg.avgIncome  - planIncome;
+        const expDiff  = avg.avgExpense - planExpense;
+        const bigDiff  = Math.abs(incDiff) > planIncome * 0.1 || Math.abs(expDiff) > planExpense * 0.1;
+        if (!bigDiff) return null;
+        return (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8,
+            background: darkMode ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.06)',
+            border: `1px solid rgba(245,158,11,0.25)`,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: amber, marginBottom: 4 }}>
+                  📊 直近{avg.months}ヶ月の実績がプランと乖離しています
+                </p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {Math.abs(incDiff) > planIncome * 0.1 && (
+                    <span style={{ fontSize: 10, color: sub }}>
+                      収入: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgIncome/10000)}万</strong> / プラン ¥{Math.round(planIncome/10000)}万
+                      <span style={{ color: incDiff > 0 ? green : red, marginLeft: 4 }}>({incDiff > 0 ? '+' : ''}{Math.round(incDiff/10000)}万)</span>
+                    </span>
+                  )}
+                  {Math.abs(expDiff) > planExpense * 0.1 && (
+                    <span style={{ fontSize: 10, color: sub }}>
+                      支出: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgExpense/10000)}万</strong> / プラン ¥{Math.round(planExpense/10000)}万
+                      <span style={{ color: expDiff > 0 ? red : green, marginLeft: 4 }}>({expDiff > 0 ? '+' : ''}{Math.round(expDiff/10000)}万)</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  const updates = {};
+                  if (Math.abs(incDiff) > planIncome * 0.1) updates.annualIncome = Math.round(avg.avgIncome * 12 / 100000) * 100000;
+                  if (Math.abs(expDiff) > planExpense * 0.1) updates.monthlyExpense = Math.round(avg.avgExpense / 5000) * 5000;
+                  setLifePlan(prev => ({ ...prev, ...updates }));
+                }}
+                style={{
+                  padding: '6px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                  background: amber, color: '#000', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0,
+                }}
+              >実績で更新</button>
+            </div>
+          </div>
+        );
+      })()}
 
       <div style={{ background: card, borderRadius: 8, overflow: 'hidden' }}>
         <button onClick={() => setSecStatus(v => !v)} style={{
@@ -603,6 +656,34 @@ export default function SimulationTab(props) {
                   onChange={e => setLifePlan(prev => ({ ...prev, [key]: Number(e.target.value) }))}
                   style={{ width: '100%', accentColor: blue }}
                 />
+                {key === 'incomeGrowthRate' && lifePlan.incomeGrowthRate > 0 && (() => {
+                  const rate = lifePlan.incomeGrowthRate / 100;
+                  const base = lifePlan.annualIncome ?? 6000000;
+                  const milestones = [5, 10, 20, 30].map(y => ({
+                    age: currentAge + y,
+                    gross: Math.round(base * Math.pow(1 + rate, y)),
+                  })).filter(m => m.age < retirementAge);
+                  if (milestones.length === 0) return null;
+                  return (
+                    <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                      {milestones.map(m => (
+                        <div key={m.age} style={{
+                          padding: '3px 8px', borderRadius: 6,
+                          background: darkMode ? 'rgba(0,229,255,0.07)' : 'rgba(0,229,255,0.06)',
+                          border: `1px solid rgba(0,229,255,0.18)`,
+                        }}>
+                          <span style={{ fontSize: 10, color: sub }}>{m.age}歳 </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: blue, fontVariantNumeric: 'tabular-nums', fontFamily: "'JetBrains Mono', monospace" }}>
+                            {m.gross >= 10_000_000 ? `${(m.gross/10_000_000).toFixed(1)}千万` : `${Math.round(m.gross/10_000)}万`}
+                          </span>
+                          <span style={{ fontSize: 9, color: sub, marginLeft: 2 }}>
+                            手取{Math.round(calcTakeHome(m.gross)/10_000)}万
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -766,9 +847,10 @@ export default function SimulationTab(props) {
             { label: '現在',                                          age: currentAge },
             { label: `${Math.round((currentAge+retirementAge)/2)}歳`, age: Math.round((currentAge+retirementAge)/2) },
             { label: `${retirementAge}歳（リタイア）`,                age: retirementAge },
-            { label: `${Math.round((retirementAge+lifeExpectancy)/2)}歳`, age: Math.round((retirementAge+lifeExpectancy)/2) },
+            ...(lifeExpectancy > 75 ? [{ label: '75歳（後期高齢）', age: 75 }] : []),
             { label: `${lifeExpectancy}歳（寿命）`,                   age: lifeExpectancy },
-          ].map(({ label, age }) => {
+          ].filter(m => m.age >= currentAge && m.age <= lifeExpectancy)
+          .map(({ label, age }) => {
             const snap = byAge.find(r => r.age === age) || byAge[byAge.length - 1];
             if (!snap) return null;
             const grossAssets = snap.totalAssets + snap.propertyValue;
