@@ -570,23 +570,33 @@ export default function SimulationTab(props) {
         </div>
         {secLifePlan && (<div className="animate-fadeIn" style={{ padding: '0 16px 16px' }}>
 
+        <div style={{ marginBottom: 14, padding: '8px 12px', borderRadius: 8, background: darkMode ? '#0d1f2d' : '#eff6ff', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 11 }}>⚙️</span>
+          <p style={{ fontSize: 11, color: darkMode ? '#60a5fa' : '#2563eb', margin: 0 }}>
+            NISA・利回り・インフレ率などの詳細は <strong>設定タブ → 積立・投資目標</strong> で設定できます
+          </p>
+        </div>
+
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>現役フェーズ</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               { key: 'annualIncome',   label: '年収',     min: 2000000, max: 30000000, step: 500000,
-                fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万` },
+                fmt: v => v >= 100000000 ? `¥${(v/100000000).toFixed(1)}億` : `¥${Math.round(v/10000)}万`, inputFmt: v => String(Math.round(v/10000)), parseFn: v => Math.round(Number(v)*10000) },
               { key: 'monthlyExpense', label: '月間生活費', min: 50000, max: 800000, step: 10000,
-                fmt: v => `¥${v.toLocaleString()}` },
+                fmt: v => `¥${v.toLocaleString()}`, inputFmt: v => String(v), parseFn: v => Number(v) },
               { key: 'incomeGrowthRate', label: '昇給率', min: 0, max: 5, step: 0.5,
-                fmt: v => v === 0 ? '考慮しない' : `${v}%/年` },
-            ].map(({ key, label, min, max, step, fmt }) => (
+                fmt: v => v === 0 ? '考慮しない' : `${v}%/年`, inputFmt: v => String(v), parseFn: v => Number(v) },
+            ].map(({ key, label, min, max, step, fmt, inputFmt, parseFn }) => (
               <div key={key}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ fontSize: 11, color: sub }}>{label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: txt, fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(lifePlan[key] ?? min)}
-                  </span>
+                  <input
+                    type="text" inputMode="decimal"
+                    value={inputFmt(lifePlan[key] ?? min)}
+                    onChange={e => { const v = parseFn(e.target.value.replace(/[^0-9.]/g, '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
+                    style={{ width: 80, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
+                  />
                 </div>
                 <input type="range" min={min} max={max} step={step}
                   value={lifePlan[key] ?? min}
@@ -656,11 +666,14 @@ export default function SimulationTab(props) {
                 fmt: v => `¥${v.toLocaleString()}` },
             ].map(({ key, label, min, max, step, fmt }) => (
               <div key={key}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                   <span style={{ fontSize: 11, color: sub }}>{label}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: txt, fontVariantNumeric: 'tabular-nums' }}>
-                    {fmt(lifePlan[key] ?? min)}
-                  </span>
+                  <input
+                    type="text" inputMode="decimal"
+                    value={String(lifePlan[key] ?? min)}
+                    onChange={e => { const v = Number(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
+                    style={{ width: 90, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
+                  />
                 </div>
                 <input type="range" min={min} max={max} step={step}
                   value={lifePlan[key] ?? min}
@@ -689,16 +702,19 @@ export default function SimulationTab(props) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
             { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 200000, step: 5000,
-              fmt: v => `¥${v.toLocaleString()}`, color: theme.purple, obj: 'sim' },
+              fmt: v => `¥${v.toLocaleString()}`, color: theme.purple },
             { key: 'returnRate',        label: '想定利回り',     min: 0, max: 12,     step: 0.5,
-              fmt: v => `${v}%`,                 color: blue,     obj: 'sim' },
-          ].map(({ key, label, min, max, step, fmt, color, obj }) => (
+              fmt: v => `${v}%`,                 color: blue },
+          ].map(({ key, label, min, max, step, fmt, color }) => (
             <div key={key}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <span style={{ fontSize: 11, color: sub }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>
-                  {fmt(simulationSettings[key] ?? min)}
-                </span>
+                <input
+                  type="text" inputMode="decimal"
+                  value={String(simulationSettings[key] ?? min)}
+                  onChange={e => { const v = Number(e.target.value.replace(/[^0-9.]/g, '')); if (!isNaN(v) && v >= min && v <= max) setSimulationSettings(prev => ({ ...prev, [key]: v })); }}
+                  style={{ width: 80, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
+                />
               </div>
               <input type="range" min={min} max={max} step={step}
                 value={simulationSettings[key] ?? min}

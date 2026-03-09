@@ -4,26 +4,13 @@ import { Edit2 } from 'lucide-react';
 import { RISK_PROFILES } from '../../hooks/useMoneyData';
 import InlineDialog from '../modals/InlineDialog';
 
-// -- プレミアムスライダー ----------------------------------------------------
-function PremiumSlider({ value, min, max, step, onChange, accent, darkMode }) {
-  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+// -- スライダー（SimulationTabと統一）--------------------------------------
+function AppSlider({ value, min, max, step, onChange, accent }) {
   return (
-    <div className="relative" style={{ height: '28px', display: 'flex', alignItems: 'center' }}>
-      <div className="absolute w-full rounded-full" style={{ height: '4px', backgroundColor: darkMode ? '#3a3a3a' : '#e5e7eb' }} />
-      <div className="absolute rounded-full" style={{ height: '4px', width: `${pct}%`, background: `linear-gradient(90deg, ${accent}88, ${accent})` }} />
-      <div className="absolute rounded-full" style={{
-        width: '20px', height: '20px',
-        left: `calc(${pct}% - 10px)`,
-        background: `radial-gradient(circle at 38% 38%, #ffffff, ${accent}cc)`,
-        boxShadow: `0 2px 8px ${accent}55, 0 1px 4px rgba(0,0,0,0.25)`,
-        border: `2.5px solid ${accent}`,
-        pointerEvents: 'none',
-      }} />
-      <input type="range" min={min} max={max} step={step} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        style={{ position: 'absolute', width: '100%', height: '28px', opacity: 0, cursor: 'pointer', margin: 0 }}
-      />
-    </div>
+    <input type="range" min={min} max={max} step={step} value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+      style={{ width: '100%', accentColor: accent || '#00e5ff' }}
+    />
   );
 }
 
@@ -141,11 +128,9 @@ export default function SettingsTab(props) {
                           <label className={`text-xs font-medium ${theme.textSecondary}`}>{category}</label>
                           <span className={`text-xs font-bold tabular-nums ${theme.text}`}>¥{amount.toLocaleString()}</span>
                         </div>
-                        <PremiumSlider
-                          value={amount} min={0} max={300000} step={5000}
+                        <AppSlider value={amount} min={0} max={300000} step={5000}
                           onChange={(v) => setMonthlyBudget({ ...monthlyBudget, expenses: { ...monthlyBudget.expenses, [category]: v } })}
-                          accent={theme.accent} darkMode={darkMode}
-                        />
+                          accent={theme.accent} />
                       </div>
                     ))}
                   </div>
@@ -188,11 +173,9 @@ export default function SettingsTab(props) {
                         className={`w-32 px-2.5 py-1.5 rounded-lg text-sm font-bold tabular-nums text-right ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
                       />
                     </div>
-                    <PremiumSlider
-                      value={simulationSettings[key]} min={min} max={max} step={step}
+                    <AppSlider value={simulationSettings[key]} min={min} max={max} step={step}
                       onChange={(v) => setSimulationSettings({ ...simulationSettings, [key]: v })}
-                      accent={theme.accent} darkMode={darkMode}
-                    />
+                      accent={theme.accent} />
                     <p className={`text-[10px] text-right ${theme.textSecondary} -mt-0.5`}>{fmt(simulationSettings[key])}</p>
                   </div>
                 ))}
@@ -231,12 +214,10 @@ export default function SettingsTab(props) {
                               ¥{(simulationSettings.lumpSumAmount || 500000).toLocaleString()}
                             </span>
                           </div>
-                          <PremiumSlider
-                            value={simulationSettings.lumpSumAmount || 500000}
+                          <AppSlider value={simulationSettings.lumpSumAmount || 500000}
                             min={100000} max={2400000} step={100000}
                             onChange={(v) => setSimulationSettings({ ...simulationSettings, lumpSumAmount: v })}
-                            accent={theme.accent} darkMode={darkMode}
-                          />
+                            accent={theme.accent} />
                           <p className={`text-[10px] text-right ${theme.textSecondary} -mt-0.5`}>
                             年間上限: ¥2,400,000
                           </p>
