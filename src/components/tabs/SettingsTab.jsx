@@ -85,6 +85,7 @@ export default function SettingsTab(props) {
 
 
   return (
+    <>
           <div className="space-y-2 animate-fadeIn pb-6">
 
             <AccSection id="appearance" icon="🌙" title="外観" expanded={settingsExpanded['appearance']} onToggle={(id) => setSettingsExpanded(prev => ({...prev, [id]: !prev[id]}))}
@@ -604,8 +605,7 @@ export default function SettingsTab(props) {
           theme={theme}
         />
       )}
-          </div>
-        </div>
-      </div>
+
+    </>
   );
 }
