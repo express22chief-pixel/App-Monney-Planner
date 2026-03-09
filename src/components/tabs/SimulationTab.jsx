@@ -9,7 +9,7 @@ import LifePlanSettingsModal  from '../modals/LifePlanSettingsModal';
 import LifeEventPlanner      from '../LifeEventPlanner';
 import { LIFE_EVENT_TEMPLATES, EVENT_ICONS } from '../../constants';
 
-// ─── 小コンポーネント ───────────────────────────────────────────────────────
+// --- 小コンポーネント -------------------------------------------------------
 
 function StatPill({ label, value, color, bg }) {
   return (
@@ -95,7 +95,7 @@ function CustomTooltip({ active, payload, label, retirementAge }) {
   );
 }
 
-// ─── メインコンポーネント ───────────────────────────────────────────────────
+// --- メインコンポーネント ---------------------------------------------------
 
 export default function SimulationTab(props) {
   const {
@@ -154,7 +154,7 @@ export default function SimulationTab(props) {
   const retirementSnap   = byAge.find(r => r.age === retirementAge);
   const targetAchieved   = retirementSnap ? retirementSnap.netWorth >= retirementTarget : false;
 
-  // ─── グラフデータ ────────────────────────────────────────────────────
+  // --- グラフデータ ----------------------------------------------------
   const chartData = useMemo(() => {
     return byAge.map(r => ({
       age:       r.age,
@@ -174,7 +174,7 @@ export default function SimulationTab(props) {
     }).filter(ev => ev.age >= currentAge && ev.age <= lifeExpectancy);
   }, [lifeEvents, currentAge, lifeExpectancy]);
 
-  // ─── カラー（テーマシステムから取得・統一）─────────────────────────
+  // --- カラー（テーマシステムから取得・統一）-------------------------
   const card  = theme.chart;                                  // カード背景
   const bg    = darkMode ? '#111'    : '#f2f2f7';
   const txt   = darkMode ? '#f5f5f5' : '#111';
@@ -209,8 +209,8 @@ export default function SimulationTab(props) {
     setShareModal(true);
   }, [retireWorth, retirementAge, isSafe, lifeExpectancy, depletionAge]);
 
-  // ─── 年収フォーマット ─────────────────────────────────────────────────
-  // ─── 数値フォーマット（億対応）──────────────────────────────────────
+  // --- 年収フォーマット -------------------------------------------------
+  // --- 数値フォーマット（億対応）--------------------------------------
   const fmtMan = v => {
     const abs = Math.abs(v);
     const sign = v < 0 ? '-' : '';
@@ -222,9 +222,9 @@ export default function SimulationTab(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           1. ステータスバナー
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       <div style={{ background: card, borderRadius: 8, overflow: 'hidden' }}>
         <button onClick={() => setSecStatus(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -299,7 +299,7 @@ export default function SimulationTab(props) {
         </div>}
       </div>
 
-      {/* ── リタイア時/最終 サマリーピル ─────────────────────────────── */}
+      {/* -- リタイア時/最終 サマリーピル ------------------------------- */}
       <div style={{ display: 'flex', gap: 8 }}>
         <StatPill label={`RETIRE · ${retirementAge}歳`} value={fmtMan(retireWorth)}
           color={blue} bg={darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(0,229,255,0.04)'} />
@@ -307,9 +307,9 @@ export default function SimulationTab(props) {
           color={finalWorth > 0 ? green : red} bg={darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} />
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           2. タイムライングラフ
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       <div style={{ background: card, borderRadius: 8 }}>
         <button onClick={() => setSecTimeline(v => !v)} style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -438,9 +438,9 @@ export default function SimulationTab(props) {
         </div>)}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           3. 家計実績インサイト
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
         <div style={{ background: card, borderRadius: 8 }}>
           <div style={{ padding: '14px 16px', borderBottom: secInsight ? `1px solid ${bdr}` : 'none' }}><SectionTitle
@@ -448,7 +448,7 @@ export default function SimulationTab(props) {
             action={<span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>}
           >
             実績ベースのインサイト
-          </SectionTitle>
+          </SectionTitle></div>
           {secInsight && (
           <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px' }}>
 
@@ -569,9 +569,9 @@ export default function SimulationTab(props) {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           4. ライフプラン調整パネル（インライン編集）
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <SectionTitle
           collapsible expanded={secLifePlan} onToggle={() => setSecLifePlan(v => !v)}
@@ -590,7 +590,7 @@ export default function SimulationTab(props) {
         </SectionTitle></div>
         {secLifePlan && (<div className="animate-fadeIn" style={{ padding: '0 16px 16px' }}>
 
-        {/* ── 現役フェーズ ────────────────────────────────────── */}
+        {/* -- 現役フェーズ -------------------------------------- */}
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>現役フェーズ</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -621,7 +621,7 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
 
-        {/* ── リタイア ────────────────────────────────────────── */}
+        {/* -- リタイア ------------------------------------------ */}
         <div style={{ marginBottom: 16 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>リタイア</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -668,7 +668,7 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 14 }} />
 
-        {/* ── 老後 ────────────────────────────────────────────── */}
+        {/* -- 老後 ---------------------------------------------- */}
         <div style={{ marginBottom: 14 }}>
           <p style={{ fontSize: 10, fontWeight: 700, color: sub, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>老後の収支</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -709,7 +709,7 @@ export default function SimulationTab(props) {
 
         <div style={{ height: 1, background: bdr, marginBottom: 12 }} />
 
-        {/* ── 投資設定ショートカット ────────────────────────── */}
+        {/* -- 投資設定ショートカット -------------------------- */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
             { key: 'monthlyInvestment', label: '月々の積立投資', min: 0, max: 200000, step: 5000,
@@ -735,9 +735,9 @@ export default function SimulationTab(props) {
         </div>)}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           4. ライフイベント（デフォルトテンプレート＋インライン調整）
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       <div style={{ background: card, borderRadius: 16 }}>
         <button onClick={() => setSecLifeEvent(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -770,9 +770,9 @@ export default function SimulationTab(props) {
       /></div>}
       </div>
 
-            {/* ══════════════════════════════════════════════════════════════════
+            {/* ==================================================================
           5. フェーズ別内訳（リタイア前後の資産構成）
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <SectionTitle collapsible expanded={secPhaseSnap} onToggle={() => setSecPhaseSnap(v => !v)}>フェーズ別スナップショット</SectionTitle>
         {secPhaseSnap && <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -838,9 +838,9 @@ export default function SimulationTab(props) {
         </div>}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════
+      {/* ==================================================================
           6. 購入 vs 賃貸 比較
-      ══════════════════════════════════════════════════════════════════ */}
+      ================================================================== */}
       {housingParams && housingComparison && (() => {
         const hc      = housingComparison;
         const yrs     = housingParams.compareYears ?? 30;
@@ -972,7 +972,7 @@ export default function SimulationTab(props) {
         );
       })()}
 
-      {/* ── モーダル ──────────────────────────────────────────────────── */}
+      {/* -- モーダル ---------------------------------------------------- */}
       {showLifePlanSettings && (
         <LifePlanSettingsModal
           lifePlan={lifePlan} setLifePlan={setLifePlan}

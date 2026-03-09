@@ -74,7 +74,7 @@ export default function SettingsTab(props) {
     lifePlan,
   } = props;
 
-  // ── インラインダイアログ state ────────────────────────────────────────
+  // -- インラインダイアログ state ----------------------------------------
   const [dialog, setDialog] = useState(null); // { type, title, message, defaultValue, onConfirm, danger }
   const closeDialog = () => setDialog(null);
 
@@ -376,25 +376,40 @@ export default function SettingsTab(props) {
                         </div>
                         <span className={`flex-1 text-xs font-medium ${theme.text}`}>{cat}</span>
                         <button onClick={() => {
-                          const newName = prompt('カテゴリ名を変更', cat);
-                          if (!newName || !newName.trim() || newName.trim() === cat) return;
-                          if (isDefault) {
-                            if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, renamedDefaults: { ...prev.renamedDefaults, expense: { ...prev.renamedDefaults.expense, [origName]: newName.trim() } } }));
-                            else setCustomCategories(prev => ({ ...prev, renamedDefaults: { ...prev.renamedDefaults, income: { ...prev.renamedDefaults.income, [origName]: newName.trim() } } }));
-                          } else {
-                            if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, expense: prev.expense.map(c => c === cat ? newName.trim() : c) }));
-                            else setCustomCategories(prev => ({ ...prev, income: prev.income.map(c => c === cat ? newName.trim() : c) }));
-                          }
+                          setDialog({
+                            type: 'input', title: 'カテゴリ名を変更',
+                            message: '新しいカテゴリ名を入力してください',
+                            defaultValue: cat,
+                            confirmLabel: '変更',
+                            onConfirm: (newName) => {
+                              if (!newName || !newName.trim() || newName.trim() === cat) { closeDialog(); return; }
+                              if (isDefault) {
+                                if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, renamedDefaults: { ...prev.renamedDefaults, expense: { ...prev.renamedDefaults.expense, [origName]: newName.trim() } } }));
+                                else setCustomCategories(prev => ({ ...prev, renamedDefaults: { ...prev.renamedDefaults, income: { ...prev.renamedDefaults.income, [origName]: newName.trim() } } }));
+                              } else {
+                                if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, expense: prev.expense.map(c => c === cat ? newName.trim() : c) }));
+                                else setCustomCategories(prev => ({ ...prev, income: prev.income.map(c => c === cat ? newName.trim() : c) }));
+                              }
+                              closeDialog();
+                            },
+                          });
                         }} className="text-xs px-2 py-1 rounded-lg font-medium" style={{ backgroundColor: darkMode ? '#3a3a3a' : '#e5e7eb', color: darkMode ? '#d4d4d4' : '#555' }}>✏️</button>
                         <button onClick={() => {
-                          if (!confirm(cat + ' を削除しますか？')) return;
-                          if (isDefault) {
-                            if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, deletedDefaults: { ...prev.deletedDefaults, expense: [...prev.deletedDefaults.expense, origName] } }));
-                            else setCustomCategories(prev => ({ ...prev, deletedDefaults: { ...prev.deletedDefaults, income: [...prev.deletedDefaults.income, origName] } }));
-                          } else {
-                            if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, expense: prev.expense.filter(c => c !== cat) }));
-                            else setCustomCategories(prev => ({ ...prev, income: prev.income.filter(c => c !== cat) }));
-                          }
+                          setDialog({
+                            type: 'confirm', title: 'カテゴリを削除',
+                            message: cat + ' を削除しますか？',
+                            confirmLabel: '削除', danger: true,
+                            onConfirm: () => {
+                              if (isDefault) {
+                                if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, deletedDefaults: { ...prev.deletedDefaults, expense: [...prev.deletedDefaults.expense, origName] } }));
+                                else setCustomCategories(prev => ({ ...prev, deletedDefaults: { ...prev.deletedDefaults, income: [...prev.deletedDefaults.income, origName] } }));
+                              } else {
+                                if (newCategoryType === 'expense') setCustomCategories(prev => ({ ...prev, expense: prev.expense.filter(c => c !== cat) }));
+                                else setCustomCategories(prev => ({ ...prev, income: prev.income.filter(c => c !== cat) }));
+                              }
+                              closeDialog();
+                            },
+                          });
                         }} className="text-red-400 text-xs px-2 py-1 rounded-lg font-bold" style={{ backgroundColor: darkMode ? '#3a2a2a' : '#fee2e2' }}>🗑️</button>
                       </div>
                     );
@@ -422,7 +437,12 @@ export default function SettingsTab(props) {
                         </div>
                         <div className="flex gap-1">
                           <button onClick={() => { setEditingCard(card); setShowCardModal(true); }} className="p-1.5 rounded-lg text-blue-500">✏️</button>
-                          <button onClick={() => { if(confirm('削除しますか？')) setCreditCards(prev => prev.filter(c => c.id !== card.id)); }} className="p-1.5 rounded-lg text-red-500">🗑️</button>
+                          <button onClick={() => setDialog({
+                            type: 'confirm', title: 'カードを削除',
+                            message: `「${card.name}」を削除しますか？`,
+                            confirmLabel: '削除', danger: true,
+                            onConfirm: () => { setCreditCards(prev => prev.filter(c => c.id !== card.id)); closeDialog(); },
+                          })} className="p-1.5 rounded-lg text-red-500">🗑️</button>
                         </div>
                       </div>
                     ))}
@@ -535,8 +555,8 @@ export default function SettingsTab(props) {
                             const icon = document.getElementById('wallet-icon-input').value.trim() || '💳';
                             const name = document.getElementById('wallet-name-input').value.trim();
                             const color = document.getElementById('wallet-color-input').value;
-                            if (!name) { alert('名前を入力してください'); return; }
-                            if ((wallets || []).some(w => w.name === name)) { alert('同じ名前のウォレットが既にあります'); return; }
+                            if (!name) { setDialog({ type: 'confirm', title: '入力エラー', message: '名前を入力してください', confirmLabel: 'OK', onConfirm: closeDialog }); return; }
+                            if ((wallets || []).some(w => w.name === name)) { setDialog({ type: 'confirm', title: '入力エラー', message: '同じ名前のウォレットが既にあります', confirmLabel: 'OK', onConfirm: closeDialog }); return; }
                             setWallets(prev => [...(prev || []), { id: Date.now(), name, icon, color }]);
                             document.getElementById('wallet-icon-input').value = '';
                             document.getElementById('wallet-name-input').value = '';
@@ -590,7 +610,7 @@ export default function SettingsTab(props) {
 
           </div>
 
-      {/* ── インラインダイアログ ───────────────────────────────────────── */}
+      {/* -- インラインダイアログ ----------------------------------------- */}
       {dialog && (
         <InlineDialog
           type={dialog.type}
