@@ -126,7 +126,7 @@ export function useMoneyData() {
   );
 
   const [monthlyHistory, setMonthlyHistory]     = useState(() => load('monthlyHistory', {}));
-  // ── デフォルトライフイベント（年齢オフセットベース）──────────────────
+  // -- デフォルトライフイベント（年齢オフセットベース）------------------
   const DEFAULT_LIFE_EVENTS = (baseAge) => {
     const nowYear = new Date().getFullYear();
     const makeDate = (age) => `${nowYear + Math.max(0, age - baseAge)}-01`;
