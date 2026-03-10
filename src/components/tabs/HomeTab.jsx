@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 export default function HomeTab(props) {
@@ -26,6 +26,60 @@ export default function HomeTab(props) {
     wallets, walletBalances,
   } = props;
   const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
+
+  // ② クイック入力バーの状態
+  const [quickAmt, setQuickAmt]   = useState('');
+  const [quickCat, setQuickCat]   = useState('食費');
+  const [quickCard, setQuickCard] = useState('cash');
+  const quickExpenseCategories = ['食費','交通費','日用品','娯楽','外食','カフェ','コンビニ','通信費','医療費','その他'];
+
+  // ①③ インサイト & 月末予測（今月のみ）
+  const insightData = useMemo(() => {
+    const today = new Date();
+    const toYM  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const ym    = toYM(today);
+    if (monthlyHistory[ym]) return null;
+    const bal    = calculateMonthlyBalance(ym);
+    const inc    = bal.plIncome  || 0;
+    const exp    = bal.plExpense || 0;
+    const cf     = bal.cfBalance || 0;
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    const daysPassed  = today.getDate();
+    const daysLeft    = daysInMonth - daysPassed;
+    const dailyRate   = daysPassed > 0 ? exp / daysPassed : 0;
+    const projectedExp = Math.round(dailyRate * daysInMonth);
+    const projectedDiff = inc - projectedExp;
+    const cfLeft = cf - Math.round(dailyRate * daysLeft);
+    const msgs = [];
+    if (inc > 0 && exp > 0) {
+      const ratio = exp / inc;
+      if (ratio < 0.6)  msgs.push({ icon: '📈', text: `このペースだと今月 +¥${Math.abs(projectedDiff).toLocaleString()} 黒字予測`, color: '#0cff8c' });
+      else if (ratio < 0.9) msgs.push({ icon: '👍', text: `支出は収入の${Math.round(ratio*100)}%。良いペースです`, color: '#00e5ff' });
+      else msgs.push({ icon: '⚠️', text: `支出が収入の${Math.round(ratio*100)}%。このペースは要注意`, color: '#ff9f0a' });
+    }
+    if (cf > 0 && daysPassed > 0) {
+      msgs.push({ icon: '💳', text: `今月あと¥${cfLeft.toLocaleString()}使えます（CF残高ベース）`, color: '#a855f7' });
+    }
+    return { msgs, projectedExp, projectedDiff, daysLeft, inc, exp };
+  }, [transactions, recurringTransactions, monthlyHistory, calculateMonthlyBalance]);
+
+  // ④ 初回チェックリスト
+  const checklistItems = useMemo(() => {
+    const today = new Date();
+    const toYM  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const ym    = toYM(today);
+    const hasCard   = creditCards && creditCards.length > 0;
+    const hasTxn3   = transactions.filter(t => t.date.startsWith(ym)).length >= 3;
+    const hasClosed = Object.keys(monthlyHistory).length > 0;
+    const hasSimu   = true;
+    const allDone   = hasCard && hasTxn3 && hasClosed;
+    if (allDone) return null;
+    return [
+      { label: 'クレカを登録する',       done: hasCard,   action: () => setActiveTab('settings') },
+      { label: '今月の取引を3件入力する', done: hasTxn3,   action: () => setShowAddTransaction(true) },
+      { label: '今月を締める',            done: hasClosed, action: () => openCloseMonthModal() },
+    ];
+  }, [creditCards, transactions, monthlyHistory]);
 
   return (
           <div className="space-y-3 animate-fadeIn">
@@ -59,6 +113,99 @@ export default function HomeTab(props) {
                 </div>
               </div>
             )}
+
+            {/* ④ 初回チェックリスト */}
+            {checklistItems && (
+              <div style={{ borderRadius: 10, padding: '12px 14px', background: darkMode ? '#0f0f0f' : '#f8f8f8', border: `1px solid ${darkMode ? '#1e1e1e' : '#e8e8e8'}` }}>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase' }}>GETTING STARTED</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {checklistItems.map((item, i) => (
+                    <button key={i} onClick={item.done ? undefined : item.action}
+                      style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: item.done ? 'default' : 'pointer', padding: 0, textAlign: 'left' }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, border: `2px solid ${item.done ? '#0cff8c' : (darkMode ? '#333' : '#ccc')}`, background: item.done ? '#0cff8c20' : 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {item.done && <span style={{ fontSize: 10, color: '#0cff8c' }}>✓</span>}
+                      </div>
+                      <span style={{ fontSize: 13, color: item.done ? (darkMode ? '#444' : '#bbb') : (darkMode ? '#e0e0e0' : '#333'), textDecoration: item.done ? 'line-through' : 'none', fontWeight: item.done ? 400 : 600 }}>{item.label}</span>
+                      {!item.done && <span style={{ marginLeft: 'auto', fontSize: 10, color: '#00e5ff' }}>→</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ① 今日のインサイト */}
+            {insightData && insightData.msgs.length > 0 && (
+              <div style={{ borderRadius: 10, padding: '10px 14px', background: darkMode ? '#0a0a0a' : '#f5f5f5', border: `1px solid ${darkMode ? '#1a1a1a' : '#ebebeb'}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {insightData.msgs.map((m, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 14 }}>{m.icon}</span>
+                    <span style={{ fontSize: 12, color: m.color, fontWeight: 600, lineHeight: 1.4 }}>{m.text}</span>
+                  </div>
+                ))}
+                {insightData.inc > 0 && insightData.daysLeft > 0 && (
+                  <div style={{ marginTop: 2, paddingTop: 6, borderTop: `1px solid ${darkMode ? '#1a1a1a' : '#e8e8e8'}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 10, color: darkMode ? '#555' : '#aaa' }}>月末まであと{insightData.daysLeft}日</span>
+                    <span style={{ fontSize: 10, color: insightData.projectedDiff >= 0 ? '#0cff8c' : '#ff453a', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+                      予測: {insightData.projectedDiff >= 0 ? '+' : ''}¥{insightData.projectedDiff.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ② クイック入力バー */}
+            {(() => {
+              const today2 = new Date();
+              const toYM2  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+              const notClosed = !monthlyHistory[toYM2(today2)];
+              if (!notClosed) return null;
+              const handleQuickAdd = () => {
+                const amt = parseInt(quickAmt.replace(/,/g, ''), 10);
+                if (!amt || amt <= 0) return;
+                const today3 = new Date();
+                const pad2 = n => String(n).padStart(2,'0');
+                const dateStr = `${today3.getFullYear()}-${pad2(today3.getMonth()+1)}-${pad2(today3.getDate())}`;
+                const isCard = quickCard !== 'cash';
+                const card = isCard ? creditCards.find(c => c.id === quickCard) : null;
+                const newTxn = {
+                  id: Date.now(), date: dateStr, amount: -amt, description: quickCat,
+                  category: quickCat, type: 'expense', settled: !isCard,
+                  creditCardId: isCard ? quickCard : null, notes: '',
+                };
+                setTransactions(prev => [newTxn, ...prev]);
+                setQuickAmt('');
+              };
+              return (
+                <div style={{ borderRadius: 10, padding: '10px 12px', background: darkMode ? '#0d0d0d' : '#f8f8f8', border: `1px solid ${darkMode ? '#1e1e1e' : '#e8e8e8'}` }}>
+                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase' }}>QUICK ADD</p>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ position: 'relative', flex: 1 }}>
+                      <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: darkMode ? '#555' : '#aaa', fontFamily: "'JetBrains Mono', monospace" }}>¥</span>
+                      <input
+                        type="number" inputMode="numeric" placeholder="金額"
+                        value={quickAmt}
+                        onChange={e => setQuickAmt(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
+                        style={{ width: '100%', paddingLeft: 24, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#111', fontSize: 14, fontFamily: "'JetBrains Mono', monospace", outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <select value={quickCat} onChange={e => setQuickCat(e.target.value)}
+                      style={{ padding: '8px 6px', borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#ccc' : '#333', fontSize: 12 }}>
+                      {quickExpenseCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <select value={quickCard} onChange={e => setQuickCard(e.target.value)}
+                      style={{ padding: '8px 6px', borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#ccc' : '#333', fontSize: 12 }}>
+                      <option value="cash">現金</option>
+                      {(creditCards||[]).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                    <button onClick={handleQuickAdd}
+                      style={{ padding: '8px 14px', borderRadius: 8, background: '#00e5ff', border: 'none', color: '#000', fontSize: 13, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
+                      追加
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
 
             {(() => {
               const today = new Date();

@@ -440,10 +440,7 @@ export default function SimulationTab(props) {
                 label={{ value: '目標', position: 'insideTopRight', fontSize: 9, fill: green }} />
             )}
 
-            {eventPins.filter(ev => ev.enabled !== false).map(ev => (
-              <ReferenceLine key={ev.id} x={ev.age} stroke={sub} strokeDasharray="2 3" strokeWidth={1}
-                label={{ value: ev.icon || '📌', position: 'top', fontSize: 11 }} />
-            ))}
+
 
             {byAge.some(r => r.loanBalance > 0) && (
               <Area type="monotone" dataKey="負債"
