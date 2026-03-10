@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { BarChart2, TrendingUp, Sparkles } from 'lucide-react';
-import { calcFutureImpact } from '../../utils/calc';
+import { calcFutureImpact, BENCHMARK_DATA } from '../../utils/calc';
 
 function formatYM(ym) {
   if (!ym) return '';
@@ -17,6 +17,8 @@ export default function CloseMonthModal(props) {
     lifePlan, userInfo,
   } = props;
 
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryData, setSummaryData] = useState(null);
   const targetMonth = closingTargetMonth || (currentBalance ? undefined : null);
   const tb = calculateMonthlyBalance(targetMonth);
   const cfBalance = isNaN(tb?.cfBalance) ? 0 : tb.cfBalance;
@@ -47,6 +49,55 @@ export default function CloseMonthModal(props) {
   const orange = theme?.orange  || '#f59e0b';
   const blue   = theme?.accent  || '#3b82f6';
   const purple = theme?.purple  || '#a855f7';
+
+  if (showSummary && summaryData) {
+    const isPositive = summaryData.plBalance >= 0;
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(8px)', padding: '0 20px' }}>
+        <div style={{ width: '100%', maxWidth: 380, background: darkMode ? '#111' : '#fff', borderRadius: 24, padding: 28, textAlign: 'center' }}>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', background: isPositive ? 'rgba(12,255,140,0.15)' : 'rgba(255,69,58,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>
+            {isPositive ? '🎉' : '📊'}
+          </div>
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase' }}>
+            {formatYM(summaryData.month)} 締め完了
+          </p>
+          <p style={{ fontSize: 32, fontWeight: 900, color: isPositive ? '#0cff8c' : red, fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
+            {isPositive ? '+' : ''}¥{(summaryData.plBalance/10000).toFixed(1)}万
+          </p>
+          <p style={{ fontSize: 12, color: darkMode ? '#666' : '#bbb', marginBottom: 20 }}>今月のPL収支</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+            {[
+              { label: '貯金に追加', val: summaryData.saved, color: blue },
+              { label: '投資に追加', val: summaryData.invest, color: purple },
+            ].map(({label, val, color}) => (
+              <div key={label} style={{ background: darkMode ? '#1a1a1a' : '#f5f5f5', borderRadius: 12, padding: '10px 12px' }}>
+                <p style={{ fontSize: 10, color: darkMode ? '#555' : '#aaa', marginBottom: 4 }}>{label}</p>
+                <p style={{ fontSize: 15, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>{val >= 0 ? '+' : ''}¥{val.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+          {summaryData.peer > 0 && (
+            <div style={{ background: darkMode ? '#0d0d0d' : '#f8f8f8', borderRadius: 12, padding: '10px 14px', marginBottom: 20, textAlign: 'left' }}>
+              <p style={{ fontSize: 10, color: darkMode ? '#555' : '#aaa', marginBottom: 6 }}>同年代との比較（PL月次換算）</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, color: darkMode ? '#888' : '#999' }}>同世代月平均貯蓄</span>
+                <span style={{ fontSize: 12, color: darkMode ? '#888' : '#999', fontVariantNumeric: 'tabular-nums' }}>¥{(summaryData.peer/12).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} / 月</span>
+              </div>
+              {summaryData.plBalance > 0 && (
+                <p style={{ fontSize: 11, color: summaryData.plBalance > summaryData.peer/12 ? '#0cff8c' : '#ff9f0a', fontWeight: 700, marginTop: 4 }}>
+                  {summaryData.plBalance > summaryData.peer/12 ? `平均より +¥${(summaryData.plBalance - summaryData.peer/12).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} 上回っています 🎯` : `平均まであと +¥${(summaryData.peer/12 - summaryData.plBalance).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} `}
+                </p>
+              )}
+            </div>
+          )}
+          <button onClick={() => setShowSummary(false)}
+            style={{ width: '100%', padding: '13px', background: '#00e5ff', border: 'none', borderRadius: 12, color: '#000', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+            資産タブで確認する →
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -210,7 +261,25 @@ export default function CloseMonthModal(props) {
             flex: 1, padding: '13px', background: darkMode ? '#252525' : '#f2f2f7',
             border: 'none', borderRadius: 12, color: sub, fontSize: 14, fontWeight: 700, cursor: 'pointer', transition: 'opacity 0.15s',
           }} onMouseOver={e=>e.currentTarget.style.opacity='0.8'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>キャンセル</button>
-          <button onClick={() => closeMonth(targetMonth)} style={{
+          <button onClick={() => {
+            closeMonth(targetMonth);
+            const getAgeGroup = age => {
+              if (age < 30) return 'under30'; if (age < 40) return '30s';
+              if (age < 50) return '40s'; if (age < 60) return '50s'; return '60s';
+            };
+            const age   = userInfo?.age ? Number(userInfo.age) : 30;
+            const ag    = getAgeGroup(age);
+            const peer  = BENCHMARK_DATA[ag]?.average ?? 0;
+            setSummaryData({
+              month: targetMonth,
+              plBalance: tb?.plBalance ?? 0,
+              cfBalance,
+              invest: closeMonthData.investAmount,
+              saved: closeMonthData.savedAmount,
+              peer,
+            });
+            setShowSummary(true);
+          }} style={{
             flex: 2, padding: '13px', background: theme.accent,
             border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
           }}>確定する</button>
