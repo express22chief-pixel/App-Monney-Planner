@@ -27,12 +27,6 @@ export default function HomeTab(props) {
   } = props;
   const formatYM = (ym) => { const [y, m] = ym.split('-'); return `${y}年${parseInt(m)}月`; };
 
-  // ② クイック入力バーの状態
-  const [quickAmt, setQuickAmt]   = useState('');
-  const [quickCat, setQuickCat]   = useState('食費');
-  const [quickCard, setQuickCard] = useState('cash');
-  const quickExpenseCategories = ['食費','交通費','日用品','娯楽','外食','カフェ','コンビニ','通信費','医療費','その他'];
-
   // ①③ インサイト & 月末予測（今月のみ）
   const insightData = useMemo(() => {
     const today = new Date();
@@ -153,59 +147,7 @@ export default function HomeTab(props) {
               </div>
             )}
 
-            {/* ② クイック入力バー */}
-            {(() => {
-              const today2 = new Date();
-              const toYM2  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-              const notClosed = !monthlyHistory[toYM2(today2)];
-              if (!notClosed) return null;
-              const handleQuickAdd = () => {
-                const amt = parseInt(quickAmt.replace(/,/g, ''), 10);
-                if (!amt || amt <= 0) return;
-                const today3 = new Date();
-                const pad2 = n => String(n).padStart(2,'0');
-                const dateStr = `${today3.getFullYear()}-${pad2(today3.getMonth()+1)}-${pad2(today3.getDate())}`;
-                const isCard = quickCard !== 'cash';
-                const card = isCard ? creditCards.find(c => c.id === quickCard) : null;
-                const newTxn = {
-                  id: Date.now(), date: dateStr, amount: -amt, description: quickCat,
-                  category: quickCat, type: 'expense', settled: !isCard,
-                  creditCardId: isCard ? quickCard : null, notes: '',
-                };
-                setTransactions(prev => [newTxn, ...prev]);
-                setQuickAmt('');
-              };
-              return (
-                <div style={{ borderRadius: 10, padding: '10px 12px', background: darkMode ? '#0d0d0d' : '#f8f8f8', border: `1px solid ${darkMode ? '#1e1e1e' : '#e8e8e8'}` }}>
-                  <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase' }}>QUICK ADD</p>
-                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <div style={{ position: 'relative', flex: 1 }}>
-                      <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: darkMode ? '#555' : '#aaa', fontFamily: "'JetBrains Mono', monospace" }}>¥</span>
-                      <input
-                        type="number" inputMode="numeric" placeholder="金額"
-                        value={quickAmt}
-                        onChange={e => setQuickAmt(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleQuickAdd()}
-                        style={{ width: '100%', paddingLeft: 24, paddingRight: 8, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#111', fontSize: 14, fontFamily: "'JetBrains Mono', monospace", outline: 'none', boxSizing: 'border-box' }}
-                      />
-                    </div>
-                    <select value={quickCat} onChange={e => setQuickCat(e.target.value)}
-                      style={{ padding: '8px 6px', borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#ccc' : '#333', fontSize: 12 }}>
-                      {quickExpenseCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    <select value={quickCard} onChange={e => setQuickCard(e.target.value)}
-                      style={{ padding: '8px 6px', borderRadius: 8, border: `1px solid ${darkMode ? '#2a2a2a' : '#e0e0e0'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#ccc' : '#333', fontSize: 12 }}>
-                      <option value="cash">現金</option>
-                      {(creditCards||[]).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                    <button onClick={handleQuickAdd}
-                      style={{ padding: '8px 14px', borderRadius: 8, background: '#00e5ff', border: 'none', color: '#000', fontSize: 13, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>
-                      追加
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
+
 
             {(() => {
               const today = new Date();

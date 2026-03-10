@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Share2, X, Download, Plus, Settings2, ChevronRight, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import {
-  ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ComposedChart, AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ReferenceLine, ResponsiveContainer, Legend,
 } from 'recharts';
 import HousingComparisonModal from '../modals/HousingComparisonModal';
@@ -114,6 +114,7 @@ export default function SimulationTab(props) {
     recentMonthlyAverages, incomeGrowthEstimate, monthlyGapImpact,
     monthlyHistory, transactions, recurringTransactions,
     setActiveTab,
+    monteCarloResults, monteCarloChartData, scenarioResults,
   } = props;
 
   // 実績資産推移（monthlyHistoryから累積）
@@ -503,6 +504,43 @@ export default function SimulationTab(props) {
           </div>
         )}
         </div>)}
+
+      {/* モンテカルロシミュレーション */}
+      <div style={{ background: card, borderRadius: 8 }}>
+        <button onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>モンテカルロシミュレーション</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>100通りのシナリオ</span>
+            <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, display: 'inline-block', transform: simulationSettings.showMonteCarloSimulation ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+          </div>
+        </button>
+        {simulationSettings.showMonteCarloSimulation && monteCarloChartData && monteCarloChartData.length > 0 && (
+          <div style={{ padding: '14px 16px' }}>
+            <p style={{ fontSize: 10, color: sub, marginBottom: 12 }}>利回りにランダムな変動を加えた100回のシミュレーション結果。上下のバンドが確率的なリスク幅を示します。</p>
+            <ResponsiveContainer width="100%" height={220}>
+              <AreaChart data={monteCarloChartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#1a1a1a' : '#f0f0f0'} vertical={false} />
+                <XAxis dataKey="年" tick={{ fontSize: 9, fill: sub }} />
+                <YAxis tickFormatter={v => v >= 100000000 ? `${(v/100000000).toFixed(0)}億` : v >= 10000 ? `${(v/10000).toFixed(0)}万` : v} tick={{ fontSize: 9, fill: sub }} width={44} />
+                <Tooltip formatter={(v, name) => [`¥${(v/10000).toFixed(0)}万`, name]} />
+                <Area type="monotone" dataKey="範囲下限" stackId="band" stroke="none" fill="#3b82f620" />
+                <Area type="monotone" dataKey="範囲上限" stackId="band" stroke="none" fill="#3b82f620" />
+                <Line type="monotone" dataKey="平均" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="最小" stroke="#ff453a" strokeWidth={1} strokeDasharray="3 3" dot={false} />
+                <Line type="monotone" dataKey="最大" stroke="#0cff8c" strokeWidth={1} strokeDasharray="3 3" dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+            <div style={{ display: 'flex', gap: 14, marginTop: 8, flexWrap: 'wrap' }}>
+              {[{ color: '#0cff8c', label: '最大' }, { color: '#3b82f6', label: '平均', bold: true }, { color: '#ff453a', label: '最小' }].map(item => (
+                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 16, height: 2, background: item.color, borderRadius: 1 }} />
+                  <span style={{ fontSize: 10, color: item.bold ? '#3b82f6' : sub, fontWeight: item.bold ? 700 : 400 }}>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
