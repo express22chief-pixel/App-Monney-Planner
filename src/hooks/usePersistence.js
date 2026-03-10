@@ -31,25 +31,29 @@ export function usePersistence(state) {
     creditCards,
     splitPayments,
     dismissedClosingAlerts,
+    isDemoMode,
   } = state;
 
-  useEffect(() => { save('transactions',          transactions);          }, [transactions]);
-  useEffect(() => { save('assetData',             assetData);             }, [assetData]);
-  useEffect(() => { save('monthlyHistory',         monthlyHistory);        }, [monthlyHistory]);
-  useEffect(() => { save('lifeEvents',            lifeEvents);            }, [lifeEvents]);
-  useEffect(() => { if (userInfo) save('userInfo', userInfo);             }, [userInfo]);
-  useEffect(() => { save('simulationSettings',    simulationSettings);    }, [simulationSettings]);
-  useEffect(() => { save('darkMode',              darkMode);              }, [darkMode]);
-  useEffect(() => { save('monthlyBudget',         monthlyBudget);         }, [monthlyBudget]);
-  useEffect(() => { save('customCategories',      customCategories);      }, [customCategories]);
-  useEffect(() => { save('recurringTransactions', recurringTransactions); }, [recurringTransactions]);
-  useEffect(() => { save('creditCards',           creditCards);           }, [creditCards]);
-  useEffect(() => { save('splitPayments',         splitPayments);         }, [splitPayments]);
-  useEffect(() => { save('dismissedClosingAlerts',dismissedClosingAlerts);}, [dismissedClosingAlerts]);
+  // デモモード中はドメインデータを保存しない（isDemoModeフラグのみ保存）
+  const isDemo = isDemoMode;
 
-  useEffect(() => { save('wallets', state.wallets); }, [state.wallets]);
-  useEffect(() => { if (state.housingParams) save('housingParams', state.housingParams); }, [state.housingParams]);
-  useEffect(() => { if (state.lifePlan) save('lifePlan', state.lifePlan); }, [state.lifePlan]);
-  useEffect(() => { save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates]);
-  useEffect(() => { save('walletAdjustments', state.walletAdjustments); }, [state.walletAdjustments]);
+  useEffect(() => { if (!isDemo) save('transactions',          transactions);          }, [transactions, isDemo]);
+  useEffect(() => { if (!isDemo) save('assetData',             assetData);             }, [assetData, isDemo]);
+  useEffect(() => { if (!isDemo) save('monthlyHistory',        monthlyHistory);        }, [monthlyHistory, isDemo]);
+  useEffect(() => { if (!isDemo) save('lifeEvents',            lifeEvents);            }, [lifeEvents, isDemo]);
+  useEffect(() => { if (!isDemo && userInfo) save('userInfo',  userInfo);              }, [userInfo, isDemo]);
+  useEffect(() => { if (!isDemo) save('simulationSettings',    simulationSettings);    }, [simulationSettings, isDemo]);
+  useEffect(() => {               save('darkMode',              darkMode);              }, [darkMode]);
+  useEffect(() => { if (!isDemo) save('monthlyBudget',         monthlyBudget);         }, [monthlyBudget, isDemo]);
+  useEffect(() => { if (!isDemo) save('customCategories',      customCategories);      }, [customCategories, isDemo]);
+  useEffect(() => { if (!isDemo) save('recurringTransactions', recurringTransactions); }, [recurringTransactions, isDemo]);
+  useEffect(() => { if (!isDemo) save('creditCards',           creditCards);           }, [creditCards, isDemo]);
+  useEffect(() => { if (!isDemo) save('splitPayments',         splitPayments);         }, [splitPayments, isDemo]);
+  useEffect(() => {               save('dismissedClosingAlerts',dismissedClosingAlerts);}, [dismissedClosingAlerts]);
+
+  useEffect(() => { if (!isDemo) save('wallets', state.wallets); }, [state.wallets, isDemo]);
+  useEffect(() => { if (!isDemo && state.housingParams) save('housingParams', state.housingParams); }, [state.housingParams, isDemo]);
+  useEffect(() => { if (!isDemo && state.lifePlan) save('lifePlan', state.lifePlan); }, [state.lifePlan, isDemo]);
+  useEffect(() => { if (!isDemo) save('transactionTemplates', state.transactionTemplates); }, [state.transactionTemplates, isDemo]);
+  useEffect(() => { if (!isDemo) save('walletAdjustments', state.walletAdjustments); }, [state.walletAdjustments, isDemo]);
 }

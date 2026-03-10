@@ -61,7 +61,7 @@ export function useMoneyData() {
   // STATE: モーダル表示フラグ
   // ----------------------------------------------------------------------------
   const [showSettings, setShowSettings]                   = useState(false);
-  const [isDemoMode, setIsDemoMode]                       = useState(false);
+  const [isDemoMode, setIsDemoMode]                       = useState(() => load('isDemoMode', false));
   const [isDemoTour, setIsDemoTour]                       = useState(false);
   const [showOnboarding, setShowOnboarding]               = useState(() => !load('userInfo', null));
   const [showTutorial, setShowTutorial]                   = useState(false);
@@ -330,6 +330,7 @@ export function useMoneyData() {
     simulationSettings, darkMode, monthlyBudget, customCategories,
     recurringTransactions, creditCards, splitPayments, dismissedClosingAlerts, transactionTemplates,
     walletAdjustments, wallets, housingParams, lifePlan,
+    isDemoMode,
   });
 
   // ----------------------------------------------------------------------------
@@ -341,6 +342,22 @@ export function useMoneyData() {
     const timer = setTimeout(() => setShowSplash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  // 再起動時にデモモードだった場合は自動クリア
+  useEffect(() => {
+    if (isDemoMode) {
+      import('../services/storage').then(({ clearAll }) => clearAll());
+      setIsDemoMode(false);
+      setIsDemoTour(false);
+      setUserInfo(null);
+      setCreditCards([{ id: 1, name: 'メインカード', closingDay: 15, paymentMonth: 1, paymentDay: 10 }]);
+      setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
+      setTransactions([]);
+      setMonthlyHistory({});
+      setMonthlyBudget({ income: 300000, expenses: { 食費: 40000, 住居費: 80000, 光熱費: 15000, 通信費: 10000, 交通費: 10000, 娯楽費: 20000, 医療費: 5000, 教育費: 0, 被服費: 10000, その他: 10000 } });
+      setShowOnboarding(true);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 前日確認ダイアログ（初回ユーザーには出さない）
   useEffect(() => {
@@ -777,6 +794,7 @@ export function useMoneyData() {
   };
 
   const startDemo = () => {
+    import('../services/storage').then(({ save }) => save('isDemoMode', true));
     setIsDemoMode(true);
     setIsDemoTour(true);
     setUserInfo(DEMO_USER_INFO);
@@ -791,13 +809,17 @@ export function useMoneyData() {
   };
 
   const exitDemo = () => {
+    import('../services/storage').then(({ save, clearAll }) => {
+      clearAll();
+    });
     setIsDemoMode(false);
     setIsDemoTour(false);
     setUserInfo(null);
-    setCreditCards([]);
+    setCreditCards([{ id: 1, name: 'メインカード', closingDay: 15, paymentMonth: 1, paymentDay: 10 }]);
     setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
     setTransactions([]);
     setMonthlyHistory({});
+    setMonthlyBudget({ income: 300000, expenses: { 食費: 40000, 住居費: 80000, 光熱費: 15000, 通信費: 10000, 交通費: 10000, 娯楽費: 20000, 医療費: 5000, 教育費: 0, 被服費: 10000, その他: 10000 } });
     setShowOnboarding(true);
   };
 
