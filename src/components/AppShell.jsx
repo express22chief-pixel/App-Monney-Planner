@@ -109,6 +109,7 @@ export default function AppShell({ data }) {
         <DemoTourOverlay
           setActiveTab={setActiveTab}
           exitDemo={data.exitDemo}
+          setIsDemoTour={data.setIsDemoTour}
           darkMode={darkMode}
         />
       )}

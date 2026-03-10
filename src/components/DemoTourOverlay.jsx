@@ -48,7 +48,7 @@ const SLIDES = [
   },
 ];
 
-export default function DemoTourOverlay({ setActiveTab, exitDemo, darkMode }) {
+export default function DemoTourOverlay({ setActiveTab, exitDemo, setIsDemoTour, darkMode }) {
   const [idx, setIdx]       = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -168,7 +168,7 @@ export default function DemoTourOverlay({ setActiveTab, exitDemo, darkMode }) {
               <button
                 onClick={() => {
                   setActiveTab('home');
-                  setIdx(0);
+                  setIsDemoTour(false);
                 }}
                 style={{
                   flex: 1, padding: '12px 0', borderRadius: 12,
