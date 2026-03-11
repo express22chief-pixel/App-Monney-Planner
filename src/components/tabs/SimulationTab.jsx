@@ -716,7 +716,7 @@ export default function SimulationTab(props) {
                   <input
                     type="text" inputMode="decimal"
                     value={inputFmt(lifePlan[key] ?? min)}
-                    onChange={e => { const v = parseFn(e.target.value.replace(/[^0-9.]/g, '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
+                    onChange={e => { const v = parseFn(e.target.value.replace(new RegExp('[^0-9.]', 'g'), '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
                     style={{ width: 80, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
                   />
                 </div>
@@ -821,7 +821,7 @@ export default function SimulationTab(props) {
                   <input
                     type="text" inputMode="decimal"
                     value={String(lifePlan[key] ?? min)}
-                    onChange={e => { const v = Number(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
+                    onChange={e => { const v = Number(e.target.value.replace(new RegExp('[^0-9]', 'g'), '')); if (!isNaN(v) && v >= min && v <= max) setLifePlan(prev => ({ ...prev, [key]: v })); }}
                     style={{ width: 90, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
                   />
                 </div>
@@ -862,7 +862,7 @@ export default function SimulationTab(props) {
                 <input
                   type="text" inputMode="decimal"
                   value={String(simulationSettings[key] ?? min)}
-                  onChange={e => { const v = Number(e.target.value.replace(/[^0-9.]/g, '')); if (!isNaN(v) && v >= min && v <= max) setSimulationSettings(prev => ({ ...prev, [key]: v })); }}
+                  onChange={e => { const v = Number(e.target.value.replace(new RegExp('[^0-9.]', 'g'), '')); if (!isNaN(v) && v >= min && v <= max) setSimulationSettings(prev => ({ ...prev, [key]: v })); }}
                   style={{ width: 80, padding: '3px 8px', borderRadius: 8, border: `1px solid ${bdr}`, background: darkMode ? '#1a1a1a' : '#f5f5f5', color: txt, fontSize: 13, fontWeight: 800, textAlign: 'right', fontVariantNumeric: 'tabular-nums', outline: 'none' }}
                 />
               </div>

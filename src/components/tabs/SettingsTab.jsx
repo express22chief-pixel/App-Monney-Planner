@@ -155,7 +155,7 @@ export default function SettingsTab(props) {
                 <div>
                   <label className={`block text-xs font-medium ${theme.textSecondary} mb-1`}>月間収入予定</label>
                   <input type="text" inputMode="numeric" value={monthlyBudget.income}
-                    onChange={(e) => setMonthlyBudget({ ...monthlyBudget, income: Number(e.target.value.replace(/[^0-9]/g, '')) })}
+                    onChange={(e) => setMonthlyBudget({ ...monthlyBudget, income: Number(e.target.value.replace(new RegExp('[^0-9]', 'g'), '')) })}
                     className={`w-full px-3 py-2.5 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                   <p className={`text-xs ${theme.textSecondary} mt-1 tabular-nums`}>¥{monthlyBudget.income.toLocaleString()}</p>
                 </div>
@@ -207,7 +207,7 @@ export default function SettingsTab(props) {
                         type="text" inputMode="decimal"
                         value={simulationSettings[key]}
                         onChange={(e) => {
-                          const v = parseFloat(e.target.value.replace(/[^0-9.]/g, ''));
+                          const v = parseFloat(e.target.value.replace(new RegExp('[^0-9.]', 'g'), ''));
                           if (!isNaN(v)) setSimulationSettings({ ...simulationSettings, [key]: Math.min(max, Math.max(min, v)) });
                         }}
                         className={`w-32 px-2.5 py-1.5 rounded-lg text-sm font-bold tabular-nums text-right ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
