@@ -504,7 +504,8 @@ export default function SimulationTab(props) {
           </div>
         )}
         </div>
-        </div>)}
+        </div>
+      )}
 
       {/* モンテカルロシミュレーション */}
       <div style={{ background: card, borderRadius: 8 }}>
