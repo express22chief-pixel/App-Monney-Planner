@@ -343,9 +343,10 @@ export function useMoneyData() {
     return () => clearTimeout(timer);
   }, []);
 
-  // 再起動時にデモモードだった場合は自動クリア
+  // 再起動時にデモモードだった場合は自動クリア（localStorageに残留している場合のみ）
   useEffect(() => {
-    if (isDemoMode) {
+    const savedDemoMode = load('isDemoMode', false);
+    if (savedDemoMode) {
       import('../services/storage').then(({ save, clearAll }) => {
         save('isDemoMode', false);
         clearAll();
@@ -815,16 +816,17 @@ export function useMoneyData() {
     import('../services/storage').then(({ save, clearAll }) => {
       save('isDemoMode', false);
       clearAll();
+      setIsDemoMode(false);
+      setIsDemoTour(false);
+      setUserInfo(null);
+      setCreditCards([{ id: 1, name: 'メインカード', closingDay: 15, paymentMonth: 1, paymentDay: 10 }]);
+      setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
+      setTransactions([]);
+      setMonthlyHistory({});
+      setLifeEvents([]);
+      setMonthlyBudget({ income: 300000, expenses: { 食費: 40000, 住居費: 80000, 光熱費: 15000, 通信費: 10000, 交通費: 10000, 娯楽費: 20000, 医療費: 5000, 教育費: 0, 被服費: 10000, その他: 10000 } });
+      setShowOnboarding(true);
     });
-    setIsDemoMode(false);
-    setIsDemoTour(false);
-    setUserInfo(null);
-    setCreditCards([{ id: 1, name: 'メインカード', closingDay: 15, paymentMonth: 1, paymentDay: 10 }]);
-    setAssetData({ savings: 0, investments: 0, nisa: 0, dryPowder: 0 });
-    setTransactions([]);
-    setMonthlyHistory({});
-    setMonthlyBudget({ income: 300000, expenses: { 食費: 40000, 住居費: 80000, 光熱費: 15000, 通信費: 10000, 交通費: 10000, 娯楽費: 20000, 医療費: 5000, 教育費: 0, 被服費: 10000, その他: 10000 } });
-    setShowOnboarding(true);
   };
 
   const closeMonth = (targetMonth) => {
