@@ -346,7 +346,10 @@ export function useMoneyData() {
   // 再起動時にデモモードだった場合は自動クリア
   useEffect(() => {
     if (isDemoMode) {
-      import('../services/storage').then(({ clearAll }) => clearAll());
+      import('../services/storage').then(({ save, clearAll }) => {
+        save('isDemoMode', false);
+        clearAll();
+      });
       setIsDemoMode(false);
       setIsDemoTour(false);
       setUserInfo(null);
@@ -810,6 +813,7 @@ export function useMoneyData() {
 
   const exitDemo = () => {
     import('../services/storage').then(({ save, clearAll }) => {
+      save('isDemoMode', false);
       clearAll();
     });
     setIsDemoMode(false);
