@@ -272,13 +272,13 @@ export default function SimulationTab(props) {
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                   {Math.abs(incDiff) > planIncome * 0.1 && (
                     <span style={{ fontSize: 10, color: sub }}>
-                      収入: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgIncome/10000)}万</strong> / プラン ¥{Math.round(planIncome/10000)}万
+                      収入: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgIncome/10000)}万</strong><span> / </span>プラン ¥{Math.round(planIncome/10000)}万
                       <span style={{ color: incDiff > 0 ? green : red, marginLeft: 4 }}>({incDiff > 0 ? '+' : ''}{Math.round(incDiff/10000)}万)</span>
                     </span>
                   )}
                   {Math.abs(expDiff) > planExpense * 0.1 && (
                     <span style={{ fontSize: 10, color: sub }}>
-                      支出: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgExpense/10000)}万</strong> / プラン ¥{Math.round(planExpense/10000)}万
+                      支出: 実績 <strong style={{ color: txt }}>¥{Math.round(avg.avgExpense/10000)}万</strong><span> / </span>プラン ¥{Math.round(planExpense/10000)}万
                       <span style={{ color: expDiff > 0 ? red : green, marginLeft: 4 }}>({expDiff > 0 ? '+' : ''}{Math.round(expDiff/10000)}万)</span>
                     </span>
                   )}
