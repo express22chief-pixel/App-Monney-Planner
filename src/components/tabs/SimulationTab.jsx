@@ -653,7 +653,7 @@ export default function SimulationTab(props) {
                 <div style={{ padding: '10px 12px', background: darkMode ? '#252525' : '#f9fafb', borderRadius: 10 }}>
                   <p style={{ fontSize: 11, color: sub, marginBottom: 4 }}>
                     過去12ヶ月の実績から推定した収入成長率:
-                    <strong style={{ color: blue, marginLeft: 4 }}>{incomeGrowthEstimate}%/年</strong>
+                    <strong style={{ color: blue, marginLeft: 4 }}>{incomeGrowthEstimate}%<span>/</span>年</strong>
                     <span style={{ marginLeft: 6, color: diff > 0 ? green : amber }}>
                       （設定{planRate}%より{diff > 0 ? '+' : ''}{diff.toFixed(1)}%）
                     </span>
@@ -710,7 +710,7 @@ export default function SimulationTab(props) {
               { key: 'monthlyExpense', label: '月間生活費', min: 50000, max: 800000, step: 10000,
                 fmt: v => `¥${v.toLocaleString()}`, inputFmt: v => String(v), parseFn: v => Number(v) },
               { key: 'incomeGrowthRate', label: '昇給率', min: 0, max: 5, step: 0.5,
-                fmt: v => v === 0 ? '考慮しない' : `${v}%/年`, inputFmt: v => String(v), parseFn: v => Number(v) },
+                fmt: v => v === 0 ? '考慮しない' : `${v}%<span>/</span>年`, inputFmt: v => String(v), parseFn: v => Number(v) },
             ].map(({ key, label, min, max, step, fmt, inputFmt, parseFn }) => (
               <div key={key}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -1137,13 +1137,6 @@ export default function SimulationTab(props) {
           </div>
         </div>
       )}
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
     </div>
   );
 }
