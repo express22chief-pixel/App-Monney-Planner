@@ -506,7 +506,7 @@ export default function SimulationTab(props) {
         </div>
         </div>)}
 
-      {/* モンテカルロシミュレーション */}
+      {/* Monte Carlo Simulation */}
       <div style={{ background: card, borderRadius: 8 }}>
         <button
           onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}

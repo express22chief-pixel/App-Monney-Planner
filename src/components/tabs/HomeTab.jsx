@@ -108,7 +108,7 @@ export default function HomeTab(props) {
               </div>
             )}
 
-            {/* ④ 初回チェックリスト */}
+            {/* checklist */}
             {checklistItems && (
               <div style={{ borderRadius: 10, padding: '12px 14px', background: darkMode ? '#0f0f0f' : '#f8f8f8', border: `1px solid ${darkMode ? '#1e1e1e' : '#e8e8e8'}` }}>
                 <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase' }}>GETTING STARTED</p>
@@ -127,7 +127,7 @@ export default function HomeTab(props) {
               </div>
             )}
 
-            {/* ① 今日のインサイト */}
+            {/* today insight */}
             {insightData && insightData.msgs.length > 0 && (
               <div style={{ borderRadius: 10, padding: '10px 14px', background: darkMode ? '#0a0a0a' : '#f5f5f5', border: `1px solid ${darkMode ? '#1a1a1a' : '#ebebeb'}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {insightData.msgs.map((m, i) => (
