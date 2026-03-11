@@ -510,7 +510,7 @@ export default function SimulationTab(props) {
       <div style={{ background: card, borderRadius: 8 }}>
         <button
           onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? '1px solid ' + bdr : 'none' }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
           <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>モンテカルロシミュレーション</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>100通りのシナリオ</span>
