@@ -33,7 +33,7 @@ export default function SetupWizardModal(props) {
                       <div key={card.id} className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                         <div>
                           <p className={`text-sm font-semibold ${theme.text}`}>{card.name}</p>
-                          <p className={`text-xs ${theme.textSecondary}`}>締め日: {card.closingDay}日 / 翌{card.paymentMonth === 2 ? '々' : ''}月{card.paymentDay}日払い</p>
+                          <p className={`text-xs ${theme.textSecondary}`}>締め日: {card.closingDay}日<span> / </span>翌{card.paymentMonth === 2 ? '々' : ''}月{card.paymentDay}日払い</p>
                         </div>
                         <button onClick={() => { setEditingCard(card); setShowCardModal(true); }} className="text-blue-400 text-xs px-2 py-1 rounded-lg" style={{ backgroundColor: darkMode ? '#1e3a5f' : '#dbeafe' }}>編集</button>
                       </div>
@@ -158,7 +158,7 @@ export default function SetupWizardModal(props) {
                     {creditCards.length === 0 ? (
                       <p className={`text-sm ${theme.textSecondary}`}>なし</p>
                     ) : creditCards.map(c => (
-                      <p key={c.id} className={`text-sm ${theme.text}`}>・{c.name}（{c.closingDay}日締め / 翌{c.paymentMonth === 2 ? '々' : ''}月{c.paymentDay}日払い）</p>
+                      <p key={c.id} className={`text-sm ${theme.text}`}>・{c.name}（{c.closingDay}日締め<span> / </span>翌{c.paymentMonth === 2 ? '々' : ''}月{c.paymentDay}日払い）</p>
                     ))}
                   </div>
                   <div>

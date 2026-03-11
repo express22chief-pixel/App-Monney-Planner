@@ -179,7 +179,7 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
       <Seg darkMode={darkMode} label="物件タイプ" value={params.propertyType} onChange={v => set('propertyType', v)}
         options={[{value:'new_eco',label:'新築省エネ'},{value:'new_other',label:'新築その他'},{value:'used',label:'中古'}]} />
       <p style={{ fontSize: 11, color: sub, marginTop: -8 }}>
-        ローン控除：新築省エネ 35万/年・新築その他 21万/年・中古 14万/年
+        ローン控除：新築省エネ 35万<span>/</span>年・新築その他 21万<span>/</span>年・中古 14万<span>/</span>年
       </p>
       <Seg darkMode={darkMode} label="土地比率（資産価値に影響）" value={String(params.landRatio)} onChange={v => set('landRatio', Number(v))}
         options={[{value:'0.2',label:'マンション(20%)'},{value:'0.4',label:'郊外戸建(40%)'},{value:'0.6',label:'都市戸建(60%)'}]} />

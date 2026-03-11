@@ -67,7 +67,7 @@ export default function BenchmarkModal(props) {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className={theme.textSecondary}>貯金</span>
-                      <span className={theme.text}>¥{(assetData.savings / 10000).toFixed(0)}万 / ¥{(calculateBenchmark().benchmark.savings / 10000).toFixed(0)}万</span>
+                      <span className={theme.text}>¥{(assetData.savings / 10000).toFixed(0)}万<span> / </span>¥{(calculateBenchmark().benchmark.savings / 10000).toFixed(0)}万</span>
                     </div>
                     <div className="flex gap-1">
                       <div className="flex-1 h-2 rounded-full bg-blue-500" style={{ width: `${Math.min((assetData.savings / calculateBenchmark().benchmark.savings * 100), 100)}%` }}></div>
@@ -77,7 +77,7 @@ export default function BenchmarkModal(props) {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className={theme.textSecondary}>投資</span>
-                      <span className={theme.text}>¥{(assetData.investments / 10000).toFixed(0)}万 / ¥{(calculateBenchmark().benchmark.investments / 10000).toFixed(0)}万</span>
+                      <span className={theme.text}>¥{(assetData.investments / 10000).toFixed(0)}万<span> / </span>¥{(calculateBenchmark().benchmark.investments / 10000).toFixed(0)}万</span>
                     </div>
                     <div className="flex gap-1">
                       <div className="flex-1 h-2 rounded-full bg-purple-500" style={{ width: `${Math.min((assetData.investments / calculateBenchmark().benchmark.investments * 100), 100)}%` }}></div>
@@ -87,7 +87,7 @@ export default function BenchmarkModal(props) {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className={theme.textSecondary}>NISA</span>
-                      <span className={theme.text}>¥{((assetData.nisa || 0) / 10000).toFixed(0)}万 / ¥{(calculateBenchmark().benchmark.nisa / 10000).toFixed(0)}万</span>
+                      <span className={theme.text}>¥{((assetData.nisa || 0) / 10000).toFixed(0)}万<span> / </span>¥{(calculateBenchmark().benchmark.nisa / 10000).toFixed(0)}万</span>
                     </div>
                     <div className="flex gap-1">
                       <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: theme.green, width: `${Math.min(((assetData.nisa || 0) / calculateBenchmark().benchmark.nisa * 100), 100)}%` }}></div>
@@ -97,7 +97,7 @@ export default function BenchmarkModal(props) {
                   <div>
                     <div className="flex justify-between text-xs mb-1">
                       <span className={theme.textSecondary}>待機資金</span>
-                      <span className={theme.text}>¥{((assetData.dryPowder || 0) / 10000).toFixed(0)}万 / ¥{(calculateBenchmark().benchmark.dryPowder / 10000).toFixed(0)}万</span>
+                      <span className={theme.text}>¥{((assetData.dryPowder || 0) / 10000).toFixed(0)}万<span> / </span>¥{(calculateBenchmark().benchmark.dryPowder / 10000).toFixed(0)}万</span>
                     </div>
                     <div className="flex gap-1">
                       <div className="flex-1 h-2 rounded-full" style={{ backgroundColor: theme.accent, width: `${Math.min(((assetData.dryPowder || 0) / calculateBenchmark().benchmark.dryPowder * 100), 100)}%` }}></div>
