@@ -503,6 +503,7 @@ export default function SimulationTab(props) {
             </div>
           </div>
         )}
+        </div>
         </div>)}
 
       {/* モンテカルロシミュレーション */}
@@ -1133,6 +1134,13 @@ export default function SimulationTab(props) {
           </div>
         </div>
       )}
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
     </div>
   );
 }
