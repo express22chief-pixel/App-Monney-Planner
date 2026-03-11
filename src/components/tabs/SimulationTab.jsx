@@ -508,8 +508,9 @@ export default function SimulationTab(props) {
 
       {/* モンテカルロシミュレーション */}
       <div style={{ background: card, borderRadius: 8 }}>
-        <button onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
+        <button
+          onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? '1px solid ' + bdr : 'none' }}>
           <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>モンテカルロシミュレーション</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>100通りのシナリオ</span>
@@ -523,8 +524,8 @@ export default function SimulationTab(props) {
               <AreaChart data={monteCarloChartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#1a1a1a' : '#f0f0f0'} vertical={false} />
                 <XAxis dataKey="年" tick={{ fontSize: 9, fill: sub }} />
-                <YAxis tickFormatter={v => v >= 100000000 ? `${(v/100000000).toFixed(0)}億` : v >= 10000 ? `${(v/10000).toFixed(0)}万` : v} tick={{ fontSize: 9, fill: sub }} width={44} />
-                <Tooltip formatter={(v, name) => [`¥${(v/10000).toFixed(0)}万`, name]} />
+                <YAxis tickFormatter={v => v >= 100000000 ? ((v/100000000).toFixed(0) + '億') : v >= 10000 ? ((v/10000).toFixed(0) + '万') : v} tick={{ fontSize: 9, fill: sub }} width={44} />
+                <Tooltip formatter={(v, name) => ['¥' + (v/10000).toFixed(0) + '万', name]} />
                 <Area type="monotone" dataKey="範囲下限" stackId="band" stroke="none" fill="#3b82f620" />
                 <Area type="monotone" dataKey="範囲上限" stackId="band" stroke="none" fill="#3b82f620" />
                 <Line type="monotone" dataKey="平均" stroke="#3b82f6" strokeWidth={2} dot={false} />
