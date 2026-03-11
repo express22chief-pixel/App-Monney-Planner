@@ -43,7 +43,7 @@ export default function RecurringModal(props) {
                   placeholder="80000"
                   value={editingRecurring?.amount || ''}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setEditingRecurring({ ...editingRecurring, amount: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${

@@ -151,7 +151,7 @@ export default function AddTransactionModal(props) {
                 <p className={`text-xs font-medium ${theme.textSecondary} mb-1`}>金額</p>
                 <div className="flex items-center gap-2">
                   <span className={`text-xl font-bold ${theme.textSecondary}`}>¥</span>
-                  <input type="text" inputMode="numeric" placeholder="0" value={chargeAmount} onChange={e => setChargeAmount(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 bg-transparent text-2xl font-bold tabular-nums ${theme.text} focus:outline-none`} style={{ color: '#FF9F0A' }} />
+                  <input type="text" inputMode="numeric" placeholder="0" value={chargeAmount} onChange={e => setChargeAmount(e.target.value.replace(new RegExp('[^0-9]', 'g'), ''))} className={`flex-1 bg-transparent text-2xl font-bold tabular-nums ${theme.text} focus:outline-none`} style={{ color: '#FF9F0A' }} />
                 </div>
               </div>
               <input type="date" value={chargeDate} onChange={e => setChargeDate(e.target.value)} className={inputBase} style={{ colorScheme: darkMode ? 'dark' : 'light' }} />
@@ -172,7 +172,7 @@ export default function AddTransactionModal(props) {
                   <span className={`text-xl font-bold ${theme.textSecondary}`}>¥</span>
                   <input type="text" inputMode="numeric" placeholder="0"
                     value={newTransaction.amount}
-                    onChange={e => setNewTransaction({ ...newTransaction, amount: e.target.value.replace(/[^0-9]/g, '') })}
+                    onChange={e => setNewTransaction({ ...newTransaction, amount: e.target.value.replace(new RegExp('[^0-9]', 'g'), '') })}
                     className={`flex-1 bg-transparent text-2xl font-bold tabular-nums ${theme.text} focus:outline-none placeholder-neutral-500`}
                     style={{ minWidth: 0, color: newTransaction.type === 'income' ? theme.green : theme.red }}
                   />
@@ -221,7 +221,7 @@ export default function AddTransactionModal(props) {
                               onChange={e => { const u = [...newTransaction.splitMembers]; u[idx] = { ...u[idx], name: e.target.value }; setNewTransaction({ ...newTransaction, splitMembers: u }); }}
                               className={`flex-1 px-2.5 py-1.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-300 placeholder-neutral-400'} focus:outline-none`} />
                             <input type="text" inputMode="numeric" placeholder="金額" value={member.amount}
-                              onChange={e => { const u = [...newTransaction.splitMembers]; u[idx] = { ...u[idx], amount: e.target.value.replace(/[^0-9]/g, '') }; setNewTransaction({ ...newTransaction, splitMembers: u }); }}
+                              onChange={e => { const u = [...newTransaction.splitMembers]; u[idx] = { ...u[idx], amount: e.target.value.replace(new RegExp('[^0-9]', 'g'), '') }; setNewTransaction({ ...newTransaction, splitMembers: u }); }}
                               className={`w-24 px-2.5 py-1.5 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-300 placeholder-neutral-400'} focus:outline-none`} />
                             {newTransaction.splitMembers.length > 1 && (
                               <button onClick={() => setNewTransaction({ ...newTransaction, splitMembers: newTransaction.splitMembers.filter((_, i) => i !== idx) })} className={`w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold shrink-0 ${darkMode ? 'bg-neutral-700 text-neutral-300' : 'bg-neutral-200 text-neutral-500'}`}>✕</button>

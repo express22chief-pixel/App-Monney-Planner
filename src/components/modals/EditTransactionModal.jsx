@@ -167,7 +167,7 @@ export default function EditTransactionModal(props) {
                     inputMode="numeric"
                     value={Math.abs(tx.amount) || ''}
                     onChange={e => {
-                      const v = e.target.value.replace(/[^0-9]/g, '');
+                      const v = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                       setEditingTransaction({ ...tx, amount: tx.type === 'expense' ? -Number(v) : Number(v) });
                     }}
                     placeholder="0"
@@ -322,7 +322,7 @@ export default function EditTransactionModal(props) {
                               value={member.amount}
                               onChange={e => {
                                 const updated = [...splitMembers];
-                                updated[idx] = { ...updated[idx], amount: e.target.value.replace(/[^0-9]/g, '') };
+                                updated[idx] = { ...updated[idx], amount: e.target.value.replace(new RegExp('[^0-9]', 'g'), '') };
                                 setSplitMembers(updated);
                               }}
                               className={`w-24 px-2.5 py-1.5 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-300 placeholder-neutral-400'} focus:outline-none`}

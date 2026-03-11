@@ -105,7 +105,7 @@ export default function LifeEventModal(props) {
                     inputMode="numeric"
                     value={editingLifeEvent.amount || ''}
                     onChange={(e) => {
-                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                       setEditingLifeEvent({ ...editingLifeEvent, amount: Number(value) });
                     }}
                     className={`w-full px-4 py-2 rounded-lg tabular-nums ${

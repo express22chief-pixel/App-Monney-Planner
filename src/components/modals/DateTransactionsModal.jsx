@@ -238,7 +238,7 @@ export default function DateTransactionsModal(props) {
                   <div className="flex gap-2">
                     <input type="text" inputMode="numeric" placeholder="金額"
                       value={newTransaction.amount}
-                      onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value.replace(/[^0-9]/g, '') })}
+                      onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value.replace(new RegExp('[^0-9]', 'g'), '') })}
                       className={`flex-1 px-3 py-2 rounded-lg text-sm tabular-nums ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600 placeholder-neutral-500' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                     <select value={newTransaction.category}
                       onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}

@@ -114,7 +114,7 @@ export default function SetupWizardModal(props) {
                     <button onClick={() => {
                       const cardId = setupCardId || (creditCards[0] ? String(creditCards[0].id) : '');
                       const date = `${setupSettlementDate.year}-${String(setupSettlementDate.month).padStart(2,'0')}-${String(setupSettlementDate.day).padStart(2,'0')}`;
-                      const amount = setupAmountInput.replace(/[^0-9]/g, '');
+                      const amount = setupAmountInput.replace(new RegExp('[^0-9]', 'g'), '');
                       if (!amount) { alert('金額を入力してください'); return; }
                       const card = creditCards.find(c => String(c.id) === String(cardId));
                       setSetupSettlements(prev => [...prev, { cardId, cardName: card ? card.name : '', date, amount }]);

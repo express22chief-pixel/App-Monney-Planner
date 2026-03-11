@@ -150,7 +150,7 @@ export default function OnboardingModal(props) {
                   type="text" inputMode="numeric" placeholder="6000000"
                   value={userInfo?.annualIncome || ''}
                   onChange={e => {
-                    const v = e.target.value.replace(/[^0-9]/g, '');
+                    const v = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setUserInfo(prev => ({ ...(prev || {}), annualIncome: v }));
                   }}
                   style={{
@@ -175,7 +175,7 @@ export default function OnboardingModal(props) {
                   type="text" inputMode="numeric" placeholder="1000000"
                   value={assetData.savings || ''}
                   onChange={e => {
-                    const v = Number(e.target.value.replace(/[^0-9]/g, ''));
+                    const v = Number(e.target.value.replace(new RegExp('[^0-9]', 'g'), ''));
                     setAssetData(prev => ({ ...prev, savings: v }));
                   }}
                   style={{
@@ -279,7 +279,7 @@ export default function OnboardingModal(props) {
                   type="text" inputMode="numeric" placeholder="0"
                   value={assetData.savings || ''}
                   onChange={e => {
-                    const v = Number(e.target.value.replace(/[^0-9]/g, ''));
+                    const v = Number(e.target.value.replace(new RegExp('[^0-9]', 'g'), ''));
                     setAssetData(prev => ({ ...prev, savings: v }));
                   }}
                   style={{

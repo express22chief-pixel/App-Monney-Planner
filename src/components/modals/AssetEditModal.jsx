@@ -20,7 +20,7 @@ export default function AssetEditModal(props) {
                   inputMode="numeric"
                   value={assetData.savings}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setAssetData({ ...assetData, savings: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
@@ -37,7 +37,7 @@ export default function AssetEditModal(props) {
                   inputMode="numeric"
                   value={assetData.investments}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setAssetData({ ...assetData, investments: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
@@ -54,7 +54,7 @@ export default function AssetEditModal(props) {
                   inputMode="numeric"
                   value={assetData.nisa || 0}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setAssetData({ ...assetData, nisa: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${
@@ -77,7 +77,7 @@ export default function AssetEditModal(props) {
                   inputMode="numeric"
                   value={assetData.dryPowder || 0}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setAssetData({ ...assetData, dryPowder: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${

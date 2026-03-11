@@ -42,7 +42,7 @@ function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, da
         <input
           type="text" inputMode="numeric"
           value={value.toLocaleString()}
-          onChange={e => { const v = Number(e.target.value.replace(/[^0-9]/g, '')); if (!isNaN(v)) onChange(v); }}
+          onChange={e => { const v = Number(e.target.value.replace(new RegExp('[^0-9]', 'g'), '')); if (!isNaN(v)) onChange(v); }}
           style={{
             flex: 1, padding: '10px 12px', borderRadius: 10,
             border: `1.5px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,

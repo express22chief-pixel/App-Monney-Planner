@@ -79,7 +79,7 @@ export default function InvestModal(props) {
                   placeholder="100000"
                   value={investForm.amount}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setInvestForm({ ...investForm, amount: value });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums text-lg font-bold transition-all ${

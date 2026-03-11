@@ -64,7 +64,7 @@ export default function DailyReviewModal(props) {
                   <div className="flex items-center gap-2">
                     <span className={`text-sm ${theme.textSecondary}`}>¥</span>
                     <input type="text" inputMode="numeric" placeholder="金額" value={dailyReviewAddForm.amount}
-                      onChange={e => setDailyReviewAddForm(prev => ({ ...prev, amount: e.target.value.replace(/[^0-9]/g, '') }))}
+                      onChange={e => setDailyReviewAddForm(prev => ({ ...prev, amount: e.target.value.replace(new RegExp('[^0-9]', 'g'), '') }))}
                       className={`flex-1 px-3 py-2 rounded-lg text-sm ${darkMode ? 'bg-neutral-700 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
                   </div>
                   <select value={dailyReviewAddForm.paymentMethod} onChange={e => setDailyReviewAddForm(prev => ({ ...prev, paymentMethod: e.target.value }))}

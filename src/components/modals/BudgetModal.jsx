@@ -19,7 +19,7 @@ export default function BudgetModal(props) {
                   inputMode="numeric"
                   value={monthlyBudget.income}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/[^0-9]/g, '');
+                    const value = e.target.value.replace(new RegExp('[^0-9]', 'g'), '');
                     setMonthlyBudget({ ...monthlyBudget, income: Number(value) });
                   }}
                   className={`w-full px-4 py-3 rounded-lg tabular-nums transition-all duration-200 ${

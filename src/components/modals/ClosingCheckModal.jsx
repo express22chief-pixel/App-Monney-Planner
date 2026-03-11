@@ -26,7 +26,7 @@ export default function ClosingCheckModal(props) {
                   className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`} />
               </div>
               <button onClick={() => {
-                const actual = Number(document.getElementById('actual-amount').value.replace(/[^0-9]/g, ''));
+                const actual = Number(document.getElementById('actual-amount').value.replace(new RegExp('[^0-9]', 'g'), ''));
                 if (!actual) {
                   setDismissedClosingAlerts(prev => ({ ...prev, [showClosingCheckModal.alertKey]: true }));
                   setShowClosingCheckModal(null);
