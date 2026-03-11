@@ -173,7 +173,7 @@ export default function CloseMonthModal(props) {
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent }} />
                   <span style={{ fontSize: 12, fontWeight: 600, color: txt }}>待機資金へ</span>
                 </div>
-                <span style={{ fontSize: 14, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }} style={{ color: theme.accent }}>
+                <span style={{ fontSize: 14, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: theme.accent }}>
                   ¥{closeMonthData.dryPowderAmount.toLocaleString()}
                 </span>
               </div>
