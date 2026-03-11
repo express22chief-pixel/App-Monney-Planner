@@ -393,7 +393,7 @@ export default function SimulationTab(props) {
           </span>
           <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secTimeline ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
-        {secTimeline && (<div className="animate-fadeIn" style={{ padding: '14px 14px 14px' }}>
+        {secTimeline ? (<div className="animate-fadeIn" style={{ padding: '14px 14px 14px' }}>
         <ResponsiveContainer width="100%" height={260}>
           <ComposedChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
@@ -505,7 +505,7 @@ export default function SimulationTab(props) {
         )}
         </div>
         </div>
-      )}
+      ) : null}
 
       {/* モンテカルロシミュレーション */}
       <div style={{ background: card, borderRadius: 8 }}>
