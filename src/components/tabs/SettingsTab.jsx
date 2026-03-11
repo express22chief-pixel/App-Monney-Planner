@@ -78,7 +78,7 @@ export default function SettingsTab(props) {
     <>
           <div className="space-y-2 animate-fadeIn pb-6">
 
-            {/* --- はじめにやること ----------------------------------------- */}
+            
             {(creditCards.length === 0 || !userInfo?.age) && (
               <div style={{
                 borderRadius: 10, padding: '14px 16px',
