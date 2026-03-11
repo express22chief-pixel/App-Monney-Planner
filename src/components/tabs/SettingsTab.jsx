@@ -451,7 +451,7 @@ export default function SettingsTab(props) {
                       <div key={card.id} className={`flex items-center justify-between p-3 rounded-lg ${darkMode ? 'bg-neutral-800' : 'bg-neutral-50'}`}>
                         <div>
                           <p className={`text-sm font-semibold ${theme.text}`}>{card.name}</p>
-                          <p className={`text-xs ${theme.textSecondary}`}>締め日: {card.closingDay}日 / 支払い: 翌{card.paymentMonth === 2 ? '々' : ''}月{card.paymentDay}日</p>
+                          <p className={`text-xs ${theme.textSecondary}`}>締め日: {card.closingDay}日<span> / </span>支払い: 翌{card.paymentMonth === 2 ? '々' : ''}月{card.paymentDay}日</p>
                         </div>
                         <div className="flex gap-1">
                           <button onClick={() => { setEditingCard(card); setShowCardModal(true); }} className="p-1.5 rounded-lg text-blue-500">✏️</button>
