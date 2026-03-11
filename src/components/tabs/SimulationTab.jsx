@@ -527,7 +527,17 @@ export default function SimulationTab(props) {
                 <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#1a1a1a' : '#f0f0f0'} vertical={false} />
                 <XAxis dataKey="年" tick={{ fontSize: 9, fill: sub }} />
                 <YAxis tickFormatter={v => v >= 100000000 ? ((v/100000000).toFixed(0) + '億') : v >= 10000 ? ((v/10000).toFixed(0) + '万') : v} tick={{ fontSize: 9, fill: sub }} width={44} />
-                <Tooltip formatter={(v, name) => ['¥' + (v/10000).toFixed(0) + '万', name]} />
+                <Tooltip
+                  contentStyle={{
+                    background: darkMode ? '#1a1a1a' : '#fff',
+                    border: `1px solid ${darkMode ? '#333' : '#e5e7eb'}`,
+                    borderRadius: 8,
+                    fontSize: 11,
+                    color: darkMode ? '#fff' : '#111',
+                  }}
+                  formatter={(v, name) => ['¥' + (v/10000).toFixed(0) + '万', name]}
+                  labelFormatter={(label) => `${label}年後`}
+                />
                 <Area type="monotone" dataKey="範囲下限" stackId="band" stroke="none" fill="#3b82f620" />
                 <Area type="monotone" dataKey="範囲上限" stackId="band" stroke="none" fill="#3b82f620" />
                 <Line type="monotone" dataKey="平均" stroke="#3b82f6" strokeWidth={2} dot={false} />
