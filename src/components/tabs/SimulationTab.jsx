@@ -147,6 +147,7 @@ export default function SimulationTab(props) {
   const [secLifePlan,    setSecLifePlan]    = useState(false);  // ライフプラン調整（デフォルト折りたたみ）
   const [secTimeline,    setSecTimeline]    = useState(true);   // タイムライングラフ
   const [secLifeEvent,   setSecLifeEvent]   = useState(true);   // ライフイベント
+  const [showBasis,      setShowBasis]      = useState(false); // 計算根拠パネル
   const [secPhaseSnap,   setSecPhaseSnap]   = useState(false);  // フェーズ別（デフォルト折りたたみ）
   const [secHousing,     setSecHousing]     = useState(false);  // 購入vs賃貸（デフォルト折りたたみ）
 
@@ -509,48 +510,38 @@ export default function SimulationTab(props) {
       </div>
 
       {/* 計算根拠パネル */}
-      {(() => {
-        const [showBasis, setShowBasis] = React.useState(false);
-        const retAge = lifePlan?.retirementAge ?? 65;
-        const lifeExp = lifePlan?.lifeExpectancy ?? 90;
-        const rr = simulationSettings?.returnRate ?? 5;
-        const ir = simulationSettings?.inflationRate ?? 0;
-        const inv = (simulationSettings?.monthlyInvestment ?? 0) + (simulationSettings?.monthlySavings ?? 0);
-        return (
-          <div style={{ background: darkMode ? '#1a1a1a' : '#f9fafb', borderRadius: 8, overflow: 'hidden' }}>
-            <button
-              onClick={() => setShowBasis(v => !v)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <span style={{ fontSize: 12, fontWeight: 700, color: sub }}>📐 計算根拠を確認</span>
-              <span style={{ fontSize: 10, color: sub }}>{showBasis ? '▲' : '▼'}</span>
-            </button>
-            {showBasis && (
-              <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {[
-                  { label: 'リタイア年齢', val: `${retAge}歳` },
-                  { label: '想定寿命', val: `${lifeExp}歳` },
-                  { label: '運用利回り（税引前）', val: `年${rr}%`, note: '複利計算・課税20.315%考慮済み' },
-                  { label: 'インフレ率', val: ir > 0 ? `年${ir}%` : '考慮しない' },
-                  { label: '月間積立額', val: `¥${inv.toLocaleString()}`, note: '投資＋貯金の合計' },
-                  { label: '計算方式', val: '複利（月次）', note: 'NISA非課税枠・一括投資・ライフイベントを反映' },
-                ].map(({ label, val, note }) => (
-                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', borderBottom: `1px solid ${darkMode ? '#2a2a2a' : '#eee'}` }}>
-                    <div>
-                      <span style={{ fontSize: 11, color: sub }}>{label}</span>
-                      {note && <p style={{ fontSize: 9, color: darkMode ? '#444' : '#bbb', marginTop: 1 }}>{note}</p>}
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: txt, fontVariantNumeric: 'tabular-nums' }}>{val}</span>
-                  </div>
-                ))}
-                <p style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc', marginTop: 4 }}>
-                  ※ 将来の運用成果を保証するものではありません。あくまで参考値としてご利用ください。
-                </p>
+      <div style={{ background: darkMode ? '#1a1a1a' : '#f9fafb', borderRadius: 8, overflow: 'hidden' }}>
+        <button
+          onClick={() => setShowBasis(v => !v)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer' }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 700, color: sub }}>📐 計算根拠を確認</span>
+          <span style={{ fontSize: 10, color: sub }}>{showBasis ? '▲' : '▼'}</span>
+        </button>
+        {showBasis && (
+          <div style={{ padding: '0 16px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[
+              { label: 'リタイア年齢', val: `${lifePlan?.retirementAge ?? 65}歳` },
+              { label: '想定寿命', val: `${lifePlan?.lifeExpectancy ?? 90}歳` },
+              { label: '運用利回り（税引前）', val: `年${simulationSettings?.returnRate ?? 5}%`, note: '複利計算・課税20.315%考慮済み' },
+              { label: 'インフレ率', val: (simulationSettings?.inflationRate ?? 0) > 0 ? `年${simulationSettings.inflationRate}%` : '考慮しない' },
+              { label: '月間積立額', val: `¥${((simulationSettings?.monthlyInvestment ?? 0) + (simulationSettings?.monthlySavings ?? 0)).toLocaleString()}`, note: '投資＋貯金の合計' },
+              { label: '計算方式', val: '複利（月次）', note: 'NISA非課税枠・一括投資・ライフイベントを反映' },
+            ].map(({ label, val, note }) => (
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', borderBottom: `1px solid ${darkMode ? '#2a2a2a' : '#eee'}` }}>
+                <div>
+                  <span style={{ fontSize: 11, color: sub }}>{label}</span>
+                  {note && <p style={{ fontSize: 9, color: darkMode ? '#444' : '#bbb', marginTop: 1 }}>{note}</p>}
+                </div>
+                <span style={{ fontSize: 12, fontWeight: 700, color: txt, fontVariantNumeric: 'tabular-nums' }}>{val}</span>
               </div>
-            )}
+            ))}
+            <p style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc', marginTop: 4 }}>
+              ※ 将来の運用成果を保証するものではありません。あくまで参考値としてご利用ください。
+            </p>
           </div>
-        );
-      })()}
+        )}
+      </div>
 
       {/* モンテカルロシミュレーション */}
       <div style={{ background: card, borderRadius: 8 }}>
