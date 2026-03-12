@@ -115,18 +115,31 @@ export default function CloseMonthModal(props) {
           <p style={{ fontSize: 17, fontWeight: 800, color: txt }}>
             {formatYM(targetMonth)}の収支を確定
           </p>
-          <p style={{ fontSize: 12, color: sub, marginTop: 2 }}>集計を確定して資産に反映します</p>
+          <p style={{ fontSize: 12, color: sub, marginTop: 2 }}>今月の収支を確定し、貯金・投資・待機資金に振り分けます</p>
+          <div style={{
+            marginTop: 10, padding: '10px 12px',
+            background: darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(59,130,246,0.06)',
+            borderRadius: 10, border: `1px solid ${darkMode ? 'rgba(0,229,255,0.15)' : 'rgba(59,130,246,0.15)'}`,
+            display: 'flex', gap: 8, alignItems: 'flex-start',
+          }}>
+            <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
+            <p style={{ fontSize: 11, color: darkMode ? '#7dd3fc' : '#3b82f6', lineHeight: 1.6, margin: 0 }}>
+              <strong>月締めとは？</strong> 月末に収支を確定させ、余剰資金を貯金・投資に配分する作業です。
+              マネーフォワードと違い、「いくら投資に回すか」を毎月自分で決めることで資産形成を意識的に管理できます。
+            </p>
+          </div>
         </div>
 
         <div style={{ overflowY: 'auto', flex: 1, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             {[
-              { label: 'PL（発生ベース）', val: tb?.plBalance ?? 0 },
-              { label: 'CF（現金ベース）', val: cfBalance },
-            ].map(({ label, val }) => (
+              { label: 'PL（発生ベース）', val: tb?.plBalance ?? 0, tip: 'クレカ未払い含む今月の損益' },
+              { label: 'CF（現金ベース）', val: cfBalance, tip: '実際に口座を出入りした現金' },
+            ].map(({ label, val, tip }) => (
               <div key={label} style={{ background: darkMode ? '#252525' : '#f9fafb', borderRadius: 12, padding: '10px 12px' }}>
-                <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>{label}</p>
+                <p style={{ fontSize: 10, color: sub, marginBottom: 2 }}>{label}</p>
+                {tip && <p style={{ fontSize: 9, color: darkMode ? '#555' : '#aaa', marginBottom: 4 }}>{tip}</p>}
                 <p style={{ fontSize: 18, fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: val >= 0 ? green : red }}>
                   {val >= 0 ? '+' : ''}¥{val.toLocaleString()}
                 </p>

@@ -348,7 +348,7 @@ export default function RecurringModal(props) {
               <button
                 onClick={() => {
                   if (!editingRecurring?.name || !editingRecurring?.amount || !editingRecurring?.category || !editingRecurring?.day) {
-                    alert('全ての項目を入力してください');
+                    setRecurringError('全ての項目を入力してください');
                     return;
                   }
                   addOrUpdateRecurring(editingRecurring);

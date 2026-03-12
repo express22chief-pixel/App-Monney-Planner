@@ -133,7 +133,7 @@ export default function LifeEventModal(props) {
                 <button
                   onClick={() => {
                     if (!editingLifeEvent.name || !editingLifeEvent.date) {
-                      alert('イベント名と予定時期を入力してください');
+                      setLifeEventError('イベント名と予定時期を入力してください');
                       return;
                     }
                     addOrUpdateLifeEvent(editingLifeEvent);

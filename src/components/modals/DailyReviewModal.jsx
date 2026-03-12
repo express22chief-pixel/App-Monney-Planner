@@ -85,8 +85,11 @@ export default function DailyReviewModal(props) {
                     <button onClick={() => setDailyReviewAddForm(null)}
                       className={`flex-1 py-2 rounded-lg text-sm font-semibold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>キャンセル</button>
                     <button onClick={() => {
-                      if (!dailyReviewAddForm.category) { alert('カテゴリを選択してください'); return; }
-                      if (!dailyReviewAddForm.amount) { alert('金額を入力してください'); return; }
+                      if (!dailyReviewAddForm.category || !dailyReviewAddForm.amount) {
+                        setDailyReviewError(!dailyReviewAddForm.category ? 'カテゴリを選択してください' : '金額を入力してください');
+                        return;
+                      }
+                      setDailyReviewError(null);
                       const amt = Number(dailyReviewAddForm.amount);
                       const newTxn = {
                         id: Date.now(),

@@ -5,6 +5,7 @@ export default function SetupWizardModal(props) {
 
   const [setupCardId, setSetupCardId] = useState(creditCards[0] ? String(creditCards[0].id) : '');
   const [setupAmountInput, setSetupAmountInput] = useState('');
+  const [setupError, setSetupError] = useState(null);
 
   return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fadeIn" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
@@ -115,7 +116,7 @@ export default function SetupWizardModal(props) {
                       const cardId = setupCardId || (creditCards[0] ? String(creditCards[0].id) : '');
                       const date = `${setupSettlementDate.year}-${String(setupSettlementDate.month).padStart(2,'0')}-${String(setupSettlementDate.day).padStart(2,'0')}`;
                       const amount = setupAmountInput.replace(new RegExp('[^0-9]', 'g'), '');
-                      if (!amount) { alert('金額を入力してください'); return; }
+                      if (!amount) { setSetupError('金額を入力してください'); return; } setSetupError(null);
                       const card = creditCards.find(c => String(c.id) === String(cardId));
                       setSetupSettlements(prev => [...prev, { cardId, cardName: card ? card.name : '', date, amount }]);
                       setSetupAmountInput('');

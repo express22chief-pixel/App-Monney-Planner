@@ -1,6 +1,7 @@
 import React from 'react';
 
 export default function ClosingCheckModal(props) {
+  const [closingMsg, setClosingMsg] = React.useState(null);
   const { theme, darkMode, showClosingCheckModal, setShowClosingCheckModal, dismissedClosingAlerts, setDismissedClosingAlerts, transactions, setTransactions, creditCards } = props;
 
   return (
@@ -55,17 +56,23 @@ export default function ClosingCheckModal(props) {
                     ...prev.filter(t => !(t.isSettlement && String(t.cardId) === String(showClosingCheckModal.card.id) && t.date === showClosingCheckModal.settleDateStr)),
                     settleTx
                   ]);
-                  alert((diff > 0 ? '差額 ¥' + diff.toLocaleString() + ' の未記録支出が見つかりました。引き落とし予定を実際の金額に更新しました。' : '記録が実際より多い状態でした。引き落とし予定を更新しました。'));
+                  setClosingMsg(diff > 0 ? `差額 ¥${diff.toLocaleString()} の未記録支出が見つかりました。引き落とし予定を更新しました。` : '記録が実際より多い状態でした。引き落とし予定を更新しました。');
                 }
                 setDismissedClosingAlerts(prev => ({ ...prev, [showClosingCheckModal.alertKey]: true }));
-                setShowClosingCheckModal(null);
+                if (!closingMsg) setShowClosingCheckModal(null);
               }}
                 className="w-full py-3 rounded-lg font-bold text-white" style={{ backgroundColor: '#6366f1' }}>
                 確認完了
               </button>
+              {closingMsg && (
+                <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.1)', borderRadius: 10, border: '1px solid rgba(99,102,241,0.3)' }}>
+                  <p style={{ fontSize: 12, color: '#6366f1', lineHeight: 1.6 }}>✓ {closingMsg}</p>
+                  <button onClick={() => setShowClosingCheckModal(null)} style={{ marginTop: 8, width: '100%', padding: '8px', background: '#6366f1', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>閉じる</button>
+                </div>
+              )}
               <button onClick={() => {
                 setDismissedClosingAlerts(prev => ({ ...prev, [showClosingCheckModal.alertKey]: true }));
-                setShowClosingCheckModal(null);
+                if (!closingMsg) setShowClosingCheckModal(null);
               }} className={`w-full py-3 rounded-lg font-semibold text-sm ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                 スキップ
               </button>

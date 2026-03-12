@@ -11,6 +11,7 @@ export default function CardModal(props) {
   const [isPayPayLinked, setIsPayPayLinked] = useState(
     editingCard ? (editingCard.isPayPayLinked || false) : false
   );
+  const [errors, setErrors] = useState({});
 
   const handleSave = () => {
     const name          = document.getElementById('card-name').value.trim();
@@ -19,10 +20,10 @@ export default function CardModal(props) {
     const paymentDay    = Number(document.getElementById('card-payment-day').value);
     const nonBusinessDay = document.getElementById('card-non-business').value;
 
-    if (!name) { alert('カード名を入力してください'); return; }
-    if (!paymentDay || paymentDay < 1 || paymentDay > 31) {
-      alert('引き落とし日は1〜31の数字を入力してください'); return;
-    }
+    const newErrors = {};
+    if (!name) newErrors.name = 'カード名を入力してください';
+    if (!paymentDay || paymentDay < 1 || paymentDay > 31) newErrors.paymentDay = '1〜31の数字を入力してください';
+    if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
 
     if (editingCard) {
       setCreditCards(prev => prev.map(c =>
@@ -60,6 +61,7 @@ export default function CardModal(props) {
               id="card-name"
               className={`w-full px-3 py-2.5 rounded-lg text-sm ${darkMode ? 'bg-neutral-800 text-white border border-neutral-600' : 'bg-white border border-neutral-200'} focus:outline-none`}
             />
+            {errors.name && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{errors.name}</p>}
           </div>
 
           <div className="flex gap-3">
@@ -101,6 +103,7 @@ export default function CardModal(props) {
               />
               <span className={`text-sm ${theme.textSecondary} whitespace-nowrap`}>日</span>
             </div>
+            {errors.paymentDay && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{errors.paymentDay}</p>}
           </div>
 
           <div>
