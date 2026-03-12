@@ -65,7 +65,6 @@ export default function CategoryModal(props) {
                             }}
                             className={`flex-1 px-2.5 py-1 rounded-lg text-sm font-medium border ${darkMode ? 'bg-neutral-700 text-white border-blue-500' : 'bg-white border-blue-400 text-neutral-900'} focus:outline-none`}
                           />
-            {categoryError && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{categoryError}</p>}
                         ) : (
                           <span className={`flex-1 text-sm font-medium ${theme.text}`}>
                             {displayName}
@@ -123,6 +122,7 @@ export default function CategoryModal(props) {
                   style={{ backgroundColor: theme.accent }}
                 >追加</button>
               </div>
+              {categoryError && <p style={{ fontSize: 11, color: '#ef4444', marginTop: 6 }}>{categoryError}</p>}
             </div>
           </div>
         </div>
