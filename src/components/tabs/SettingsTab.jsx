@@ -66,7 +66,8 @@ export default function SettingsTab(props) {
   } = props;
 
   // -- インラインダイアログ state ----------------------------------------
-  const [dialog, setDialog] = useState(null); // { type, title, message, defaultValue, onConfirm, danger }
+  const [dialog, setDialog] = useState(null);
+  const [importError, setImportError] = useState(null); // { type, title, message, defaultValue, onConfirm, danger }
   const closeDialog = () => setDialog(null);
 
   const deletedExp = customCategories?.deletedDefaults?.expense || [];
@@ -649,7 +650,7 @@ export default function SettingsTab(props) {
                             },
                           });
                         } catch {
-                          alert('ファイルの読み込みに失敗しました。有効なJSONファイルを選択してください。');
+                          setImportError('ファイルの読み込みに失敗しました。有効なJSONファイルを選択してください。');
                         }
                       };
                       reader.readAsText(file);
