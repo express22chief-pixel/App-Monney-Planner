@@ -34,6 +34,7 @@ const DEFAULT_PARAMS = {
 };
 
 function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, darkMode }) {
+  const sub = darkMode ? '#9ca3af' : '#6b7280';
   return (
     <div>
       {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: sub, marginBottom: 4 }}>{label}</label>}
@@ -59,6 +60,7 @@ function NumInput({ label, value, onChange, prefix = '¥', suffix = '', hint, da
 }
 
 function Seg({ label, options, value, onChange, darkMode }) {
+  const sub = darkMode ? '#9ca3af' : '#6b7280';
   return (
     <div>
       {label && <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: sub, marginBottom: 6 }}>{label}</label>}
@@ -77,7 +79,8 @@ function Seg({ label, options, value, onChange, darkMode }) {
   );
 }
 
-function InfoRow({ label, value, accent }) {
+function InfoRow({ label, value, accent, darkMode }) {
+  const sub = darkMode ? '#9ca3af' : '#6b7280';
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, paddingBottom: 6, marginBottom: 6, borderBottom: `1px solid ${darkMode ? '#2a2a2a' : 'rgba(0,0,0,0.06)'}` }}>
       <span style={{ color: sub }}>{label}</span>
@@ -97,9 +100,12 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
   const set = (key, val) => setParams(p => ({ ...p, [key]: val }));
 
   const loanAmount   = params.propertyPrice - params.downPayment;
-  const monthlyLoan  = loanAmount > 0
-    ? Math.round(loanAmount * (params.interestRate/100/12) * Math.pow(1+params.interestRate/100/12, params.loanMonths) / (Math.pow(1+params.interestRate/100/12, params.loanMonths)-1))
-    : 0;
+  const monthlyLoan = (() => {
+    if (loanAmount <= 0) return 0;
+    const r = params.interestRate / 100 / 12;
+    if (r === 0) return Math.round(loanAmount / params.loanMonths); // 無利子の場合
+    return Math.round(loanAmount * r * Math.pow(1+r, params.loanMonths) / (Math.pow(1+r, params.loanMonths) - 1));
+  })();
   const monthlyBuy   = monthlyLoan + params.managementFee + Math.round(params.propertyTax/12);
   const monthlyDiff  = monthlyBuy - params.monthlyRent;
 
@@ -265,17 +271,17 @@ export default function HousingComparisonModal({ theme, darkMode, housingParams,
     <div key="summary" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ padding: '14px 16px', background: darkMode ? 'rgba(10,214,100,0.1)' : '#ecfdf5', borderRadius: 12 }}>
         <p style={{ fontSize: 13, fontWeight: 800, color: green, marginBottom: 10 }}>設定内容の確認</p>
-        <InfoRow label="📅 購入予定年齢"   value={`${params.purchaseAge}歳（あと${params.purchaseAge-currentAge}年）`} accent={blue} />
-        <InfoRow label="物件価格"          value={`¥${params.propertyPrice.toLocaleString()}`} />
-        <InfoRow label="頭金"              value={`¥${params.downPayment.toLocaleString()}`} />
-        <InfoRow label="借入額"            value={`¥${loanAmount.toLocaleString()}`} accent={red} />
-        <InfoRow label="月々返済"          value={`¥${monthlyLoan.toLocaleString()}`} />
-        <InfoRow label="金利"              value={`${params.rateType==='fixed'?'固定':'変動'} ${params.interestRate}%`} />
-        <InfoRow label="返済期間"          value={`${params.loanMonths/12}年`} />
-        <InfoRow label="月々総支出（購入）" value={`¥${monthlyBuy.toLocaleString()}`} />
-        <InfoRow label="月々家賃（賃貸）"  value={`¥${params.monthlyRent.toLocaleString()}`} />
-        <InfoRow label="月々差額"          value={`${monthlyDiff>0?'+':''}¥${monthlyDiff.toLocaleString()}`} accent={monthlyDiff>0?red:green} />
-        <InfoRow label="比較期間"          value={`${params.compareYears}年`} />
+        <InfoRow label="📅 購入予定年齢"   value={`${params.purchaseAge}歳（あと${params.purchaseAge-currentAge}年）`} accent={blue}  darkMode={darkMode}/>
+        <InfoRow label="物件価格"          value={`¥${params.propertyPrice.toLocaleString()}`}  darkMode={darkMode}/>
+        <InfoRow label="頭金"              value={`¥${params.downPayment.toLocaleString()}`}  darkMode={darkMode}/>
+        <InfoRow label="借入額"            value={`¥${loanAmount.toLocaleString()}`} accent={red}  darkMode={darkMode}/>
+        <InfoRow label="月々返済"          value={`¥${monthlyLoan.toLocaleString()}`}  darkMode={darkMode}/>
+        <InfoRow label="金利"              value={`${params.rateType==='fixed'?'固定':'変動'} ${params.interestRate}%`}  darkMode={darkMode}/>
+        <InfoRow label="返済期間"          value={`${params.loanMonths/12}年`}  darkMode={darkMode}/>
+        <InfoRow label="月々総支出（購入）" value={`¥${monthlyBuy.toLocaleString()}`}  darkMode={darkMode}/>
+        <InfoRow label="月々家賃（賃貸）"  value={`¥${params.monthlyRent.toLocaleString()}`}  darkMode={darkMode}/>
+        <InfoRow label="月々差額"          value={`${monthlyDiff>0?'+':''}¥${monthlyDiff.toLocaleString()}`} accent={monthlyDiff>0?red:green} darkMode={darkMode}/>
+        <InfoRow label="比較期間"          value={`${params.compareYears}年`}  darkMode={darkMode}/>
       </div>
       <div>
         <label style={{ fontSize: 12, fontWeight: 600, color: sub, display: 'block', marginBottom: 6 }}>比較期間</label>
