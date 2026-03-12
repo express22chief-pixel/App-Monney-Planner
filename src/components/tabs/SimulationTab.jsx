@@ -148,6 +148,7 @@ export default function SimulationTab(props) {
   const [secTimeline,    setSecTimeline]    = useState(true);   // タイムライングラフ
   const [secLifeEvent,   setSecLifeEvent]   = useState(true);   // ライフイベント
   const [showBasis,      setShowBasis]      = useState(false); // 計算根拠パネル
+  const [jobChangeAmount, setJobChangeAmount] = useState(0);    // 転職シミュ
   const [secPhaseSnap,   setSecPhaseSnap]   = useState(false);  // フェーズ別（デフォルト折りたたみ）
   const [secHousing,     setSecHousing]     = useState(false);  // 購入vs賃貸（デフォルト折りたたみ）
 
@@ -207,6 +208,75 @@ export default function SimulationTab(props) {
   const bg    = darkMode ? '#111'    : '#f2f2f7';
   const txt   = darkMode ? '#f5f5f5' : '#111';
   const sub   = darkMode ? '#aaaaaa' : '#555555';
+
+  // ===== C: 貯蓄率KPI =====
+  const savingsRateData = useMemo(() => {
+    const today = new Date();
+    const toYM = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const ym = toYM(today);
+    if (monthlyHistory[ym]) return null; // 締め済みの月は対象外
+    // 直近3ヶ月の締め済み月から平均貯蓄率を計算
+    const closedMonths = Object.entries(monthlyHistory)
+      .filter(([, h]) => h.plIncome > 0)
+      .map(([, h]) => ({ rate: h.plBalance / h.plIncome }))
+      .slice(-3);
+    if (closedMonths.length === 0) return null;
+    const avg = Math.round((closedMonths.reduce((a, b) => a + b.rate, 0) / closedMonths.length) * 100);
+    const latest = Math.round(closedMonths[closedMonths.length - 1].rate * 100);
+    const grade = latest >= 50 ? { label: 'FIRE圏', color: '#0cff8c' }
+                : latest >= 30 ? { label: '優秀',   color: '#00e5ff' }
+                : latest >= 20 ? { label: '良好',   color: '#a855f7' }
+                : latest >= 10 ? { label: '標準',   color: '#ff9f0a' }
+                :                { label: '要改善', color: '#ff453a' };
+    return { latest, avg, grade };
+  }, [monthlyHistory]);
+
+  // ===== B: ライフステージ先読み =====
+  const lifeStageData = useMemo(() => {
+    const age = userInfo?.age ? Number(userInfo.age) : null;
+    if (!age) return null;
+    const totalAssets = (assetData?.savings || 0) + (assetData?.investments || 0);
+    const income = userInfo?.annualIncome ? Number(userInfo.annualIncome) : 0;
+    const events = [];
+    if (age < 35) {
+      const y = Math.max(1, 32 - age);
+      events.push({ icon: '💍', label: '結婚', age: age+y, need: 3000000, note: '結婚式・新生活費用の平均', urgency: y<=3?'high':'mid' });
+    }
+    if (age >= 28 && age <= 50) {
+      const y = Math.max(1, 46 - age);
+      if (y < 20) events.push({ icon: '🎓', label: '教育費（大学入学）', age: age+y, need: 5000000, note: '私立文系4年間の目安', urgency: y<=5?'high':'mid' });
+    }
+    if (age < 45) {
+      const y = Math.max(1, 38 - age);
+      const dp = income > 0 ? Math.round(income * 0.2 * 2) : 8000000;
+      events.push({ icon: '🏠', label: '住宅頭金', age: age+y, need: dp, note: '物件価格の20%が目安', urgency: y<=3?'high':y<=7?'mid':'low' });
+    }
+    const retireAge = lifePlan?.retirementAge || 65;
+    const retireNeeded = Math.max(0, 20000000 - totalAssets);
+    if (retireNeeded > 0) {
+      const y = Math.max(1, retireAge - age);
+      events.push({ icon: '🏖️', label: '老後資金', age: retireAge, need: retireNeeded, note: '金融庁試算の2000万円基準', urgency: y<=10?'high':'low' });
+    }
+    return events.map(ev => {
+      const years = Math.max(0.5, ev.age - age);
+      return { ...ev, yearsTo: Math.round(years*10)/10, monthly: Math.round(ev.need / (years*12)) };
+    }).sort((a,b) => a.yearsTo - b.yearsTo).slice(0, 3);
+  }, [userInfo, assetData, lifePlan]);
+
+  // ===== L: 転職シミュレーター =====
+  const jobChangeData = useMemo(() => {
+    if (!jobChangeAmount) return null;
+    const age = userInfo?.age ? Number(userInfo.age) : 35;
+    const retireAge = lifePlan?.retirementAge || 65;
+    const years = Math.max(1, retireAge - age);
+    const r = (simulationSettings?.returnRate || 5) / 100 / 12;
+    const n = years * 12;
+    const monthlyChange = Math.round(jobChangeAmount * 10000 * 0.75 / 12);
+    const futureValue = Math.round(monthlyChange * ((Math.pow(1+r, n) - 1) / r));
+    const currentMonthly = simulationSettings?.monthlyInvestment || 0;
+    const yearsEarlier = currentMonthly > 0 ? Math.round(Math.abs(monthlyChange) / currentMonthly * 3 * 10) / 10 : null;
+    return { monthlyChange, futureValue, yearsEarlier, isPositive: jobChangeAmount > 0 };
+  }, [jobChangeAmount, userInfo, lifePlan, simulationSettings]);
   const bdr   = darkMode ? '#2a2a2a' : '#e5e7eb';
   const green  = theme.green;                                 // テーマ緑
   const red    = theme.red;                                   // テーマ赤
