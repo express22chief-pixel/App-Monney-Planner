@@ -89,6 +89,7 @@ export function useMoneyData() {
   const [showLifeEventModal, setShowLifeEventModal]       = useState(false);
   const [editingLifeEvent, setEditingLifeEvent]           = useState(null);
   const [showInvestModal, setShowInvestModal]             = useState(false);
+  const [investError, setInvestError] = useState(null);
   const [investForm, setInvestForm]                       = useState({ fromSource: 'savings', amount: '', targetAccount: 'investments' });
   const [showClosingCheckModal, setShowClosingCheckModal] = useState(null);
   const [showSplitList, setShowSplitList]                 = useState(false);
@@ -101,6 +102,7 @@ export function useMoneyData() {
   // ----------------------------------------------------------------------------
   const [editingCategoryName, setEditingCategoryName]     = useState(null);
   const [editingCategoryValue, setEditingCategoryValue]   = useState('');
+  const [categoryError, setCategoryError] = useState(null);
   const [newCategoryName, setNewCategoryName]             = useState('');
   const [newCategoryType, setNewCategoryType]             = useState('expense');
   const [editingRecurring, setEditingRecurring]           = useState(null);
@@ -878,9 +880,10 @@ export function useMoneyData() {
   };
 
   const addCustomCategory = () => {
-    if (!newCategoryName.trim()) { alert('カテゴリ名を入力してください'); return; }
+    if (!newCategoryName.trim()) { setCategoryError('カテゴリ名を入力してください'); return; }
     const existing = newCategoryType === 'expense' ? expenseCategories : incomeCategories;
-    if (existing.includes(newCategoryName.trim())) { alert('このカテゴリは既に存在します'); return; }
+    if (existing.includes(newCategoryName.trim())) { setCategoryError('このカテゴリは既に存在します'); return; }
+    setCategoryError(null);
     setCustomCategories(prev => ({ ...prev, [newCategoryType]: [...prev[newCategoryType], newCategoryName.trim()] }));
     if (newCategoryType === 'expense') {
       setMonthlyBudget(prev => ({ ...prev, expenses: { ...prev.expenses, [newCategoryName.trim()]: 0 } }));
@@ -929,10 +932,11 @@ export function useMoneyData() {
 
   const executeInvestment = () => {
     const amount = Number(investForm.amount);
-    if (!amount || amount <= 0) { alert('金額を入力してください'); return; }
+    if (!amount || amount <= 0) { setInvestError('金額を入力してください'); return; }
     const n          = (v) => isNaN(v) ? 0 : v;
     const srcBalance = investForm.fromSource === 'savings' ? n(assetData.savings) : n(assetData.dryPowder || 0);
-    if (amount > srcBalance) { alert('残高が不足しています'); return; }
+    if (amount > srcBalance) { setInvestError('残高が不足しています'); return; }
+    setInvestError(null);
     setAssetData(prev => {
       const nd = { ...prev };
       if (investForm.fromSource === 'savings') nd.savings   = n(prev.savings) - amount;
@@ -1037,6 +1041,7 @@ export function useMoneyData() {
     showLifeEventModal, setShowLifeEventModal,
     editingLifeEvent, setEditingLifeEvent,
     showInvestModal, setShowInvestModal,
+    investError, setInvestError,
     investForm, setInvestForm,
     showClosingCheckModal, setShowClosingCheckModal,
     showSplitList, setShowSplitList,
@@ -1059,6 +1064,7 @@ export function useMoneyData() {
     // -- カテゴリ ---------------------------------------------------------------
     editingCategoryName, setEditingCategoryName,
     editingCategoryValue, setEditingCategoryValue,
+    categoryError, setCategoryError,
     newCategoryName, setNewCategoryName,
     newCategoryType, setNewCategoryType,
     editingRecurring, setEditingRecurring,
