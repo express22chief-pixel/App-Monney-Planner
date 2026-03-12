@@ -890,7 +890,7 @@ export function useMoneyData() {
   };
 
   const deleteCustomCategory = (category, type) => {
-    if (!confirm(`「${category}」を削除しますか？`)) return;
+    // 削除確認はUI側でInlineDialogを使用すること（confirm()を排除）
     setCustomCategories(prev => ({ ...prev, [type]: prev[type].filter(c => c !== category) }));
     if (type === 'expense' && monthlyBudget.expenses[category] !== undefined) {
       setMonthlyBudget(prev => { const e = { ...prev.expenses }; delete e[category]; return { ...prev, expenses: e }; });
@@ -923,7 +923,7 @@ export function useMoneyData() {
   };
 
   const deleteRecurring = (id) => {
-    if (!confirm('この定期支払いを削除しますか？')) return;
+    // 削除確認はUI側でInlineDialogを使用すること（confirm()を排除）
     setRecurringTransactions(recurringTransactions.filter(r => r.id !== id));
   };
 
