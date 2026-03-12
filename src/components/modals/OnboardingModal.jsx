@@ -51,7 +51,7 @@ export default function OnboardingModal(props) {
             <p style={{ fontSize: 13, color: sub }}>お金の流れを、時間軸で管理する。</p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
 
             <button onClick={() => props.startDemo()}
               style={{
@@ -91,16 +91,21 @@ export default function OnboardingModal(props) {
                 <p style={{ fontSize: 10, color: sub }}>クレカ登録から始める本格管理</p>
               </button>
             </div>
-          </div>
 
-          <div style={{ textAlign: 'center' }}>
+            {/* データ引き継ぎ：目立つカードとして表示 */}
             <button
-              onClick={() => {
-                setShowOnboarding(false);
-              }}
-              style={{ fontSize: 11, color: sub, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              すでに使っていた方（データを引き継ぐ）はエクスポート済みJSONをインポートしてください
+              onClick={() => setMode('import')}
+              style={{
+                width: '100%', padding: '14px 18px', borderRadius: 14,
+                background: card, border: `1px solid ${bdr}`,
+                cursor: 'pointer', textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+              <span style={{ fontSize: 20 }}>📥</span>
+              <div>
+                <p style={{ fontSize: 13, fontWeight: 700, color: txt, marginBottom: 1 }}>以前のデータを引き継ぐ</p>
+                <p style={{ fontSize: 10, color: sub }}>エクスポートしたJSONファイルから復元</p>
+              </div>
             </button>
           </div>
 
@@ -317,6 +322,121 @@ export default function OnboardingModal(props) {
             クレカを登録して始める →
           </button>
 
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'import') {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: darkMode ? '#080808' : '#f2f2f7',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+
+          <button onClick={() => setMode(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub, fontSize: 12, marginBottom: 20 }}>
+            ← 戻る
+          </button>
+
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: txt, marginBottom: 4 }}>📥 データを引き継ぐ</h2>
+          <p style={{ fontSize: 12, color: sub, marginBottom: 24, lineHeight: 1.6 }}>
+            以前にエクスポートしたJSONファイルを選択してください。<br />
+            全データが復元されます。
+          </p>
+
+          <div style={{
+            padding: '16px', borderRadius: 12,
+            background: darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(59,130,246,0.06)',
+            border: `1px solid ${darkMode ? 'rgba(0,229,255,0.2)' : 'rgba(59,130,246,0.2)'}`,
+            marginBottom: 24,
+          }}>
+            <p style={{ fontSize: 11, color: darkMode ? '#7dd3fc' : '#3b82f6', lineHeight: 1.7 }}>
+              💡 <strong>エクスポートファイルの場所</strong><br />
+              設定タブ → 「データをエクスポート」で作成したJSONファイルです。
+              メールやクラウドストレージに保存しておくと、機種変更時に使えます。
+            </p>
+          </div>
+
+          <button
+            onClick={() => {
+              const input = document.createElement('input');
+              input.type = 'file';
+              input.accept = '.json';
+              input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  try {
+                    const d = JSON.parse(ev.target.result);
+                    if (d.transactions)          props.setTransactions(d.transactions);
+                    if (d.recurringTransactions) props.setRecurringTransactions(d.recurringTransactions);
+                    if (d.creditCards)           props.setCreditCards(d.creditCards);
+                    if (d.monthlyBudget)         props.setMonthlyBudget(d.monthlyBudget);
+                    if (d.simulationSettings)    props.setSimulationSettings(d.simulationSettings);
+                    if (d.userInfo)              props.setUserInfo(d.userInfo);
+                    if (d.assetData)             props.setAssetData(d.assetData);
+                    if (d.monthlyHistory)        props.setMonthlyHistory(d.monthlyHistory);
+                    if (d.lifeEvents)            props.setLifeEvents(d.lifeEvents);
+                    if (d.lifePlan)              props.setLifePlan(d.lifePlan);
+                    if (d.wallets)               props.setWallets && props.setWallets(d.wallets);
+                    if (d.customCategories)      props.setCustomCategories(d.customCategories);
+                    setShowOnboarding(false);
+                  } catch {
+                    setMode('importError');
+                  }
+                };
+                reader.readAsText(file);
+              };
+              input.click();
+            }}
+            style={{
+              width: '100%', padding: '16px', borderRadius: 12,
+              background: cyan, border: 'none', cursor: 'pointer',
+              color: '#000', fontSize: 14, fontWeight: 800,
+            }}
+          >
+            JSONファイルを選択して復元する
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (mode === 'importError') {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 50,
+        background: darkMode ? '#080808' : '#f2f2f7',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '24px 20px',
+      }}>
+        <div style={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <p style={{ fontSize: 32, marginBottom: 16 }}>😕</p>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: txt, marginBottom: 8 }}>読み込めませんでした</h2>
+          <p style={{ fontSize: 12, color: sub, marginBottom: 24, lineHeight: 1.6 }}>
+            有効なJSONファイルではないか、<br />破損している可能性があります。
+          </p>
+          <button
+            onClick={() => setMode('import')}
+            style={{
+              width: '100%', padding: '14px', borderRadius: 12,
+              background: cyan, border: 'none', cursor: 'pointer',
+              color: '#000', fontSize: 14, fontWeight: 800,
+            }}
+          >
+            もう一度試す
+          </button>
+          <button
+            onClick={() => setMode(null)}
+            style={{ marginTop: 10, background: 'none', border: 'none', cursor: 'pointer', color: sub, fontSize: 12 }}
+          >
+            最初に戻る
+          </button>
         </div>
       </div>
     );

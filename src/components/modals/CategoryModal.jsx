@@ -2,7 +2,7 @@ import React from 'react';
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from '../../constants';
 
 export default function CategoryModal(props) {
-  const { theme, darkMode, expenseCategories, incomeCategories, customCategories, setCustomCategories, monthlyBudget, setMonthlyBudget, newCategoryName, setNewCategoryName, newCategoryType, setNewCategoryType, addCustomCategory, setShowCategoryModal, editingCategoryName, setEditingCategoryName, editingCategoryValue, setEditingCategoryValue, handleRenameDefaultCategory, handleDeleteDefaultCategory, deleteCustomCategory } = props;
+  const { theme, darkMode, categoryError, setCategoryError, expenseCategories, incomeCategories, customCategories, setCustomCategories, monthlyBudget, setMonthlyBudget, newCategoryName, setNewCategoryName, newCategoryType, setNewCategoryType, addCustomCategory, setShowCategoryModal, editingCategoryName, setEditingCategoryName, editingCategoryValue, setEditingCategoryValue, handleRenameDefaultCategory, handleDeleteDefaultCategory, deleteCustomCategory } = props;
   const deletedExp = customCategories?.deletedDefaults?.expense || [];
   const deletedInc = customCategories?.deletedDefaults?.income || [];
   const renamedExp = customCategories?.renamedDefaults?.expense || {};
@@ -65,6 +65,7 @@ export default function CategoryModal(props) {
                             }}
                             className={`flex-1 px-2.5 py-1 rounded-lg text-sm font-medium border ${darkMode ? 'bg-neutral-700 text-white border-blue-500' : 'bg-white border-blue-400 text-neutral-900'} focus:outline-none`}
                           />
+            {categoryError && <p style={{ fontSize: 11, color: \'#ef4444\', marginTop: 4 }}>{categoryError}</p>}
                         ) : (
                           <span className={`flex-1 text-sm font-medium ${theme.text}`}>
                             {displayName}

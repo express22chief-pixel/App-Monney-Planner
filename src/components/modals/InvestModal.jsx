@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function InvestModal(props) {
-  const { theme, darkMode, investForm, setInvestForm, assetData, executeInvestment, setShowInvestModal } = props;
+  const { investError, setInvestError, theme, darkMode, investForm, setInvestForm, assetData, executeInvestment, setShowInvestModal } = props;
 
   return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
