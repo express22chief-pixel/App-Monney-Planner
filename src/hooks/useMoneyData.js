@@ -167,7 +167,7 @@ export function useMoneyData() {
       },
       {
         id: 'tpl_housing',    icon: '🏠', name: '住居',
-        enabled: true,  ageOffset: 8,  age: baseAge + 8,
+        enabled: false, ageOffset: 8,  age: baseAge + 8,
         amount: 0, date: makeDate(baseAge + 8),
         type: 'housing_choice', template: true,
         housingChoice: 'buy',
@@ -235,6 +235,16 @@ export function useMoneyData() {
   });
   const [housingParams, setHousingParams]       = useState(() => load('housingParams', null));
   const [showHousingModal, setShowHousingModal] = useState(false);
+
+  // 住居設定を保存すると同時に tpl_housing を自動ONにするラッパー
+  const saveHousingParams = (params) => {
+    setHousingParams(params);
+    if (params) {
+      setLifeEvents(prev => prev.map(ev =>
+        ev.id === 'tpl_housing' ? { ...ev, enabled: true } : ev
+      ));
+    }
+  };
 
   const [lifePlan, setLifePlan] = useState(() => load('lifePlan', {
     retirementAge:            65,
@@ -1086,7 +1096,7 @@ export function useMoneyData() {
     expenseCategories, incomeCategories,
     currentMonth, currentBalance, budgetAnalysis, unclosedMonths,
     simulationResults, monteCarloResults, scenarioResults, chartData, monteCarloChartData, simOverrides,
-    housingParams, setHousingParams, housingComparison,
+    housingParams, setHousingParams: saveHousingParams, housingComparison,
     showHousingModal, setShowHousingModal,
     lifePlan, setLifePlan, lifePlanSimulation,
     recentMonthlyAverages, incomeGrowthEstimate, monthlyGapImpact,
