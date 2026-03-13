@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function LifeEventModal(props) {
   const { theme, darkMode, editingLifeEvent, setEditingLifeEvent, addOrUpdateLifeEvent, setShowLifeEventModal } = props;
+  const [lifeEventError, setLifeEventError] = useState(null);
   const lifeEventTemplates = [
     { name: '結婚', estimatedAmount: 3000000, icon: '💍', type: 'expense' },
     { name: '出産', estimatedAmount: 500000, icon: '👶', type: 'expense' },
@@ -130,12 +131,18 @@ export default function LifeEventModal(props) {
                   />
                 </div>
 
+                {lifeEventError && (
+                  <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 8, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>
+                    ⚠ {lifeEventError}
+                  </p>
+                )}
                 <button
                   onClick={() => {
                     if (!editingLifeEvent.name || !editingLifeEvent.date) {
                       setLifeEventError('イベント名と予定時期を入力してください');
                       return;
                     }
+                    setLifeEventError(null);
                     addOrUpdateLifeEvent(editingLifeEvent);
                   }}
                   className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
