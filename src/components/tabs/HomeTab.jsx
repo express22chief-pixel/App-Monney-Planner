@@ -412,7 +412,22 @@ export default function HomeTab(props) {
                   </div>
 
                   {transactions.length === 0 ? (
-                    <p className={`text-sm text-center py-10 ${theme.textSecondary}`}>まだ取引がありません</p>
+                    <div style={{ padding: '32px 20px', textAlign: 'center' }}>
+                      <div style={{ fontSize: 36, marginBottom: 12 }}>📝</div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: darkMode ? '#f5f5f5' : '#111', marginBottom: 6 }}>まだ取引がありません</p>
+                      <p style={{ fontSize: 12, color: darkMode ? '#888' : '#999', lineHeight: 1.7, marginBottom: 16 }}>
+                        収入・支出を記録して<br/>家計の流れを見える化しましょう
+                      </p>
+                      <button
+                        onClick={() => setShowAddTransaction(true)}
+                        style={{
+                          padding: '10px 20px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #00e5ff, #0072ff)',
+                          color: '#fff', fontSize: 13, fontWeight: 700,
+                          boxShadow: '0 4px 14px rgba(0,229,255,0.25)',
+                        }}
+                      >＋ 最初の取引を記録する</button>
+                    </div>
                   ) : (
                     <>
 
@@ -500,7 +515,13 @@ export default function HomeTab(props) {
               {showRecurringList && (
                 <div className={`border-t ${theme.border} animate-fadeIn`}>
                   {recurringTransactions.length === 0 ? (
-                    <p className={`text-sm text-center py-4 ${theme.textSecondary}`}>定期支払いを追加してください</p>
+                    <div style={{ padding: '16px 20px', textAlign: 'center' }}>
+                      <p style={{ fontSize: 12, color: darkMode ? '#666' : '#aaa', marginBottom: 8 }}>家賃・サブスク・積立などを登録すると<br/>毎月の固定費が自動で管理できます</p>
+                      <button onClick={() => setShowRecurringModal(true)} style={{
+                        fontSize: 11, color: darkMode ? '#00e5ff' : '#3b82f6', fontWeight: 700,
+                        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      }}>＋ 固定収支を追加する</button>
+                    </div>
                   ) : (
                     <div className="divide-y" style={{ borderColor: darkMode ? '#2a2a2a' : '#f0f0f0' }}>
                       {recurringTransactions.map((r) => (

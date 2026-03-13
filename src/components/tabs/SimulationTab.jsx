@@ -144,12 +144,12 @@ export default function SimulationTab(props) {
   const [expandEvents,   setExpandEvents]   = useState(false);
   const [secStatus,      setSecStatus]      = useState(true);   // ステータスバナー
   const [secInsight,     setSecInsight]     = useState(true);   // 実績インサイト
-  const [secLifePlan,    setSecLifePlan]    = useState(false);  // ライフプラン調整（デフォルト折りたたみ）
+  const [secLifePlan,    setSecLifePlan]    = useState(false);  // シナリオ設定（デフォルト折りたたみ）
   const [secTimeline,    setSecTimeline]    = useState(true);   // タイムライングラフ
   const [secLifeEvent,   setSecLifeEvent]   = useState(true);   // ライフイベント
   const [showBasis,      setShowBasis]      = useState(false); // 計算根拠パネル
   const [jobChangeAmount, setJobChangeAmount] = useState(0);    // 転職シミュ
-  const [subTab,          setSubTab]          = useState('forecast'); // サブタブ: forecast | scenario | insight
+  const [subTab,          setSubTab]          = useState('insight'); // サブタブ: insight | scenario
   const [secPhaseSnap,   setSecPhaseSnap]   = useState(false);  // フェーズ別（デフォルト折りたたみ）
   const [secHousing,     setSecHousing]     = useState(false);  // 購入vs賃貸（デフォルト折りたたみ）
 
@@ -318,9 +318,8 @@ export default function SimulationTab(props) {
     return `${sign}¥${abs.toLocaleString()}`;
   };
 
-  // ===== サブタブ定義 =====
+  // ===== サブタブ定義（2タブ）=====
   const SUB_TABS = [
-    { id: 'forecast', label: '予測', icon: '📈' },
     { id: 'insight',  label: 'インサイト', icon: '💡' },
     { id: 'scenario', label: 'シナリオ', icon: '🎛️' },
   ];
@@ -328,31 +327,42 @@ export default function SimulationTab(props) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-      {/* ===== サブタブスイッチャー ===== */}
-      <div style={{
-        display: 'flex', gap: 6, padding: '12px 0 10px',
-        position: 'sticky', top: 0, zIndex: 10,
-        background: darkMode ? '#0a0a0a' : '#f5f5f5',
-      }}>
-        {SUB_TABS.map(tab => (
-          <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
-            flex: 1, padding: '8px 4px', borderRadius: 20, border: 'none', cursor: 'pointer',
-            fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
-            background: subTab === tab.id
-              ? (darkMode ? '#1c1c1e' : '#fff')
-              : 'transparent',
-            color: subTab === tab.id ? blue : sub,
-            boxShadow: subTab === tab.id ? (darkMode ? '0 1px 6px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.1)') : 'none',
-          }}>
-            <span style={{ marginRight: 4 }}>{tab.icon}</span>{tab.label}
-          </button>
-        ))}
-      </div>
+      {/* ===== 予測グラフ（常時表示） ===== */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingBottom: 12 }}>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 4 }}>
+      {/* 新規ユーザー向け設定誘導バナー */}
+      {!userInfo?.age && (
+        <div style={{
+          padding: '16px', borderRadius: 12,
+          background: darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(59,130,246,0.05)',
+          border: `1px solid ${darkMode ? 'rgba(0,229,255,0.2)' : 'rgba(59,130,246,0.2)'}`,
+        }}>
+          <p style={{ fontSize: 13, fontWeight: 700, color: blue, marginBottom: 6 }}>⚙️ まずシナリオを設定しましょう</p>
+          <p style={{ fontSize: 11, color: sub, lineHeight: 1.7, marginBottom: 12 }}>
+            年齢・年収・リタイア年齢などを入力すると<br/>
+            あなた専用の資産シミュレーションが始まります。
+          </p>
+          <button onClick={() => setSubTab('scenario')} style={{
+            padding: '9px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: blue, color: '#fff', fontSize: 12, fontWeight: 700,
+          }}>シナリオタブで設定する →</button>
+        </div>
+      )}
 
-      {subTab === 'forecast' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {(lifePlan.annualIncome ?? 0) === 0 && userInfo?.age && (
+        <div style={{
+          padding: '12px 14px', borderRadius: 10,
+          background: darkMode ? 'rgba(255,159,10,0.08)' : 'rgba(255,159,10,0.06)',
+          border: `1px solid rgba(255,159,10,0.25)`,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12,
+        }}>
+          <p style={{ fontSize: 11, color: amber, fontWeight: 600 }}>💡 年収を設定するとシミュレーションが開始されます</p>
+          <button onClick={() => setSubTab('scenario')} style={{
+            padding: '6px 12px', borderRadius: 8, border: `1px solid ${amber}`,
+            background: 'none', color: amber, fontSize: 11, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap',
+          }}>設定 →</button>
+        </div>
+      )}
 
       {(() => {
         if (!recentMonthlyAverages || recentMonthlyAverages.months < 2) return null;
@@ -647,8 +657,30 @@ export default function SimulationTab(props) {
         )}
       </div>
 
+      </div>{/* end forecast always-visible */}
+
+      {/* ===== サブタブスイッチャー（インサイト / シナリオ）===== */}
+      <div style={{
+        display: 'flex', gap: 6, padding: '4px 0 10px',
+        position: 'sticky', top: 0, zIndex: 10,
+        background: darkMode ? '#0a0a0a' : '#f5f5f5',
+      }}>
+        {SUB_TABS.map(tab => (
+          <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
+            flex: 1, padding: '8px 4px', borderRadius: 20, border: 'none', cursor: 'pointer',
+            fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+            background: subTab === tab.id
+              ? (darkMode ? '#1c1c1e' : '#fff')
+              : 'transparent',
+            color: subTab === tab.id ? blue : sub,
+            boxShadow: subTab === tab.id ? (darkMode ? '0 1px 6px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.1)') : 'none',
+          }}>
+            <span style={{ marginRight: 4 }}>{tab.icon}</span>{tab.label}
+          </button>
+        ))}
       </div>
-      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       {subTab === 'scenario' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -896,7 +928,7 @@ export default function SimulationTab(props) {
       <div style={{ background: card, borderRadius: 16, padding: 18 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: secLifePlan ? 12 : 0 }}>
           <button onClick={() => setSecLifePlan(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>ライフプラン調整</span>
+            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>シナリオ設定</span>
             <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifePlan ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
           </button>
           <button onClick={(e) => { e.stopPropagation(); setShowLifePlanSettings(true); }} style={{
@@ -1109,6 +1141,7 @@ export default function SimulationTab(props) {
         setLifeEvents={setLifeEvents}
         setShowHousingModal={setShowHousingModal}
         housingParams={housingParams}
+        setHousingParams={setHousingParams}
         currentAge={currentAge}
         darkMode={darkMode}
         theme={theme}
