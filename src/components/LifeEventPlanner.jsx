@@ -9,7 +9,7 @@ import { Plus, ChevronRight, ChevronDown, ChevronUp, Home, Settings2 } from 'luc
  */
 export default function LifeEventPlanner({
   lifeEvents, setLifeEvents,
-  setShowHousingModal, housingParams,
+  setShowHousingModal, housingParams, setHousingParams,
   currentAge, darkMode, theme,
   card, txt, sub, bdr, blue, red, green, amber, fmtMan,
   setShowLifeEventModal, setEditingLifeEvent, deleteLifeEvent,
@@ -22,6 +22,10 @@ export default function LifeEventPlanner({
 
   const updateEvent = (id, patch) => {
     setLifeEvents(prev => prev.map(e => e.id === id ? { ...e, ...patch } : e));
+    // 住居を賃貸に切り替えたらhousingParamsをクリア
+    if (patch.housingChoice === 'rent') {
+      setHousingParams(null);
+    }
   };
 
   const nowYear = new Date().getFullYear();
