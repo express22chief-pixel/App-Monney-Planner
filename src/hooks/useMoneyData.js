@@ -47,6 +47,7 @@ export function useMoneyData() {
   const [selectedDate, setSelectedDate]                   = useState(null);
   const [darkMode, setDarkMode]                           = useState(() => load('darkMode', true));
   const [showSplash, setShowSplash]                       = useState(true);
+  const [_dataReady, setDataReady]                        = useState(false);
   const [summaryMonthOffset, setSummaryMonthOffset]       = useState(0);
   const [recentTxnLimit, setRecentTxnLimit]               = useState(3);
   const [historySearch, setHistorySearch]                 = useState('');
@@ -349,11 +350,19 @@ export function useMoneyData() {
   // 副作用 ② システム初期化（スプラッシュ / 前日確認）
   // ----------------------------------------------------------------------------
 
-  // スプラッシュ非表示タイマー
+  // スプラッシュ：データ復元完了 + 最低600ms表示
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 2500);
-    return () => clearTimeout(timer);
+    // stateはすべてuseState初期化時に同期読込済み → 次フレームでready
+    const readyTimer = setTimeout(() => setDataReady(true), 0);
+    return () => clearTimeout(readyTimer);
   }, []);
+
+  useEffect(() => {
+    if (!_dataReady) return;
+    // データ準備完了後、最低600ms + アニメーション余白
+    const minTimer = setTimeout(() => setShowSplash(false), 600);
+    return () => clearTimeout(minTimer);
+  }, [_dataReady]);
 
   // 再起動時にデモモードだった場合は自動クリア（localStorageに残留している場合のみ）
   useEffect(() => {
