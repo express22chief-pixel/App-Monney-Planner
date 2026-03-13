@@ -149,6 +149,7 @@ export default function SimulationTab(props) {
   const [secLifeEvent,   setSecLifeEvent]   = useState(true);   // ライフイベント
   const [showBasis,      setShowBasis]      = useState(false); // 計算根拠パネル
   const [jobChangeAmount, setJobChangeAmount] = useState(0);    // 転職シミュ
+  const [subTab,          setSubTab]          = useState('forecast'); // サブタブ: forecast | scenario | insight
   const [secPhaseSnap,   setSecPhaseSnap]   = useState(false);  // フェーズ別（デフォルト折りたたみ）
   const [secHousing,     setSecHousing]     = useState(false);  // 購入vs賃貸（デフォルト折りたたみ）
 
@@ -317,8 +318,41 @@ export default function SimulationTab(props) {
     return `${sign}¥${abs.toLocaleString()}`;
   };
 
+  // ===== サブタブ定義 =====
+  const SUB_TABS = [
+    { id: 'forecast', label: '予測', icon: '📈' },
+    { id: 'insight',  label: 'インサイト', icon: '💡' },
+    { id: 'scenario', label: 'シナリオ', icon: '🎛️' },
+  ];
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
+      {/* ===== サブタブスイッチャー ===== */}
+      <div style={{
+        display: 'flex', gap: 6, padding: '12px 0 10px',
+        position: 'sticky', top: 0, zIndex: 10,
+        background: darkMode ? '#0a0a0a' : '#f5f5f5',
+      }}>
+        {SUB_TABS.map(tab => (
+          <button key={tab.id} onClick={() => setSubTab(tab.id)} style={{
+            flex: 1, padding: '8px 4px', borderRadius: 20, border: 'none', cursor: 'pointer',
+            fontSize: 12, fontWeight: 700, transition: 'all 0.15s',
+            background: subTab === tab.id
+              ? (darkMode ? '#1c1c1e' : '#fff')
+              : 'transparent',
+            color: subTab === tab.id ? blue : sub,
+            boxShadow: subTab === tab.id ? (darkMode ? '0 1px 6px rgba(0,0,0,0.4)' : '0 1px 4px rgba(0,0,0,0.1)') : 'none',
+          }}>
+            <span style={{ marginRight: 4 }}>{tab.icon}</span>{tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 4 }}>
+
+      {subTab === 'forecast' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
       {(() => {
         if (!recentMonthlyAverages || recentMonthlyAverages.months < 2) return null;
@@ -613,53 +647,120 @@ export default function SimulationTab(props) {
         )}
       </div>
 
+      </div>
+      )}
+
+      {subTab === 'scenario' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
       {/* モンテカルロシミュレーション */}
-      <div style={{ background: card, borderRadius: 8 }}>
+      <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}`, overflow: 'hidden' }}>
         <button
           onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
           style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
-          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>モンテカルロシミュレーション</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>100通りのシナリオ</span>
-            <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, display: 'inline-block', transform: simulationSettings.showMonteCarloSimulation ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: txt }}>確率的シミュレーション</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color: blue, padding: '2px 8px', borderRadius: 10, background: darkMode ? 'rgba(0,229,255,0.1)' : 'rgba(59,130,246,0.08)' }}>100通り</span>
           </div>
+          <span style={{ fontSize: 11, color: sub, opacity: 0.7, display: 'inline-block', transform: simulationSettings.showMonteCarloSimulation ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
         </button>
-        {simulationSettings.showMonteCarloSimulation && monteCarloChartData && monteCarloChartData.length > 0 && (
-          <div style={{ padding: '14px 16px' }}>
-            <p style={{ fontSize: 10, color: sub, marginBottom: 12 }}>利回りにランダムな変動を加えた100回のシミュレーション結果。上下のバンドが確率的なリスク幅を示します。</p>
-            <ResponsiveContainer width="100%" height={220}>
-              <AreaChart data={monteCarloChartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#1a1a1a' : '#f0f0f0'} vertical={false} />
-                <XAxis dataKey="年" tick={{ fontSize: 9, fill: sub }} />
-                <YAxis tickFormatter={v => v >= 100000000 ? ((v/100000000).toFixed(0) + '億') : v >= 10000 ? ((v/10000).toFixed(0) + '万') : v} tick={{ fontSize: 9, fill: sub }} width={44} />
-                <Tooltip
-                  contentStyle={{
-                    background: darkMode ? '#1a1a1a' : '#fff',
-                    border: `1px solid ${darkMode ? '#333' : '#e5e7eb'}`,
-                    borderRadius: 8,
-                    fontSize: 11,
-                    color: darkMode ? '#fff' : '#111',
-                  }}
-                  formatter={(v, name) => ['¥' + (v/10000).toFixed(0) + '万', name]}
-                  labelFormatter={(label) => `${label}年後`}
-                />
-                <Area type="monotone" dataKey="範囲下限" stackId="band" stroke="none" fill="#3b82f620" />
-                <Area type="monotone" dataKey="範囲上限" stackId="band" stroke="none" fill="#3b82f620" />
-                <Line type="monotone" dataKey="平均" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="最小" stroke="#ff453a" strokeWidth={1} strokeDasharray="3 3" dot={false} />
-                <Line type="monotone" dataKey="最大" stroke="#0cff8c" strokeWidth={1} strokeDasharray="3 3" dot={false} />
-              </AreaChart>
-            </ResponsiveContainer>
-            <div style={{ display: 'flex', gap: 14, marginTop: 8, flexWrap: 'wrap' }}>
-              {[{ color: '#0cff8c', label: '最大' }, { color: '#3b82f6', label: '平均', bold: true }, { color: '#ff453a', label: '最小' }].map(item => (
-                <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 16, height: 2, background: item.color, borderRadius: 1 }} />
-                  <span style={{ fontSize: 10, color: item.bold ? '#3b82f6' : sub, fontWeight: item.bold ? 700 : 400 }}>{item.label}</span>
+        {simulationSettings.showMonteCarloSimulation && monteCarloChartData && monteCarloChartData.length > 0 && (() => {
+          const bandData = monteCarloChartData.map(d => ({
+            ...d,
+            バンド幅: Math.max(0, (d['範囲上限'] ?? 0) - (d['範囲下限'] ?? 0)),
+          }));
+          const last = bandData[bandData.length - 1];
+          return (
+            <div style={{ padding: '16px 16px 14px' }}>
+              <p style={{ fontSize: 11, color: sub, lineHeight: 1.7, marginBottom: 14 }}>
+                利回りにランダムな変動を加えた100通りの結果。<strong style={{ color: txt }}>青い帯</strong>は中央50%の幅、<strong style={{ color: '#0cff8c' }}>緑</strong>が最良・<strong style={{ color: '#ff453a' }}>赤</strong>が最悪シナリオです。
+              </p>
+              <ResponsiveContainer width="100%" height={240}>
+                <ComposedChart data={bandData} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="mcBandGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={blue} stopOpacity={0.3} />
+                      <stop offset="100%" stopColor={blue} stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2a2a2a' : '#ebebeb'} vertical={false} />
+                  <XAxis dataKey="年" tick={{ fontSize: 10, fill: sub }} />
+                  <YAxis
+                    tickFormatter={v => {
+                      if (v === 0) return '0';
+                      const abs = Math.abs(v);
+                      if (abs >= 100_000_000) return `${(v/100_000_000).toFixed(1)}億`;
+                      return `${Math.round(v/10000)}万`;
+                    }}
+                    tick={{ fontSize: 10, fill: sub }} width={50}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: darkMode ? '#1c1c1e' : '#fff',
+                      border: `1px solid ${darkMode ? '#3a3a3a' : '#e5e7eb'}`,
+                      borderRadius: 10, fontSize: 12,
+                      color: darkMode ? '#f5f5f5' : '#111',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                    }}
+                    formatter={(v, name) => {
+                      if (name === 'バンド幅' || name === '範囲下限') return null;
+                      const fmt = val => val >= 100_000_000 ? `¥${(val/100_000_000).toFixed(1)}億` : `¥${Math.round(val/10000)}万`;
+                      const labels = { '平均': '平均シナリオ', '最大': '最良シナリオ', '最小': '最悪シナリオ' };
+                      return [fmt(v), labels[name] ?? name];
+                    }}
+                    labelFormatter={label => `${label}後`}
+                  />
+                  <Area type="monotone" dataKey="範囲下限" stroke="none" fill="transparent" legendType="none" />
+                  <Area type="monotone" dataKey="バンド幅" stroke="none" fill="url(#mcBandGrad)" legendType="none" />
+                  <Line type="monotone" dataKey="最小" stroke="#ff453a" strokeWidth={1.5} strokeDasharray="5 3" dot={false} strokeOpacity={0.85} />
+                  <Line type="monotone" dataKey="最大" stroke="#0cff8c" strokeWidth={1.5} strokeDasharray="5 3" dot={false} strokeOpacity={0.85} />
+                  <Line type="monotone" dataKey="平均" stroke={blue} strokeWidth={2.5} dot={false}
+                    activeDot={{ r: 5, fill: blue, stroke: darkMode ? '#000' : '#fff', strokeWidth: 2 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+              {/* 凡例 */}
+              <div style={{ display: 'flex', gap: 14, marginTop: 10, paddingLeft: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                {[
+                  { type: 'line', color: '#0cff8c', label: '最良シナリオ' },
+                  { type: 'line', color: blue,      label: '平均', bold: true },
+                  { type: 'line', color: '#ff453a', label: '最悪シナリオ' },
+                  { type: 'band', color: blue,      label: '中央50%の幅' },
+                ].map(item => (
+                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    {item.type === 'band' ? (
+                      <div style={{ width: 16, height: 10, borderRadius: 3, background: `${blue}35`, border: `1px solid ${blue}70` }} />
+                    ) : (
+                      <div style={{ width: 18, height: item.bold ? 3 : 2, borderRadius: 2, background: item.color, opacity: item.bold ? 1 : 0.85 }} />
+                    )}
+                    <span style={{ fontSize: 11, color: item.bold ? blue : sub, fontWeight: item.bold ? 700 : 400 }}>{item.label}</span>
+                  </div>
+                ))}
+              </div>
+              {/* 最終値サマリー */}
+              {last && (
+                <div style={{ marginTop: 14, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                  {[
+                    { label: '最良', value: last['最大'], color: '#0cff8c' },
+                    { label: '平均', value: last['平均'], color: blue },
+                    { label: '最悪', value: last['最小'], color: '#ff453a' },
+                  ].map(({ label, value, color }) => {
+                    const fmt = v => v >= 100_000_000 ? `¥${(v/100_000_000).toFixed(1)}億` : v >= 10_000 ? `¥${Math.round(v/10000)}万` : `¥0`;
+                    return (
+                      <div key={label} style={{ padding: '10px 8px', borderRadius: 10, background: darkMode ? '#0a0a0a' : '#f8f8f8', textAlign: 'center', border: `1px solid ${bdr}` }}>
+                        <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>{label}</p>
+                        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 800, color, letterSpacing: '-0.02em' }}>{fmt(value)}</p>
+                        <p style={{ fontSize: 9, color: sub, marginTop: 2 }}>{last['年']}後</p>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
+              <p style={{ fontSize: 10, color: darkMode ? '#2a2a2a' : '#d1d5db', marginTop: 10, textAlign: 'right' }}>
+                ※将来の運用成果を保証するものではありません
+              </p>
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
 
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
@@ -1216,6 +1317,147 @@ export default function SimulationTab(props) {
         );
       })()}
 
+      </div>
+      )}
+
+      {/* ===== インサイトタブ: BCL 3カード ===== */}
+      {subTab === 'insight' && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* --- C: 貯蓄率KPI --- */}
+          <div style={{ borderRadius: 12, overflow: 'hidden', background: card, border: `1px solid ${bdr}` }}>
+            <div style={{ padding: '14px 16px 10px', borderBottom: `1px solid ${bdr}` }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: sub, marginBottom: 10 }}>貯蓄率トラッカー</p>
+              {savingsRateData ? (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 36, fontWeight: 800, color: savingsRateData.grade.color }}>{savingsRateData.latest}%</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: savingsRateData.grade.color, padding: '2px 8px', borderRadius: 20, background: `${savingsRateData.grade.color}20` }}>{savingsRateData.grade.label}</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <p style={{ fontSize: 9, color: sub, marginBottom: 2 }}>3ヶ月平均</p>
+                      <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 18, fontWeight: 700, color: sub }}>{savingsRateData.avg}%</p>
+                    </div>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: darkMode ? '#1a1a1a' : '#f0f0f0', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${Math.min(savingsRateData.latest, 100)}%`, borderRadius: 3, background: savingsRateData.grade.color, transition: 'width 0.5s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                    <span style={{ fontSize: 9, color: darkMode ? '#333' : '#ddd' }}>0%</span>
+                    <span style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc' }}>目標20%</span>
+                    <span style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc' }}>FIRE圏50%</span>
+                  </div>
+                </>
+              ) : (
+                <div style={{ padding: '16px 0', textAlign: 'center' }}>
+                  <p style={{ fontSize: 13, color: sub, marginBottom: 4 }}>📊 月を締めると表示されます</p>
+                  <p style={{ fontSize: 11, color: darkMode ? '#333' : '#ccc' }}>1ヶ月分の締め処理後に貯蓄率が計算されます</p>
+                </div>
+              )}
+            </div>
+            <div style={{ padding: '8px 14px', background: darkMode ? '#080808' : '#fafafa' }}>
+              <p style={{ fontSize: 10, color: sub }}>※前月締め確定値ベース。今月分は月締め後に反映。</p>
+            </div>
+          </div>
+
+          {/* --- B: ライフステージ先読み --- */}
+          <div style={{ borderRadius: 12, background: card, border: `1px solid ${bdr}`, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px 10px', borderBottom: `1px solid ${bdr}` }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: sub }}>UPCOMING MILESTONES</p>
+            </div>
+            {lifeStageData && lifeStageData.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                {lifeStageData.map((ev, i) => (
+                  <div key={i} style={{ padding: '12px 16px', borderBottom: i < lifeStageData.length-1 ? `1px solid ${darkMode?'#141414':'#f5f5f5'}` : 'none', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: ev.urgency==='high'?'rgba(255,69,58,0.12)':ev.urgency==='mid'?'rgba(255,159,10,0.12)':'rgba(0,229,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{ev.icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: txt, marginBottom: 2 }}>{ev.label}</p>
+                          <p style={{ fontSize: 9, color: sub }}>{ev.note}</p>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 800, color: ev.urgency==='high'?'#ff453a':ev.urgency==='mid'?'#ff9f0a':'#00e5ff' }}>¥{(ev.need/10000).toFixed(0)}万</p>
+                          <p style={{ fontSize: 9, color: sub }}>{ev.yearsTo}年後・{ev.age}歳</p>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 6, padding: '4px 8px', borderRadius: 6, background: darkMode?'#0a0a0a':'#f8f8f8', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 9, color: sub }}>月々</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, color: txt }}>¥{ev.monthly.toLocaleString()}</span>
+                        <span style={{ fontSize: 9, color: sub }}>の積立が必要</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '20px 16px', textAlign: 'center' }}>
+                <p style={{ fontSize: 13, color: sub, marginBottom: 4 }}>👤 年齢を設定すると表示されます</p>
+                <p style={{ fontSize: 11, color: darkMode?'#333':'#ccc' }}>設定タブ → ユーザー情報から年齢を入力してください</p>
+              </div>
+            )}
+            <div style={{ padding: '8px 16px', background: darkMode?'#080808':'#fafafa', borderTop: `1px solid ${bdr}` }}>
+              <p style={{ fontSize: 9, color: sub, textAlign: 'center' }}>※ライフプラン設定で年齢・家族構成を更新すると精度が上がります</p>
+            </div>
+          </div>
+
+          {/* --- L: 転職シミュレーター --- */}
+          <div style={{ borderRadius: 12, background: card, border: `1px solid ${bdr}`, overflow: 'hidden' }}>
+            <div style={{ padding: '12px 16px 12px', borderBottom: jobChangeData ? `1px solid ${bdr}` : 'none' }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: sub, marginBottom: 10 }}>転職シミュレーター</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <p style={{ fontSize: 12, color: sub, whiteSpace: 'nowrap' }}>年収が</p>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {[-100, -50, 50, 100, 200].map(v => (
+                    <button key={v} onClick={() => setJobChangeAmount(jobChangeAmount === v ? 0 : v)}
+                      style={{ padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                        border: `1px solid ${jobChangeAmount===v?(v>0?'#0cff8c':'#ff453a'):bdr}`,
+                        background: jobChangeAmount===v?(v>0?'rgba(12,255,140,0.1)':'rgba(255,69,58,0.1)'):'transparent',
+                        color: jobChangeAmount===v?(v>0?'#0cff8c':'#ff453a'):sub }}>
+                      {v > 0 ? `+${v}万` : `${v}万`}
+                    </button>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12, color: sub, whiteSpace: 'nowrap' }}>変わったら</p>
+              </div>
+            </div>
+            {jobChangeData ? (
+              <div style={{ padding: '14px 16px' }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <div style={{ flex: 1, padding: '10px 12px', borderRadius: 10, background: darkMode?'#080808':'#f8f8f8' }}>
+                    <p style={{ fontSize: 9, color: sub, marginBottom: 4 }}>手取り増減/月</p>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 800, color: jobChangeData.isPositive?'#0cff8c':'#ff453a' }}>
+                      {jobChangeData.isPositive?'+':''}¥{jobChangeData.monthlyChange.toLocaleString()}
+                    </p>
+                  </div>
+                  <div style={{ flex: 1, padding: '10px 12px', borderRadius: 10, background: darkMode?'#080808':'#f8f8f8' }}>
+                    <p style={{ fontSize: 9, color: sub, marginBottom: 4 }}>退職までの総資産差</p>
+                    <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 800, color: jobChangeData.isPositive?'#0cff8c':'#ff453a' }}>
+                      {jobChangeData.isPositive?'+':''}{(jobChangeData.futureValue/10000).toFixed(0)}万
+                    </p>
+                  </div>
+                </div>
+                {jobChangeData.yearsEarlier && jobChangeData.isPositive && (
+                  <div style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(12,255,140,0.06)', border: '1px solid rgba(12,255,140,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 14 }}>🚀</span>
+                    <p style={{ fontSize: 11, color: '#0cff8c', fontWeight: 600 }}>目標達成が約{jobChangeData.yearsEarlier}年早まります</p>
+                  </div>
+                )}
+                <p style={{ fontSize: 9, color: darkMode?'#333':'#ddd', marginTop: 8, textAlign: 'right' }}>
+                  ※複利({simulationSettings?.returnRate||5}%/年)・手取り75%換算の概算
+                </p>
+              </div>
+            ) : (
+              <div style={{ padding: '14px 16px', textAlign: 'center' }}>
+                <p style={{ fontSize: 12, color: sub }}>👆 年収の変化幅を選んでください</p>
+              </div>
+            )}
+          </div>
+
+        </div>
+      )}
+
       {showLifePlanSettings && (
         <LifePlanSettingsModal
           lifePlan={lifePlan} setLifePlan={setLifePlan}
@@ -1252,6 +1494,7 @@ export default function SimulationTab(props) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
