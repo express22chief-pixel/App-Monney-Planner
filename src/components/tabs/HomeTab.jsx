@@ -71,7 +71,7 @@ export default function HomeTab(props) {
     return [
       { label: 'クレカを登録する',       done: hasCard,   action: () => setActiveTab('settings') },
       { label: '今月の取引を3件入力する', done: hasTxn3,   action: () => setShowAddTransaction(true) },
-      { label: '今月を締める',            done: hasClosed, action: () => openCloseMonthModal() },
+      { label: '今月を振り返る',            done: hasClosed, action: () => openCloseMonthModal() },
     ];
   }, [creditCards, transactions, monthlyHistory]);
 
@@ -82,9 +82,9 @@ export default function HomeTab(props) {
               <div style={{ borderRadius: 6, padding: '12px 14px', borderLeft: `3px solid ${theme.orange}`, backgroundColor: darkMode ? 'rgba(255,145,0,0.08)' : 'rgba(255,109,0,0.05)' }}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
-                    <p className="text-sm font-bold mb-1" style={{ color: theme.orange }}>⚠ 未締めの月があります</p>
+                    <p className="text-sm font-bold mb-1" style={{ color: theme.orange }}>⚠ 振り返りが終わっていない月があります</p>
                     <p className={`text-xs ${theme.textSecondary} mb-1`}>以下の月の収支がまだ確定していません。</p>
-                    <p className={`text-xs mb-2`} style={{ color: darkMode ? '#888' : '#999' }}>確定すると貯金・投資額が資産タブに反映され、翌月の管理を始められます。</p>
+                    <p className={`text-xs mb-2`} style={{ color: darkMode ? '#888' : '#999' }}>先月の収支を確認して、貯金・投資への振り分けを完了しましょう。</p>
                     <div className="flex flex-wrap gap-2">
                       {unclosedMonths.map(ym => (
                         <button
@@ -99,7 +99,7 @@ export default function HomeTab(props) {
                             letterSpacing: '0.04em', cursor: 'pointer',
                           }}
                         >
-                          {formatYM(ym)}の収支を確定する
+                          {formatYM(ym)}を振り返る
                         </button>
                       ))}
                     </div>
@@ -111,7 +111,7 @@ export default function HomeTab(props) {
             {/* checklist */}
             {checklistItems && (
               <div style={{ borderRadius: 10, padding: '12px 14px', background: darkMode ? '#0f0f0f' : '#f8f8f8', border: `1px solid ${darkMode ? '#1e1e1e' : '#e8e8e8'}` }}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase' }}>GETTING STARTED</p>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 9, fontWeight: 700, letterSpacing: '0.12em', color: theme.accent, marginBottom: 10, textTransform: 'uppercase' }}>GETTING STARTED</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {checklistItems.map((item, i) => (
                     <button key={i} onClick={item.done ? undefined : item.action}
@@ -120,7 +120,7 @@ export default function HomeTab(props) {
                         {item.done && <span style={{ fontSize: 10, color: '#0cff8c' }}>✓</span>}
                       </div>
                       <span style={{ fontSize: 13, color: item.done ? (darkMode ? '#444' : '#bbb') : (darkMode ? '#e0e0e0' : '#333'), textDecoration: item.done ? 'line-through' : 'none', fontWeight: item.done ? 400 : 600 }}>{item.label}</span>
-                      {!item.done && <span style={{ marginLeft: 'auto', fontSize: 10, color: '#00e5ff' }}>→</span>}
+                      {!item.done && <span style={{ marginLeft: 'auto', fontSize: 10, color: theme.accent }}>→</span>}
                     </button>
                   ))}
                 </div>
@@ -208,7 +208,7 @@ export default function HomeTab(props) {
                           {monthLabel}
                         </span>
                         {monthlyHistory[targetMonth] && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/15 text-green-500">締済</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-green-500/15 text-green-500">確定済</span>
                         )}
 
                         <button
@@ -401,7 +401,7 @@ export default function HomeTab(props) {
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
 
                   <div className="flex items-center justify-between px-4 py-3">
-                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>RECENT TXN</h2>
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: theme.accent }}>RECENT TXN</h2>
                     <button
                       onClick={() => setShowAllTransactions && setShowAllTransactions(true)}
                       className={`text-xs font-semibold`}
@@ -473,7 +473,7 @@ export default function HomeTab(props) {
                     onClick={() => setShowRecurringList(!showRecurringList)}
                     className="flex items-center gap-2 flex-1 text-left"
                   >
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>定期支払い</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: theme.accent }}>定期支払い</span>
                     {recurringTransactions.length > 0 && (
                       <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>
                         {recurringTransactions.length}件
@@ -518,7 +518,7 @@ export default function HomeTab(props) {
                     <div style={{ padding: '16px 20px', textAlign: 'center' }}>
                       <p style={{ fontSize: 12, color: darkMode ? '#666' : '#aaa', marginBottom: 8 }}>家賃・サブスク・積立などを登録すると<br/>毎月の固定費が自動で管理できます</p>
                       <button onClick={() => setShowRecurringModal(true)} style={{
-                        fontSize: 11, color: darkMode ? '#00e5ff' : '#3b82f6', fontWeight: 700,
+                        fontSize: 11, color: theme.accent, fontWeight: 700,
                         background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                       }}>＋ 固定収支を追加する</button>
                     </div>
@@ -636,7 +636,7 @@ export default function HomeTab(props) {
                         onClick={() => setShowPayments(!showPayments)}
                         className="flex items-center gap-2 flex-1 text-left"
                       >
-                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の支払い予定</span>
+                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: theme.accent }}>今月の支払い予定</span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${darkMode ? 'bg-neutral-700 text-neutral-400' : 'bg-neutral-200 text-neutral-500'}`}>{allItems.length}件</span>
                         <span className={`text-xs ${theme.textSecondary} ml-auto mr-2`} style={{ display: 'inline-block', transform: showPayments ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
                       </button>
@@ -746,7 +746,7 @@ export default function HomeTab(props) {
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-base">👥</span>
-                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff' }}>立替待ち</span>
+                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: theme.accent }}>立替待ち</span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-blue-500 text-white">
                       {splitPayments.filter(s => !s.settled).length}人
                     </span>
@@ -846,7 +846,7 @@ export default function HomeTab(props) {
               return (
                 <div className={`${theme.cardGlass} rounded-lg overflow-hidden`}>
                   <div className="px-4 pt-3 pb-2 flex items-center justify-between">
-                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#00e5ff' }}>今月の収支詳細</h2>
+                    <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: theme.accent }}>今月の収支詳細</h2>
                     <button onClick={() => setShowBudgetModal(true)}
                       className={`text-xs px-2 py-1 rounded-lg font-medium ${darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'}`}>
                       予算設定 →
@@ -915,9 +915,9 @@ export default function HomeTab(props) {
                         <button onClick={() => openCloseMonthModal()}
                           className="w-full py-2.5 rounded-lg font-semibold text-white transition-all hover-scale text-sm"
                           style={{ backgroundColor: theme.accent }}>
-                          今月の収支を確定する
+                          今月を振り返る
                         </button>
-                        <p className={`text-[10px] text-center mt-1.5 ${theme.textSecondary}`}>確定すると資産タブに反映されます</p>
+                        <p className={`text-[10px] text-center mt-1.5 ${theme.textSecondary}`}>振り返りを完了すると資産タブに反映されます</p>
                       </div>
                     )}
                   </div>
