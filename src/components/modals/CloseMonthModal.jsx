@@ -15,10 +15,12 @@ export default function CloseMonthModal(props) {
     closeMonth, setShowCloseMonthModal,
     simulationSettings, calculateMonthlyBalance, currentBalance, budgetAnalysis,
     lifePlan, userInfo,
+    transactions,
   } = props;
 
   const [showSummary, setShowSummary] = useState(false);
   const [summaryData, setSummaryData] = useState(null);
+  const [step, setStep] = useState('review'); // 'review' → 'allocate'
   const targetMonth = closingTargetMonth || (currentBalance ? undefined : null);
   const tb = calculateMonthlyBalance(targetMonth);
   const cfBalance = isNaN(tb?.cfBalance) ? 0 : tb.cfBalance;
@@ -50,6 +52,91 @@ export default function CloseMonthModal(props) {
   const blue   = theme?.accent  || '#3b82f6';
   const purple = theme?.purple  || '#a855f7';
 
+  // ──────────────────────────────────────────
+  // STEP 1: 取引確認画面
+  // ──────────────────────────────────────────
+  if (step === 'review' && !showSummary) {
+    const monthTxns = (transactions || [])
+      .filter(t => t.date?.startsWith(targetMonth) && !t.isSettlement)
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const totalIncome  = monthTxns.filter(t => t.amount > 0).reduce((s,t) => s + t.amount, 0);
+    const totalExpense = Math.abs(monthTxns.filter(t => t.amount < 0).reduce((s,t) => s + t.amount, 0));
+
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, backdropFilter: 'blur(4px)' }}>
+        <div style={{ width: '100%', maxWidth: 480, background: card, borderRadius: '20px 20px 0 0', maxHeight: '88vh', display: 'flex', flexDirection: 'column' }}>
+
+          {/* ヘッダー */}
+          <div style={{ padding: '20px 20px 14px', borderBottom: `1px solid ${bdr}`, flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: blue, letterSpacing: '0.04em' }}>STEP 1 / 2</p>
+              <button onClick={() => setShowCloseMonthModal(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub, fontSize: 18 }}>✕</button>
+            </div>
+            <p style={{ fontSize: 17, fontWeight: 800, color: txt }}>記入漏れを確認する</p>
+            <p style={{ fontSize: 12, color: sub, marginTop: 4, lineHeight: 1.6 }}>
+              {formatYM(targetMonth)}の取引一覧です。<br/>漏れがなければ次へ進んでください。
+            </p>
+          </div>
+
+          {/* サマリー */}
+          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${bdr}`, flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+            {[
+              { label: '収入', value: totalIncome,             color: green },
+              { label: '支出', value: totalExpense,            color: red },
+              { label: '件数', value: monthTxns.length + '件', color: txt, isText: true },
+            ].map(({ label, value, color, isText }) => (
+              <div key={label} style={{ textAlign: 'center', padding: '8px 4px', borderRadius: 8, background: darkMode ? '#181818' : '#f5f5f5', border: `1px solid ${bdr}` }}>
+                <p style={{ fontSize: 10, color: sub, marginBottom: 3 }}>{label}</p>
+                <p style={{ fontSize: isText ? 14 : 12, fontWeight: 800, color, fontVariantNumeric: 'tabular-nums' }}>
+                  {isText ? value : `¥${Math.round(value/1000)}k`}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* 取引リスト */}
+          <div style={{ overflowY: 'auto', flex: 1 }}>
+            {monthTxns.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: sub }}>
+                <p style={{ fontSize: 14, marginBottom: 8 }}>📭</p>
+                <p style={{ fontSize: 13 }}>この月の取引がありません</p>
+              </div>
+            ) : monthTxns.map((t, i) => (
+              <div key={t.id}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 20px', borderBottom: `1px solid ${bdr}` }}>
+                <div style={{ width: 34, height: 34, borderRadius: 8, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
+                  background: t.amount >= 0 ? (darkMode ? 'rgba(0,230,118,0.1)' : 'rgba(0,200,83,0.07)') : (darkMode ? 'rgba(255,61,87,0.1)' : 'rgba(229,57,53,0.07)') }}>
+                  {t.amount >= 0 ? '💰' : t.paymentMethod === 'credit' ? '💳' : '💵'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: txt, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.category}</p>
+                  <p style={{ fontSize: 10, color: sub }}>{t.date.slice(5)} {t.memo ? `· ${t.memo}` : ''}</p>
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 800, color: t.amount >= 0 ? green : red, fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>
+                  {t.amount >= 0 ? '+' : ''}¥{Math.abs(t.amount).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* フッター */}
+          <div style={{ padding: '14px 20px', flexShrink: 0, borderTop: `1px solid ${bdr}`, display: 'flex', gap: 10 }}>
+            <button onClick={() => setShowCloseMonthModal(false)}
+              style={{ flex: 1, padding: '13px', background: darkMode ? '#252525' : '#f2f2f7', border: 'none', borderRadius: 12, color: sub, fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+              あとで追記する
+            </button>
+            <button onClick={() => setStep('allocate')}
+              style={{ flex: 2, padding: '13px', background: blue, border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer' }}>
+              問題なし → 振り分けへ
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showSummary && summaryData) {
     const isPositive = summaryData.plBalance >= 0;
     return (
@@ -59,7 +146,7 @@ export default function CloseMonthModal(props) {
             {isPositive ? '🎉' : '📊'}
           </div>
           <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase' }}>
-            {formatYM(summaryData.month)} 締め完了
+            {formatYM(summaryData.month)} 振り返り完了
           </p>
           <p style={{ fontSize: 32, fontWeight: 900, color: isPositive ? '#0cff8c' : red, fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>
             {isPositive ? '+' : ''}¥{(summaryData.plBalance/10000).toFixed(1)}万
@@ -112,10 +199,17 @@ export default function CloseMonthModal(props) {
       }}>
 
         <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: blue, letterSpacing: '0.04em' }}>STEP 2 / 2</p>
+            <button onClick={() => setStep('review')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: sub, display: 'flex', alignItems: 'center', gap: 3 }}>
+              ← 取引一覧に戻る
+            </button>
+          </div>
           <p style={{ fontSize: 17, fontWeight: 800, color: txt }}>
-            {formatYM(targetMonth)}の収支を確定
+            振り分けを設定する
           </p>
-          <p style={{ fontSize: 12, color: sub, marginTop: 2 }}>今月の収支を確定し、貯金・投資・待機資金に振り分けます</p>
+          <p style={{ fontSize: 12, color: sub, marginTop: 2 }}>貯金・投資・待機資金への振り分けを決めて確定しましょう</p>
           <div style={{
             marginTop: 10, padding: '10px 12px',
             background: darkMode ? 'rgba(0,229,255,0.06)' : 'rgba(59,130,246,0.06)',
@@ -124,8 +218,8 @@ export default function CloseMonthModal(props) {
           }}>
             <span style={{ fontSize: 14, flexShrink: 0 }}>💡</span>
             <p style={{ fontSize: 11, color: darkMode ? '#7dd3fc' : '#3b82f6', lineHeight: 1.6, margin: 0 }}>
-              <strong>月締めとは？</strong> 月末に収支を確定させ、余剰資金を貯金・投資に配分する作業です。
-              マネーフォワードと違い、「いくら投資に回すか」を毎月自分で決めることで資産形成を意識的に管理できます。
+              <strong>振り分けとは？</strong> 月の収支を確認して、余剰資金を貯金・投資に配分する作業です。
+              「いくら投資に回すか」を毎月自分で決めることで、資産形成を意識的に進められます。
             </p>
           </div>
         </div>
@@ -295,7 +389,7 @@ export default function CloseMonthModal(props) {
           }} style={{
             flex: 2, padding: '13px', background: theme.accent,
             border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
-          }}>確定する</button>
+          }}>振り分けを確定する</button>
         </div>
       </div>
     </div>
