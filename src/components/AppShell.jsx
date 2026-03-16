@@ -27,6 +27,7 @@ import OnboardingModal       from './modals/OnboardingModal';
 import DemoTourOverlay       from './DemoTourOverlay';
 import AddTransactionModal   from './modals/AddTransactionModal';
 import CloseMonthModal       from './modals/CloseMonthModal';
+import MonthReviewBanner     from './MonthReviewBanner';
 import EditTransactionModal  from './modals/EditTransactionModal';
 import SetupWizardModal      from './modals/SetupWizardModal';
 import DailyReviewModal      from './modals/DailyReviewModal';
@@ -277,6 +278,17 @@ export default function AppShell({ data }) {
       {data.showTutorial              && <TutorialModal         {...tabProps} />}
       {data.showOnboarding            && <OnboardingModal       {...tabProps} />}
       {data.showAddTransaction        && <AddTransactionModal   {...tabProps} />}
+      {data.showMonthReview && !data.showCloseMonthModal && (
+        <MonthReviewBanner
+          theme={theme}
+          darkMode={data.darkMode}
+          monthReviewTarget={data.monthReviewTarget}
+          setShowMonthReview={data.setShowMonthReview}
+          openCloseMonthModal={data.openCloseMonthModal}
+          calculateMonthlyBalance={data.calculateMonthlyBalance}
+          monthlyHistory={data.monthlyHistory}
+        />
+      )}
       {data.showCloseMonthModal       && <CloseMonthModal       {...tabProps} />}
       {data.editingTransaction        && <EditTransactionModal  {...tabProps} />}
       {data.showSetupWizard           && <SetupWizardModal      {...tabProps} />}
