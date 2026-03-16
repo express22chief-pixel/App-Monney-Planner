@@ -25,8 +25,8 @@ function StatPill({ label, value, color, bg }) {
   );
 }
 
-function SectionTitle({ children, action, collapsible, expanded, onToggle, sub = '#9ca3af' }) {
-  const style = { fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: '0em', color: '#00e5ff' };
+function SectionTitle({ children, action, collapsible, expanded, onToggle, txtColor = '#f0f0f0', subColor = '#888' }) {
+  const style = { fontSize: 12, fontWeight: 700, letterSpacing: '0em', color: txtColor };
   if (collapsible) {
     return (
       <button
@@ -38,7 +38,7 @@ function SectionTitle({ children, action, collapsible, expanded, onToggle, sub =
         <p style={style}>{children}</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {action && <span onClick={e => e.stopPropagation()}>{action}</span>}
-          <span style={{ fontSize: 11, color: '#00e5ff', transition: 'transform 0.2s', opacity: 0.7,
+          <span style={{ fontSize: 11, color: subColor, transition: 'transform 0.2s', opacity: 0.7,
             display: 'inline-block', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </div>
       </button>
@@ -205,7 +205,7 @@ export default function SimulationTab(props) {
   }, [lifeEvents, currentAge, lifeExpectancy]);
 
   // --- カラー（テーマシステムから取得・統一）-------------------------
-  const card  = theme.chart;                                  // カード背景
+  const card  = theme.cardHex;                               // カード背景（= HomeTabのtheme.card相当）
   const bg    = darkMode ? '#111'    : '#f2f2f7';
   const txt   = darkMode ? '#f5f5f5' : '#111';
   const sub   = darkMode ? '#aaaaaa' : '#555555';
@@ -278,7 +278,7 @@ export default function SimulationTab(props) {
     const yearsEarlier = currentMonthly > 0 ? Math.round(Math.abs(monthlyChange) / currentMonthly * 3 * 10) / 10 : null;
     return { monthlyChange, futureValue, yearsEarlier, isPositive: jobChangeAmount > 0 };
   }, [jobChangeAmount, userInfo, lifePlan, simulationSettings]);
-  const bdr   = darkMode ? '#2a2a2a' : '#e5e7eb';
+  const bdr   = theme.borderHex;  // = dark:#1f1f1f / light:#e8e8e6（HomeTabのglass classと統一）
   const green  = theme.green;                                 // テーマ緑
   const red    = theme.red;                                   // テーマ赤
   const amber  = theme.orange;                                // テーマオレンジ→amber代替
@@ -416,10 +416,11 @@ export default function SimulationTab(props) {
         );
       })()}
 
-      <div style={{ background: card, borderRadius: 8, overflow: 'hidden' }}>
+      <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}`,
+          overflow: 'hidden' }}>
         <button onClick={() => setSecStatus(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
           borderBottom: secStatus ? `1px solid ${bdr}` : 'none',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -430,13 +431,13 @@ export default function SimulationTab(props) {
               {isSafe ? `${lifeExpectancy}歳まで資産が持続` : `${depletionAge}歳で枯渇見込み`}
             </span>
           </div>
-          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secStatus ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+          <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secStatus ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
         {secStatus && <div className="animate-fadeIn" style={{
           background: isSafe
             ? (darkMode ? 'rgba(0,230,118,0.04)' : 'rgba(0,200,83,0.03)')
             : (darkMode ? 'rgba(255,61,87,0.06)' : 'rgba(229,57,53,0.03)'),
-          padding: '14px 16px',
+          padding: '12px 16px',
         }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ flex: 1 }}>
@@ -497,16 +498,16 @@ export default function SimulationTab(props) {
           color={finalWorth > 0 ? green : red} bg={darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'} />
       </div>
 
-      <div style={{ background: card, borderRadius: 8 }}>
+      <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}` }}>
         <button onClick={() => setSecTimeline(v => !v)} style={{
           width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
           borderBottom: secTimeline ? `1px solid ${bdr}` : 'none',
         }}>
-          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: txt }}>
             資産タイムライン（{currentAge}歳〜{lifeExpectancy}歳）
           </span>
-          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secTimeline ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+          <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secTimeline ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
         {secTimeline && (
         <div className="animate-fadeIn" style={{ padding: '14px 14px 14px' }}>
@@ -645,12 +646,12 @@ export default function SimulationTab(props) {
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '6px 0', borderBottom: `1px solid ${darkMode ? '#2a2a2a' : '#eee'}` }}>
                 <div>
                   <span style={{ fontSize: 11, color: sub }}>{label}</span>
-                  {note && <p style={{ fontSize: 9, color: darkMode ? '#444' : '#bbb', marginTop: 1 }}>{note}</p>}
+                  {note && <p style={{ fontSize: 10, color: darkMode ? '#444' : '#bbb', marginTop: 1 }}>{note}</p>}
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 700, color: txt, fontVariantNumeric: 'tabular-nums' }}>{val}</span>
               </div>
             ))}
-            <p style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc', marginTop: 4 }}>
+            <p style={{ fontSize: 10, color: darkMode ? '#444' : '#ccc', marginTop: 4 }}>
               ※ 将来の運用成果を保証するものではありません。あくまで参考値としてご利用ください。
             </p>
           </div>
@@ -689,7 +690,7 @@ export default function SimulationTab(props) {
       <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}`, overflow: 'hidden' }}>
         <button
           onClick={() => setSimulationSettings(prev => ({ ...prev, showMonteCarloSimulation: !prev.showMonteCarloSimulation }))}
-          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', borderBottom: simulationSettings.showMonteCarloSimulation ? `1px solid ${bdr}` : 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: txt }}>確率的シミュレーション</span>
             <span style={{ fontSize: 10, fontWeight: 700, color: blue, padding: '2px 8px', borderRadius: 10, background: darkMode ? 'rgba(0,229,255,0.1)' : 'rgba(59,130,246,0.08)' }}>100通り</span>
@@ -781,7 +782,7 @@ export default function SimulationTab(props) {
                       <div key={label} style={{ padding: '10px 8px', borderRadius: 10, background: darkMode ? '#0a0a0a' : '#f8f8f8', textAlign: 'center', border: `1px solid ${bdr}` }}>
                         <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>{label}</p>
                         <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 800, color, letterSpacing: '-0.02em' }}>{fmt(value)}</p>
-                        <p style={{ fontSize: 9, color: sub, marginTop: 2 }}>{last['年']}後</p>
+                        <p style={{ fontSize: 10, color: sub, marginTop: 2 }}>{last['年']}後</p>
                       </div>
                     );
                   })}
@@ -796,20 +797,20 @@ export default function SimulationTab(props) {
       </div>
 
       {(recentMonthlyAverages || monthlyGapImpact || incomeGrowthEstimate !== null) && (
-        <div style={{ background: card, borderRadius: 8 }}>
+        <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}` }}>
           <button onClick={() => setSecInsight(v => !v)} style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+            padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
             borderBottom: secInsight ? `1px solid ${bdr}` : 'none',
           }}>
-            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>実績ベースのインサイト</span>
+            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: txt }}>実績ベースのインサイト</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 10, color: sub, fontWeight: 600 }}>家計簿の実績から</span>
-              <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secInsight ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+              <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secInsight ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
             </div>
           </button>
           {secInsight && (
-          <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '14px 16px' }}>
+          <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10, padding: '12px 16px' }}>
 
             {monthlyGapImpact && (
               <div style={{
@@ -925,11 +926,11 @@ export default function SimulationTab(props) {
         </div>
       )}
 
-      <div style={{ background: card, borderRadius: 16, padding: 18 }}>
+      <div style={{ background: card, borderRadius: 12, padding: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: secLifePlan ? 12 : 0 }}>
           <button onClick={() => setSecLifePlan(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>シナリオ設定</span>
-            <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifePlan ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: txt }}>シナリオ設定</span>
+            <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifePlan ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
           </button>
           <button onClick={(e) => { e.stopPropagation(); setShowLifePlanSettings(true); }} style={{
             display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px',
@@ -995,7 +996,7 @@ export default function SimulationTab(props) {
                           <span style={{ fontSize: 11, fontWeight: 700, color: blue, fontVariantNumeric: 'tabular-nums', fontFamily: "'JetBrains Mono', monospace" }}>
                             {m.gross >= 10_000_000 ? `${(m.gross/10_000_000).toFixed(1)}千万` : `${Math.round(m.gross/10_000)}万`}
                           </span>
-                          <span style={{ fontSize: 9, color: sub, marginLeft: 2 }}>
+                          <span style={{ fontSize: 10, color: sub, marginLeft: 2 }}>
                             手取{Math.round(calcTakeHome(m.gross)/10_000)}万
                           </span>
                         </div>
@@ -1127,14 +1128,14 @@ export default function SimulationTab(props) {
         </div>)}
       </div>
 
-      <div style={{ background: card, borderRadius: 16 }}>
+      <div style={{ background: card, borderRadius: 12, border: `1px solid ${bdr}` }}>
         <button onClick={() => setSecLifeEvent(v => !v)} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer',
+          padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer',
           borderBottom: secLifeEvent ? `1px solid ${bdr}` : 'none',
         }}>
-          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>ライフイベント</span>
-          <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifeEvent ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+          <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: txt }}>ライフイベント</span>
+          <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secLifeEvent ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
         </button>
         {secLifeEvent && <div className="animate-fadeIn" style={{ paddingBottom: 8 }}><LifeEventPlanner
         lifeEvents={lifeEvents}
@@ -1160,8 +1161,8 @@ export default function SimulationTab(props) {
       /></div>}
       </div>
 
-      <div style={{ background: card, borderRadius: 16, padding: 18 }}>
-        <SectionTitle collapsible expanded={secPhaseSnap} onToggle={() => setSecPhaseSnap(v => !v)}>フェーズ別スナップショット</SectionTitle>
+      <div style={{ background: card, borderRadius: 12, padding: '16px' }}>
+        <SectionTitle collapsible expanded={secPhaseSnap} onToggle={() => setSecPhaseSnap(v => !v)} txtColor={txt} subColor={sub}>フェーズ別スナップショット</SectionTitle>
         {secPhaseSnap && <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
             { label: '現在',                                          age: currentAge },
@@ -1242,11 +1243,11 @@ export default function SimulationTab(props) {
         const rentTotal        = hc.rentScenario?.totalRentPaid ?? 0;
 
         return (
-          <div style={{ background: card, borderRadius: 16, padding: 18 }}>
+          <div style={{ background: card, borderRadius: 12, padding: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: secHousing ? 12 : 0 }}>
               <button onClick={() => setSecHousing(v => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: '#00e5ff' }}>購入 vs 賃貸 比較（{yrs}年間）</span>
-                <span style={{ fontSize: 11, color: '#00e5ff', opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secHousing ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                <span style={{ fontFamily: "'Noto Sans JP', sans-serif", fontSize: 12, fontWeight: 700, color: txt }}>購入 vs 賃貸 比較（{yrs}年間）</span>
+                <span style={{ fontSize: 11, color: sub, opacity: 0.7, transition: 'transform 0.2s', display: 'inline-block', transform: secHousing ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
               </button>
               <button onClick={(e) => { e.stopPropagation(); setShowHousingModal(true); }} style={{
                 padding: '5px 10px', background: 'none',
@@ -1270,7 +1271,7 @@ export default function SimulationTab(props) {
             </div>
 
             <div style={{
-              padding: '14px 16px', borderRadius: 12, marginBottom: 12,
+              padding: '12px 16px', borderRadius: 12, marginBottom: 12,
               background: isBuyWin
                 ? (darkMode ? '#0d2b1a' : '#f0fdf4')
                 : (darkMode ? '#1a0d2b' : '#faf5ff'),
@@ -1369,7 +1370,7 @@ export default function SimulationTab(props) {
                       <span style={{ fontSize: 11, fontWeight: 700, color: savingsRateData.grade.color, padding: '2px 8px', borderRadius: 20, background: `${savingsRateData.grade.color}20` }}>{savingsRateData.grade.label}</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <p style={{ fontSize: 9, color: sub, marginBottom: 2 }}>3ヶ月平均</p>
+                      <p style={{ fontSize: 10, color: sub, marginBottom: 2 }}>3ヶ月平均</p>
                       <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 18, fontWeight: 700, color: sub }}>{savingsRateData.avg}%</p>
                     </div>
                   </div>
@@ -1377,20 +1378,20 @@ export default function SimulationTab(props) {
                     <div style={{ height: '100%', width: `${Math.min(savingsRateData.latest, 100)}%`, borderRadius: 3, background: savingsRateData.grade.color, transition: 'width 0.5s ease' }} />
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                    <span style={{ fontSize: 9, color: darkMode ? '#333' : '#ddd' }}>0%</span>
-                    <span style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc' }}>目標20%</span>
-                    <span style={{ fontSize: 9, color: darkMode ? '#444' : '#ccc' }}>FIRE圏50%</span>
+                    <span style={{ fontSize: 10, color: darkMode ? '#333' : '#ddd' }}>0%</span>
+                    <span style={{ fontSize: 10, color: darkMode ? '#444' : '#ccc' }}>目標20%</span>
+                    <span style={{ fontSize: 10, color: darkMode ? '#444' : '#ccc' }}>FIRE圏50%</span>
                   </div>
                 </>
               ) : (
                 <div style={{ padding: '16px 0', textAlign: 'center' }}>
-                  <p style={{ fontSize: 13, color: sub, marginBottom: 4 }}>📊 月を締めると表示されます</p>
-                  <p style={{ fontSize: 11, color: darkMode ? '#333' : '#ccc' }}>1ヶ月分の締め処理後に貯蓄率が計算されます</p>
+                  <p style={{ fontSize: 13, color: sub, marginBottom: 4 }}>📊 先月の振り返りを完了すると表示されます</p>
+                  <p style={{ fontSize: 11, color: darkMode ? '#333' : '#ccc' }}>1ヶ月分の振り返りを完了後に貯蓄率が計算されます</p>
                 </div>
               )}
             </div>
             <div style={{ padding: '8px 14px', background: darkMode ? '#080808' : '#fafafa' }}>
-              <p style={{ fontSize: 10, color: sub }}>※前月締め確定値ベース。今月分は月締め後に反映。</p>
+              <p style={{ fontSize: 10, color: sub }}>※先月の振り返り確定値ベース。今月分は振り返り完了後に反映。</p>
             </div>
           </div>
 
@@ -1408,17 +1409,17 @@ export default function SimulationTab(props) {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                           <p style={{ fontSize: 12, fontWeight: 700, color: txt, marginBottom: 2 }}>{ev.label}</p>
-                          <p style={{ fontSize: 9, color: sub }}>{ev.note}</p>
+                          <p style={{ fontSize: 10, color: sub }}>{ev.note}</p>
                         </div>
                         <div style={{ textAlign: 'right' }}>
                           <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 800, color: ev.urgency==='high'?'#ff453a':ev.urgency==='mid'?'#ff9f0a':'#00e5ff' }}>¥{(ev.need/10000).toFixed(0)}万</p>
-                          <p style={{ fontSize: 9, color: sub }}>{ev.yearsTo}年後・{ev.age}歳</p>
+                          <p style={{ fontSize: 10, color: sub }}>{ev.yearsTo}年後・{ev.age}歳</p>
                         </div>
                       </div>
                       <div style={{ marginTop: 6, padding: '4px 8px', borderRadius: 6, background: darkMode?'#0a0a0a':'#f8f8f8', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                        <span style={{ fontSize: 9, color: sub }}>月々</span>
+                        <span style={{ fontSize: 10, color: sub }}>月々</span>
                         <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700, color: txt }}>¥{ev.monthly.toLocaleString()}</span>
-                        <span style={{ fontSize: 9, color: sub }}>の積立が必要</span>
+                        <span style={{ fontSize: 10, color: sub }}>の積立が必要</span>
                       </div>
                     </div>
                   </div>
@@ -1431,7 +1432,7 @@ export default function SimulationTab(props) {
               </div>
             )}
             <div style={{ padding: '8px 16px', background: darkMode?'#080808':'#fafafa', borderTop: `1px solid ${bdr}` }}>
-              <p style={{ fontSize: 9, color: sub, textAlign: 'center' }}>※ライフプラン設定で年齢・家族構成を更新すると精度が上がります</p>
+              <p style={{ fontSize: 10, color: sub, textAlign: 'center' }}>※ライフプラン設定で年齢・家族構成を更新すると精度が上がります</p>
             </div>
           </div>
 
@@ -1456,16 +1457,16 @@ export default function SimulationTab(props) {
               </div>
             </div>
             {jobChangeData ? (
-              <div style={{ padding: '14px 16px' }}>
+              <div style={{ padding: '12px 16px' }}>
                 <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
                   <div style={{ flex: 1, padding: '10px 12px', borderRadius: 10, background: darkMode?'#080808':'#f8f8f8' }}>
-                    <p style={{ fontSize: 9, color: sub, marginBottom: 4 }}>手取り増減/月</p>
+                    <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>手取り増減/月</p>
                     <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 800, color: jobChangeData.isPositive?'#0cff8c':'#ff453a' }}>
                       {jobChangeData.isPositive?'+':''}¥{jobChangeData.monthlyChange.toLocaleString()}
                     </p>
                   </div>
                   <div style={{ flex: 1, padding: '10px 12px', borderRadius: 10, background: darkMode?'#080808':'#f8f8f8' }}>
-                    <p style={{ fontSize: 9, color: sub, marginBottom: 4 }}>退職までの総資産差</p>
+                    <p style={{ fontSize: 10, color: sub, marginBottom: 4 }}>退職までの総資産差</p>
                     <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 16, fontWeight: 800, color: jobChangeData.isPositive?'#0cff8c':'#ff453a' }}>
                       {jobChangeData.isPositive?'+':''}{(jobChangeData.futureValue/10000).toFixed(0)}万
                     </p>
@@ -1477,12 +1478,12 @@ export default function SimulationTab(props) {
                     <p style={{ fontSize: 11, color: '#0cff8c', fontWeight: 600 }}>目標達成が約{jobChangeData.yearsEarlier}年早まります</p>
                   </div>
                 )}
-                <p style={{ fontSize: 9, color: darkMode?'#333':'#ddd', marginTop: 8, textAlign: 'right' }}>
+                <p style={{ fontSize: 10, color: darkMode?'#333':'#ddd', marginTop: 8, textAlign: 'right' }}>
                   ※複利({simulationSettings?.returnRate||5}%/年)・手取り75%換算の概算
                 </p>
               </div>
             ) : (
-              <div style={{ padding: '14px 16px', textAlign: 'center' }}>
+              <div style={{ padding: '12px 16px', textAlign: 'center' }}>
                 <p style={{ fontSize: 12, color: sub }}>👆 年収の変化幅を選んでください</p>
               </div>
             )}
@@ -1511,7 +1512,7 @@ export default function SimulationTab(props) {
 
       {shareModal && shareUrl && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, zIndex: 60 }}>
-          <div style={{ background: card, borderRadius: 16, padding: 20, maxWidth: 360, width: '100%' }}>
+          <div style={{ background: card, borderRadius: 12, padding: 20, maxWidth: 360, width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: txt }}>シェア画像</p>
               <button onClick={() => setShareModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: sub }}><X size={18} /></button>
