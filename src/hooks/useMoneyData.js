@@ -48,6 +48,8 @@ export function useMoneyData() {
   const [darkMode, setDarkMode]                           = useState(() => load('darkMode', true));
   const [showSplash, setShowSplash]                       = useState(true);
   const [_dataReady, setDataReady]                        = useState(false);
+  const [showMonthReview, setShowMonthReview]             = useState(false);
+  const [monthReviewTarget, setMonthReviewTarget]         = useState(null);
   const [summaryMonthOffset, setSummaryMonthOffset]       = useState(0);
   const [recentTxnLimit, setRecentTxnLimit]               = useState(3);
   const [historySearch, setHistorySearch]                 = useState('');
@@ -403,6 +405,29 @@ export function useMoneyData() {
     setShowDailyReview(true);
   }, [showOnboarding]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 月変わり検知 → 先月振り返りバナーを自動表示
+  useEffect(() => {
+    if (showOnboarding) return;
+    const nowJST    = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const thisMonth = nowJST.toISOString().slice(0, 7); // YYYY-MM
+    const lastMonth = (() => {
+      const d = new Date(nowJST.getFullYear(), nowJST.getMonth() - 1, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    })();
+    const lastCheckedMonth = load('lastCheckedMonth', null);
+    // 今月まだチェックしていない & 先月が未締め & 先月に取引がある
+    if (lastCheckedMonth !== thisMonth) {
+      import('../services/storage').then(({ save }) => save('lastCheckedMonth', thisMonth));
+      const lastMonthClosed = !!monthlyHistory[lastMonth];
+      const lastMonthHasTxn = transactions.some(t => t.date.startsWith(lastMonth));
+      if (!lastMonthClosed && lastMonthHasTxn) {
+        setMonthReviewTarget(lastMonth);
+        setShowMonthReview(true);
+        setShowDailyReview(false); // dailyReviewより優先
+      }
+    }
+  }, [showOnboarding]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ----------------------------------------------------------------------------
   // 副作用 ③ UI副作用（背景スクロール制御 / 定期取引自動生成）
   // ----------------------------------------------------------------------------
@@ -487,23 +512,31 @@ export function useMoneyData() {
   }, [simulationSettings, assetData, lifeEvents, simOverrides]);
 
   const housingComparison = useMemo(() => {
-    if (!housingParams) return null;
+    const housingEvent = lifeEvents.find(e => e.id === 'tpl_housing');
+    const isHousingActive = housingEvent?.enabled && housingEvent?.housingChoice === 'buy';
+    if (!housingParams || !isHousingActive) return null;
     return calculateHousingComparison(housingParams, {
       returnRate:      simulationSettings.returnRate,
       incomeGrowthRate: lifePlan.incomeGrowthRate ?? 0,
       monthlyIncome:   currentBalance?.plIncome ?? 0,
       assetData,
     });
-  }, [housingParams, simulationSettings.returnRate, assetData]);
+  }, [housingParams, lifeEvents, simulationSettings.returnRate, assetData]);
 
   const lifePlanSimulation = useMemo(() => {
     const currentAge = userInfo?.age ? Number(userInfo.age) : 30;
+    // tpl_housing が ON かつ housingChoice が 'buy' のときだけ住宅購入として計算
+    const housingEvent = lifeEvents.find(e => e.id === 'tpl_housing');
+    const effectiveHousingParams =
+      housingEvent?.enabled && housingEvent?.housingChoice === 'buy'
+        ? housingParams
+        : null;
     return calculateLifePlanSimulation(
       { ...lifePlan, currentAge },
       simulationSettings,
       assetData,
       lifeEvents,
-      housingParams,
+      effectiveHousingParams,
     );
   }, [lifePlan, simulationSettings, assetData, lifeEvents, housingParams, userInfo]);
 
@@ -1053,6 +1086,7 @@ export function useMoneyData() {
     setupSettlementDate, setSetupSettlementDate,
     showDateTransactionsModal, setShowDateTransactionsModal,
     showAddTransaction, setShowAddTransaction,
+    showMonthReview, setShowMonthReview, monthReviewTarget,
     showCloseMonthModal, setShowCloseMonthModal,
     closingTargetMonth,
     closeMonthData, setCloseMonthData,
