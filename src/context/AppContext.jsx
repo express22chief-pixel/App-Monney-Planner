@@ -35,7 +35,8 @@ export function buildTheme(darkMode) {
     // semantic colors — electric palette
     green:         darkMode ? '#00e676'  : '#00c853',   // electric green
     red:           darkMode ? '#ff3d57'  : '#e53935',   // sharp red
-    accent:        '#00e5ff',                            // cyan — same in both modes
+    accent:        '#00e5ff',                            // cyan — ブランド色・装飾
+    action:        '#0A84FF',                            // blue — 操作ボタン専用色
     purple:        darkMode ? '#d500f9'  : '#aa00ff',   // electric purple
     orange:        darkMode ? '#ff9100'  : '#ff6d00',   // electric orange
 
