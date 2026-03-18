@@ -268,7 +268,7 @@ export default function CalendarTab(props) {
       {!monthlyHistory[selectedMonth] && calculateMonthlyBalance(selectedMonth).cfBalance !== 0 && selectedMonth < currentMonth && (
         <button onClick={() => openCloseMonthModal(selectedMonth)}
           style={{ width: '100%', padding: '12px', borderRadius: 12, border: 'none', cursor: 'pointer',
-            background: `linear-gradient(135deg, ${theme.orange}, ${theme.orange}cc)`,
+            background: '#0A84FF',
             color: '#fff', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           ⚠ {formatYM(selectedMonth)}を振り返る
         </button>

@@ -229,14 +229,16 @@ export default function HomeTab(props) {
                     </div>
 
                     <div className="mb-1">
-                      <p className={`text-[10px] font-medium ${theme.textSecondary} mb-1`}>収支</p>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: isPositive ? theme.green : theme.red, marginBottom: 2, letterSpacing: '0.04em' }}>
+                        {isPositive ? '▲ 黒字' : '▼ 赤字'}
+                      </p>
                       <p style={{
                         fontFamily: "'JetBrains Mono', monospace",
-                        fontSize: 32, fontWeight: 800,
+                        fontSize: 38, fontWeight: 800,
                         fontVariantNumeric: 'tabular-nums',
                         color: isPositive ? theme.green : theme.red,
                         letterSpacing: '-0.04em',
-                        textShadow: isPositive ? `0 0 20px ${theme.green}50` : `0 0 20px ${theme.red}40`,
+                        lineHeight: 1,
                       }}>
                         {isPositive ? '+' : '−'}¥{Math.abs(diff).toLocaleString()}
                       </p>
@@ -914,7 +916,7 @@ export default function HomeTab(props) {
                       <div className="px-3 pb-3">
                         <button onClick={() => openCloseMonthModal()}
                           className="w-full py-2.5 rounded-lg font-semibold text-white transition-all hover-scale text-sm"
-                          style={{ backgroundColor: theme.accent }}>
+                          style={{ backgroundColor: '#0A84FF' }}>
                           今月を振り返る
                         </button>
                         <p className={`text-[10px] text-center mt-1.5 ${theme.textSecondary}`}>振り返りを完了すると資産タブに反映されます</p>
