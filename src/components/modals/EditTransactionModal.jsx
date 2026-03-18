@@ -418,7 +418,7 @@ export default function EditTransactionModal(props) {
                 <button
                   onClick={handleSave}
                   className="flex-1 py-3 rounded-lg font-bold text-white text-sm"
-                  style={{ backgroundColor: theme.accent }}
+                  style={{ backgroundColor: '#0A84FF' }}
                 >変更を保存</button>
               </div>
             </div>

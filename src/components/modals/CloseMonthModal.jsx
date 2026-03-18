@@ -277,7 +277,7 @@ export default function CloseMonthModal(props) {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: theme.accent }} />
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#0A84FF' }} />
                   <span style={{ fontSize: 12, fontWeight: 600, color: txt }}>待機資金へ</span>
                 </div>
                 <span style={{ fontSize: 14, fontWeight: 800, fontVariantNumeric: 'tabular-nums', color: theme.accent }}>
@@ -387,7 +387,7 @@ export default function CloseMonthModal(props) {
             });
             setShowSummary(true);
           }} style={{
-            flex: 2, padding: '13px', background: theme.accent,
+            flex: 2, padding: '13px', background: '#0A84FF',
             border: 'none', borderRadius: 12, color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
           }}>振り分けを確定する</button>
         </div>

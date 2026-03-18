@@ -79,7 +79,7 @@ export default function BudgetModal(props) {
               <button
                 onClick={() => setShowBudgetModal(false)}
                 className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale"
-                style={{ backgroundColor: theme.accent }}
+                style={{ backgroundColor: '#0A84FF' }}
               >
                 保存
               </button>

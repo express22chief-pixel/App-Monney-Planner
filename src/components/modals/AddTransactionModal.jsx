@@ -275,7 +275,7 @@ export default function AddTransactionModal(props) {
                 }
                 addTransaction();
                 if (newTransaction.amount && newTransaction.category) setShowAddTransaction(false);
-              }} className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: theme.accent }}>追加する</button>
+              }} className="w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 hover-scale" style={{ backgroundColor: '#0A84FF' }}>追加する</button>
             </div>
           )}
         </div>
