@@ -137,7 +137,7 @@ export default function MonthReviewBanner({
               style={{
                 flex: 2, padding: '12px', borderRadius: 12,
                 border: 'none', cursor: 'pointer',
-                background: `linear-gradient(135deg, ${accent}, #0072ff)`,
+                background: '#0A84FF',
                 color: '#fff', fontSize: 13, fontWeight: 800,
                 boxShadow: `0 4px 14px ${accent}40`,
               }}
